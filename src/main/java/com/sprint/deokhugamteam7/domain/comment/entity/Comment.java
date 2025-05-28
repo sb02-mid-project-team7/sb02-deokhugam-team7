@@ -63,7 +63,11 @@ public class Comment {
         review.addComment(comment);
         return comment;
     }
-    
+
+    public void update(String content) {
+        this.content = content;
+    }
+
     public void delete() {
         isDeleted = true;
     }

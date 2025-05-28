@@ -10,6 +10,8 @@ import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
+import com.sprint.deokhugamteam7.exception.comment.ForbiddenException;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,55 +23,86 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CommentService {
 
-    private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
-    private final ReviewRepository reviewRepository;
+	private final CommentRepository commentRepository;
+	private final UserRepository userRepository;
+	private final ReviewRepository reviewRepository;
 
-    public CommentDto create(CommentCreateRequest commentCreateRequest) {
-        UUID userId = commentCreateRequest.userId();
-        UUID reviewId = commentCreateRequest.reviewId();
+	public CommentDto create(CommentCreateRequest commentCreateRequest) {
+		UUID userId = commentCreateRequest.userId();
+		UUID reviewId = commentCreateRequest.reviewId();
 
-        User user = userRepository.findById(userId).orElseThrow();
-        Review review = reviewRepository.findById(reviewId).orElseThrow();
+		User user = userRepository.findById(userId).orElseThrow(
+			() -> new EntityNotFoundException("user not found")
+		);
+		Review review = reviewRepository.findById(reviewId).orElseThrow(
+			() -> new EntityNotFoundException("review not found")
+		);
 
-        String content = commentCreateRequest.content();
+		String content = commentCreateRequest.content();
 
-        Comment newComment = Comment.create(
-            user,
-            review,
-            content
-        );
+		Comment newComment = Comment.create(
+			user,
+			review,
+			content
+		);
 
-        Comment savedComment = commentRepository.save(newComment);
-        return new CommentDto(
-            savedComment.getId(),
-            savedComment.getReview().getId(),
-            savedComment.getUser().getId(),
-            savedComment.getUser().getNickname(),
-            savedComment.getContent(),
-            savedComment.getCreatedAt(),
-            savedComment.getUpdatedAt()
-        );
-    }
+		Comment savedComment = commentRepository.save(newComment);
+		return CommentDto.from(savedComment);
+	}
 
-    public CommentDto update(CommentUpdateRequest commentUpdateRequest) {
-        log.debug("메시지 수정 시작: request={}", commentUpdateRequest);
-        return null;
-    }
+	public CommentDto update(UUID commentId, UUID userId,
+		CommentUpdateRequest commentUpdateRequest) {
+		Comment comment = commentRepository.findById(commentId).orElseThrow(
+			() -> new EntityNotFoundException("comment not found")
+		);
 
-    public void deleteHard(UUID commentId, UUID userId) {
+		if (comment.getUser().getId() != userId) {
+			throw new ForbiddenException("해당 댓글을 수정할 권한이 없습니다.");
+		}
 
-    }
+		String content = commentUpdateRequest.content();
+		comment.update(content);
 
-    public void deleteSoft(UUID commentId, UUID userId) {
+		return CommentDto.from(comment);
+	}
 
-    }
+	public void deleteHard(UUID commentId, UUID userId) {
+		Comment comment = commentRepository.findById(commentId).orElseThrow(
+			() -> new EntityNotFoundException("comment not found")
+		);
+
+		if (comment.getUser().getId() != userId) {
+			throw new ForbiddenException("해당 댓글을 삭제할 권한이 없습니다.");
+		}
+
+		commentRepository.deleteById(commentId);
+	}
+
+	public void deleteSoft(UUID commentId, UUID userId) {
+		Comment comment = commentRepository.findById(commentId).orElseThrow(
+			() -> new EntityNotFoundException("comment not found")
+		);
+
+		if (comment.getUser().getId() != userId) {
+			throw new ForbiddenException("해당 댓글을 삭제할 권한이 없습니다.");
+		}
+
+		comment.delete();
+	}
 
 
-    public CursorPageResponseCommentDto getCommentList(UUID reviewId, String direction,
-        String cursor,
-        LocalDateTime after, int limit) {
+	public CursorPageResponseCommentDto getCommentList(UUID reviewId, String direction,
+		String cursor,
+		LocalDateTime after, int limit) {
 
-        return null;
-    }
+		return null;
+	}
+
+	public CommentDto getComment(UUID commentId) {
+		Comment comment = commentRepository.findById(commentId).orElseThrow(
+			() -> new EntityNotFoundException("comment not found")
+		);
+
+		return CommentDto.from(comment);
+	}
 }
