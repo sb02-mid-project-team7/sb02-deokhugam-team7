@@ -15,6 +15,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -29,6 +30,7 @@ public class BasicBookService implements BookService{
   private final BookRepository bookRepository;
 
   @Override
+  @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile file) {
     if (bookRepository.existsByIsbn(request.isbn())) {
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -53,6 +55,7 @@ public class BasicBookService implements BookService{
   }
 
   @Override
+  @Transactional
   public BookDto update(UUID id, BookUpdateRequest request, MultipartFile file) {
     return null;
   }
