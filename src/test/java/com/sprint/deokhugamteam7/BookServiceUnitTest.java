@@ -13,7 +13,7 @@ import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.book.service.BasicBookService;
-import com.sprint.deokhugamteam7.domain.book.service.ImageService;
+import com.sprint.deokhugamteam7.domain.book.service.S3ImageService;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -29,7 +29,7 @@ import org.springframework.mock.web.MockMultipartFile;
 public class BookServiceUnitTest {
 
   @Mock
-  private ImageService imageService;
+  private S3ImageService s3ImageService;
 
   @Mock
   private BookRepository bookRepository;
@@ -61,7 +61,7 @@ public class BookServiceUnitTest {
     MockMultipartFile mockMultipartFile = new MockMultipartFile("name", "test.png", "image/png",
         new byte[0]);
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", "ccc", "ddd", now, "11111111");
-    when(imageService.uploadImage(mockMultipartFile)).thenReturn("testUrl");
+    when(s3ImageService.uploadImage(mockMultipartFile)).thenReturn("testUrl");
     // when
     BookDto bookDto = bookService.create(request, mockMultipartFile);
     // then

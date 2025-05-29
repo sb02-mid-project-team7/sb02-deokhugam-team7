@@ -1,7 +1,7 @@
 package com.sprint.deokhugamteam7.domain.book.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookResponse;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;

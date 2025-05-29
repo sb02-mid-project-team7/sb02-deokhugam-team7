@@ -5,7 +5,7 @@ import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
-import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
 import com.sprint.deokhugamteam7.domain.book.service.APIService;
 import com.sprint.deokhugamteam7.domain.book.service.BookService;
 import java.util.UUID;

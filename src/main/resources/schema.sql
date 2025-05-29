@@ -50,7 +50,7 @@ create table if not exists reviews
     updated_at TIMESTAMP,
 
     CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_reviews_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
+    CONSTRAINT fk_reviews_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE,
     CONSTRAINT uk_reviews_user_book UNIQUE (user_id, book_id)
 );
 
@@ -75,7 +75,7 @@ create table if not exists ranking_reviews
     created_at TIMESTAMP        NOT NULL,
 
     CONSTRAINT fk_rankingreviews_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
-    CONSTRAINT uk_reviewlikes_user_review UNIQUE (user_id, review_id)
+--     CONSTRAINT uk_reviewlikes_user_review UNIQUE (user_id, review_id)
 );
 
 create table if not exists comments

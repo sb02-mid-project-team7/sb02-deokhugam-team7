@@ -1,5 +1,6 @@
-package com.sprint.deokhugamteam7.domain.book.dto.response;
+package com.sprint.deokhugamteam7.domain.book.dto;
 
+import com.sprint.deokhugamteam7.domain.book.dto.response.Item;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;

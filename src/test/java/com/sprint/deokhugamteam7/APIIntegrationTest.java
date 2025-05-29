@@ -2,7 +2,7 @@ package com.sprint.deokhugamteam7;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
 import com.sprint.deokhugamteam7.domain.book.service.APIService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
