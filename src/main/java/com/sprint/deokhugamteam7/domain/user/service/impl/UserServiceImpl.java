@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
         savedUser.getId(),
         savedUser.getEmail(),
         savedUser.getNickname(),
-        savedUser.getCreateAt()
+        savedUser.getCreatedAt()
     );
   }
 
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
         user.getId(),
         user.getEmail(),
         user.getNickname(),
-        user.getCreateAt()
+        user.getCreatedAt()
     );
   }
 
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
         user.getId(),
         user.getEmail(),
         user.getNickname(),
-        user.getCreateAt()
+        user.getCreatedAt()
     );
   }
 
@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
         user.getId(),
         user.getEmail(),
         user.getNickname(),
-        user.getCreateAt()
+        user.getCreatedAt()
     );
   }
 
