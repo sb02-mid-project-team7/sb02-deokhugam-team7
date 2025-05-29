@@ -41,7 +41,19 @@ public class UserServiceImpl implements UserService {
   }
 
   public UserDto login(UserLoginRequest request) {
-    return null;
+    User user = userRepository.findByEmail(request.email())
+        .orElseThrow(() -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    if (!user.getPassword().equals(request.password())) {
+      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreateAt()
+    );
   }
 
   public UserDto findById(UUID id) {
