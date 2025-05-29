@@ -6,8 +6,11 @@ import com.sprint.deokhugamteam7.domain.user.dto.response.UserDto;
 import com.sprint.deokhugamteam7.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +38,12 @@ public class UserController {
     // 새 세션 생성
     httpRequest.getSession(true).setAttribute("userId", user.id().toString());
 
+    return ResponseEntity.status(200).body(user);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<UserDto> findById(@PathVariable UUID id) {
+    UserDto user = userService.findById(id);
     return ResponseEntity.status(200).body(user);
   }
 }

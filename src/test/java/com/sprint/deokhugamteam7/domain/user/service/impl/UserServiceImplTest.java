@@ -2,6 +2,7 @@ package com.sprint.deokhugamteam7.domain.user.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -11,8 +12,10 @@ import com.sprint.deokhugamteam7.domain.user.dto.response.UserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
+import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.user.UserException;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -118,6 +121,36 @@ class UserServiceImplTest {
       assertThat(thrown)
           .isInstanceOf(UserException.class)
           .hasMessage("Internal Server Error");
+    }
+  }
+
+  @Nested
+  @DisplayName("조회")
+  class FindById {
+
+    @Test
+    @DisplayName("조회 성공")
+    void findById_success() {
+      User user = User.create("test@example.com", "tester", "Password123!");
+      when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+      UserDto result = userService.findById(user.getId());
+      assertThat(result).isNotNull();
+      assertThat(result.email()).isEqualTo(user.getEmail());
+      assertThat(result.nickname()).isEqualTo(user.getNickname());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 사용자로 조회 실패")
+    void findById_userNotFound() {
+      UUID userId = UUID.randomUUID();
+      // given
+      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> userService.findById(userId))
+          .isInstanceOf(UserException.class)
+          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
     }
   }
 }

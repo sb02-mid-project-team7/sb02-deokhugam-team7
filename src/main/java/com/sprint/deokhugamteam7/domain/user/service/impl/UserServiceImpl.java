@@ -59,8 +59,17 @@ public class UserServiceImpl implements UserService {
     );
   }
 
+  @Transactional(readOnly = true)
   public UserDto findById(UUID id) {
-    return null;
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreateAt()
+    );
   }
 
   public UserDto update(UUID id, UserUpdateRequest request) {
