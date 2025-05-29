@@ -72,4 +72,26 @@ public class BasicReviewService implements ReviewService {
 
     return ReviewDto.of(review, likeCount, commentCount, likedByMe);
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public void deleteSoft(UUID id, UUID userId) {
+    Review review = reviewRepository.findById(id)
+        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    review.validateUserAuthorization(userId);
+
+    review.delete();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public void deleteHard(UUID id, UUID userId) {
+    Review review = reviewRepository.findById(id)
+        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    review.validateUserAuthorization(userId);
+
+    reviewRepository.delete(review);
+  }
 }
