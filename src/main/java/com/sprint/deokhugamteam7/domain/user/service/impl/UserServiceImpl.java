@@ -87,8 +87,17 @@ public class UserServiceImpl implements UserService {
   }
 
   public void softDeleteById(UUID id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    user.softDelete();
   }
 
   public void hardDeleteById(UUID id) {
+    if (!userRepository.existsById(id)) {
+      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    userRepository.deleteById(id);
   }
 }

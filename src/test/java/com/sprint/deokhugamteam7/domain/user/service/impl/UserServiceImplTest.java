@@ -196,4 +196,72 @@ class UserServiceImplTest {
       verify(userRepository).findById(userId);
     }
   }
+
+  @Nested
+  @DisplayName("논리 삭제")
+  class SoftDelete {
+    @Test
+    @DisplayName("soft delete 성공")
+    void softDelete_success() {
+      // given
+      UUID userId = UUID.randomUUID();
+      User user = User.create("soft@example.com", "softie", "pw123!");
+      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+      // when
+      userService.softDeleteById(userId);
+
+      // then
+      assertThat(user.isDeleted()).isTrue();
+      verify(userRepository).findById(userId);
+    }
+
+    @Test
+    @DisplayName("soft delete 시 사용자가 없으면 예외 발생")
+    void softDelete_userNotFound() {
+      // given
+      UUID userId = UUID.randomUUID();
+      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+      // when & then
+      assertThatThrownBy(() -> userService.softDeleteById(userId))
+          .isInstanceOf(DeokhugamException.class)
+          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+
+      verify(userRepository).findById(userId);
+    }
+  }
+
+  @Nested
+  @DisplayName("물리 삭제")
+  class HardDelete {
+    @Test
+    @DisplayName("hard delete 성공")
+    void hardDelete_success() {
+      // given
+      UUID userId = UUID.randomUUID();
+      when(userRepository.existsById(userId)).thenReturn(true);
+
+      // when
+      userService.hardDeleteById(userId);
+
+      // then
+      verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    @DisplayName("hard delete 시 사용자가 없으면 예외 발생")
+    void hardDelete_userNotFound() {
+      // given
+      UUID userId = UUID.randomUUID();
+      when(userRepository.existsById(userId)).thenReturn(false);
+
+      // when & then
+      assertThatThrownBy(() -> userService.hardDeleteById(userId))
+          .isInstanceOf(DeokhugamException.class)
+          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+
+      verify(userRepository).existsById(userId);
+    }
+  }
 }
