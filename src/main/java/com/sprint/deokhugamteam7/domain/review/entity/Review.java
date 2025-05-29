@@ -4,6 +4,8 @@ package com.sprint.deokhugamteam7.domain.review.entity;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.comment.entity.Comment;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
+import com.sprint.deokhugamteam7.exception.ErrorCode;
+import com.sprint.deokhugamteam7.exception.review.ReviewException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -61,6 +63,7 @@ public class Review {
   @Column(updatable = false)
   private LocalDateTime updatedAt;
 
+  // 두 List가 필요없다는게 확인 됨. 그래도 혹시 모르니, 기능 구현이 끝나기 전까진 놔둘 예정.
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Comment> commentList;
 
@@ -92,5 +95,16 @@ public class Review {
 
   public void delete() {
     isDeleted = true;
+  }
+
+  public void update(String content, int rating) {
+    this.content = content;
+    this.rating = rating;
+  }
+
+  public void validateUserAuthorization(UUID userId) {
+    if (!this.user.getId().equals(userId)) {
+      throw new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
   }
 }
