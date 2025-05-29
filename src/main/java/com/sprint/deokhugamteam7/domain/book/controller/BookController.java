@@ -1,8 +1,10 @@
 package com.sprint.deokhugamteam7.domain.book.controller;
 
+import com.sprint.deokhugamteam7.domain.book.dto.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
+import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookDto;
 import com.sprint.deokhugamteam7.domain.book.service.APIService;
 import com.sprint.deokhugamteam7.domain.book.service.BookService;
@@ -66,5 +68,18 @@ public class BookController implements BookApi {
   public ResponseEntity<Void> deletePhysically(@PathVariable UUID bookId) {
     bookService.deletePhysically(bookId);
     return ResponseEntity.status(204).build();
+  }
+
+  @GetMapping
+  public ResponseEntity<CursorPageResponseBookDto> findAll(
+      BookCondition condition) {
+    CursorPageResponseBookDto result = bookService.findAll(condition);
+    return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("/{bookId}")
+  public ResponseEntity<BookDto> findById(@PathVariable UUID bookId) {
+    BookDto bookDto = bookService.findById(bookId);
+    return ResponseEntity.ok(bookDto);
   }
 }

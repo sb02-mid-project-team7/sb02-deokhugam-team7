@@ -48,7 +48,7 @@ public class BookIntegrationTest {
   @Test
   void createSuccess() {
     // given
-    BookCreateRequest request = new BookCreateRequest("aaa", "bbb", null, "ccc", now, null);
+    BookCreateRequest request = new BookCreateRequest("aaaa", "bbbb", null, "cccc", now, null);
     // when
     BookDto bookDto = bookService.create(request, null);
     // then
@@ -56,9 +56,9 @@ public class BookIntegrationTest {
         () -> assertThat(bookDto.id()).isNotNull(),
         () -> assertThat(bookDto.createdAt()).isNotNull(),
         ()-> assertThat(bookDto.updatedAt()).isNotNull(),
-        () -> assertThat(bookDto.title()).isEqualTo("aaa"),
-        () -> assertThat(bookDto.author()).isEqualTo("bbb"),
-        () -> assertThat(bookDto.publisher()).isEqualTo("ccc"),
+        () -> assertThat(bookDto.title()).isEqualTo("aaaa"),
+        () -> assertThat(bookDto.author()).isEqualTo("bbbb"),
+        () -> assertThat(bookDto.publisher()).isEqualTo("cccc"),
         () -> assertThat(bookDto.publishedDate()).isEqualTo(now)
     );
   }

@@ -1,8 +1,10 @@
 package com.sprint.deokhugamteam7.domain.book.controller;
 
+import com.sprint.deokhugamteam7.domain.book.dto.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
+import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -96,7 +98,7 @@ public interface BookApi {
   @Operation(summary = "ISBN으로 도서 정보 조회")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "20",
+          responseCode = "200",
           description = "Book정보가 성공적으로 조회됨")
   })
   ResponseEntity<NaverBookDto> info(
@@ -105,5 +107,30 @@ public interface BookApi {
           required = true
       )
     String isbn
+  );
+
+  @Operation(summary = "도서 목록 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "Book 목록이 성공적으로 조회됨")
+  })
+  ResponseEntity<CursorPageResponseBookDto> findAll(
+      BookCondition condition
+  );
+
+
+  @Operation(summary = "도서 단건 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "Book이 성공적으로 조회됨")
+  })
+  ResponseEntity<BookDto> findById(
+      @Parameter(
+          description = "도서 ID",
+          required = true
+      )
+      UUID bookId
   );
 }

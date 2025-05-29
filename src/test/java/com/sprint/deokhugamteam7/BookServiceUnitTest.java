@@ -50,7 +50,7 @@ public class BookServiceUnitTest {
         ()->assertThat(bookDto.title()).isEqualTo("aaa"),
         ()-> assertThat(bookDto.author()).isEqualTo("bbb"),
         ()-> assertThat(bookDto.publisher()).isEqualTo("ccc"),
-        ()->assertThat(bookDto.publishedDate()).isEqualTo(now)
+        ()-> assertThat(bookDto.publishedDate()).isEqualTo(now)
     );
   }
 
@@ -81,7 +81,7 @@ public class BookServiceUnitTest {
     // given
     BookCreateRequest mock = mock(BookCreateRequest.class);
     when(mock.isbn()).thenReturn("1234567");
-    when(bookRepository.existsByIsbn("1234567")).thenReturn(false);
+    when(bookRepository.existsByIsbnIsNotNullAndIsbn("1234567")).thenReturn(false);
     // when & then
     assertThrows(DeokhugamException.class, ()->
         bookService.create(mock, mock(MockMultipartFile.class)));

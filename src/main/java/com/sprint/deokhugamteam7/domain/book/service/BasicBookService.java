@@ -9,9 +9,15 @@ import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +33,7 @@ public class BasicBookService implements BookService{
   @Override
   @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile file) {
-    if (bookRepository.existsByIsbn(request.isbn())) {
+    if (bookRepository.existsByIsbnIsNotNullAndIsbn(request.isbn())) {
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
@@ -52,13 +58,9 @@ public class BasicBookService implements BookService{
   @Override
   @Transactional
   public BookDto update(UUID id, BookUpdateRequest request, MultipartFile file) {
-    Book book = bookRepository.findById(id).orElseThrow(
+    Book book = bookRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
         () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
     );
-
-    if (book.getIsDeleted()) {
-      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
-    }
 
     String thumbnailUrl = null;
     if (file != null) {
@@ -74,15 +76,31 @@ public class BasicBookService implements BookService{
 
     return BookDto.from(book);
   }
-
+  //TODO 출판일순, 평점순, 리뷰순 구현해야함
   @Override
+  @Transactional(readOnly = true)
   public CursorPageResponseBookDto findAll(BookCondition condition) {
-    return null;
+    Sort.Direction direction = Sort.Direction.fromString(condition.getDirection());
+    Sort sort = Sort.by(direction, condition.getOrderBy());
+    Pageable pageable = PageRequest.of(0, condition.getLimit(), sort);
+
+    LocalDateTime cursor =Optional.ofNullable(condition.getCursor()).map(LocalDateTime::parse)
+        .orElse(LocalDateTime.now());
+
+    Slice<BookDto> bookSlice = bookRepository.findAllByKeyword(condition.getKeyword(),
+        cursor, pageable)
+        .map(BookDto::from);
+
+    return CursorPageResponseBookDto.from(bookSlice);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public BookDto findById(UUID id) {
-    return null;
+    Book book = bookRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
+        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+    );
+    return BookDto.from(book);
   }
 
   @Override
