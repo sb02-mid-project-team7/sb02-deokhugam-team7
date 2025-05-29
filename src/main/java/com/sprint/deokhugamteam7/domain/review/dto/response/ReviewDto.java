@@ -1,8 +1,6 @@
 package com.sprint.deokhugamteam7.domain.review.dto.response;
 
-import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
-import com.sprint.deokhugamteam7.domain.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -24,15 +22,15 @@ public record ReviewDto(
     LocalDateTime updatedAt
 ) {
 
-  public static ReviewDto of(Book book, User user, Review review, int likeCount, int commentCount,
+  public static ReviewDto of(Review review, int likeCount, int commentCount,
       boolean likedByMe) {
     return ReviewDto.builder()
         .id(review.getId())
-        .bookId(book.getId())
-        .bookTitle(book.getTitle())
-        .bookThumbnailUrl(book.getThumbnailUrl())
-        .userId(user.getId())
-        .userNickname(user.getNickname())
+        .bookId(review.getBook().getId())
+        .bookTitle(review.getBook().getTitle())
+        .bookThumbnailUrl(review.getBook().getThumbnailUrl())
+        .userId(review.getUser().getId())
+        .userNickname(review.getUser().getNickname())
         .content(review.getContent())
         .rating(review.getRating())
         .likeCount(likeCount)
