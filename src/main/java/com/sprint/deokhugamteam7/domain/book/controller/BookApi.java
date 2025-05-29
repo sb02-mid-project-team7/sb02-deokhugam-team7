@@ -3,6 +3,7 @@ package com.sprint.deokhugamteam7.domain.book.controller;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
+import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -64,6 +65,45 @@ public interface BookApi {
       MultipartFile file
   );
 
+  @Operation(summary = "Book 논리 삭제")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "204",
+          description = "Book이 성공적으로 삭제됨")
+  })
+  ResponseEntity<Void> deleteLogically(
+      @Parameter(
+          description = "도서 ID",
+          required = true
+      )
+      UUID bookId
+  );
 
+  @Operation(summary = "Book 물리 삭제")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "204",
+          description = "Book이 성공적으로 삭제됨")
+  })
+  ResponseEntity<Void> deletePhysically(
+      @Parameter(
+          description = "도서 ID",
+          required = true
+      )
+      UUID bookId
+  );
 
+  @Operation(summary = "ISBN으로 도서 정보 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "20",
+          description = "Book정보가 성공적으로 조회됨")
+  })
+  ResponseEntity<NaverBookDto> info(
+      @Parameter(
+          description = "ISBN 번호",
+          required = true
+      )
+    String isbn
+  );
 }
