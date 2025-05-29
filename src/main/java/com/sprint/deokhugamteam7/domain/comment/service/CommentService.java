@@ -40,7 +40,7 @@ public class CommentService {
 		if (user.isDeleted()) {
 			throw new IllegalArgumentException("user is deleted");
 		}
-		
+
 		Review review = reviewRepository.findById(reviewId).orElseThrow(
 			() -> new EntityNotFoundException("review not found")
 		);
@@ -81,7 +81,7 @@ public class CommentService {
 		);
 
 		if (comment.getUser().getId() != userId) {
-			throw new ForbiddenException("해당 댓글을 삭제할 권한이 없습니다.");
+			throw new IllegalArgumentException("해당 댓글을 삭제할 권한이 없습니다.");
 		}
 
 		commentRepository.deleteById(commentId);
