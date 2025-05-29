@@ -11,6 +11,7 @@ import com.sprint.deokhugamteam7.domain.user.dto.response.UserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
+import com.sprint.deokhugamteam7.exception.user.UserException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,7 +68,7 @@ class UserServiceImplTest {
       Throwable thrown = catchThrowable(() -> userService.register(request));
 
       assertThat(thrown)
-          .isInstanceOf(DeokhugamException.class)
+          .isInstanceOf(UserException.class)
           .hasMessage("Internal Server Error");
     }
   }
@@ -100,7 +101,7 @@ class UserServiceImplTest {
       Throwable thrown = catchThrowable(() -> userService.login(request));
 
       assertThat(thrown)
-          .isInstanceOf(DeokhugamException.class)
+          .isInstanceOf(UserException.class)
           .hasMessage("Internal Server Error");
     }
 
@@ -115,7 +116,7 @@ class UserServiceImplTest {
       Throwable thrown = catchThrowable(() -> userService.login(request));
 
       assertThat(thrown)
-          .isInstanceOf(DeokhugamException.class)
+          .isInstanceOf(UserException.class)
           .hasMessage("Internal Server Error");
     }
   }

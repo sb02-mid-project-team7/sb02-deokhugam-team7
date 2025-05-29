@@ -9,6 +9,7 @@ import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.domain.user.service.UserService;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
+import com.sprint.deokhugamteam7.exception.user.UserException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class UserServiceImpl implements UserService {
 
   public UserDto register(UserRegisterRequest request) {
     if (userRepository.existsByEmail(request.email())) {
-      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     User user = User.create(
@@ -44,10 +45,10 @@ public class UserServiceImpl implements UserService {
 
   public UserDto login(UserLoginRequest request) {
     User user = userRepository.findByEmail(request.email())
-        .orElseThrow(() -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
     if (!user.getPassword().equals(request.password())) {
-      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
     return new UserDto(
