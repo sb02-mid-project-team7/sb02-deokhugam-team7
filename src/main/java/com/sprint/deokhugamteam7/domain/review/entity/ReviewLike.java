@@ -11,13 +11,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -40,13 +40,13 @@ public class ReviewLike {
   @JoinColumn(name = "review_id", nullable = false)
   private Review review;
 
+  @CreatedDate
   @Column(updatable = false, nullable = false)
   private LocalDateTime createdAt;
 
   public static ReviewLike create(User user, Review review) {
     ReviewLike reviewLike = new ReviewLike();
     reviewLike.user = user;
-    reviewLike.review = review;
 
     review.addReviewLike(reviewLike);
     return reviewLike;
