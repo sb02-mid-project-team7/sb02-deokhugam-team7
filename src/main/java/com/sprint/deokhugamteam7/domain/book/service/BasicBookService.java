@@ -9,16 +9,11 @@ import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Slf4j
 @Service
@@ -54,7 +49,23 @@ public class BasicBookService implements BookService{
 
   @Override
   public BookDto update(UUID id, BookUpdateRequest request, MultipartFile file) {
-    return null;
+    Book book = bookRepository.findById(id).orElseThrow(
+        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+    );
+
+    String thumbnailUrl = null;
+    if (file != null) {
+      thumbnailUrl = imageService.uploadImage(file);
+    }
+
+    book.update(request.title(), request.author(), request.description(), request.publisher(),
+        request.publishedDate(), thumbnailUrl);
+    bookRepository.save(book);
+
+    log.info("[BasicBookService] update Book : id {}, title {}, created at {}, updated at {}",
+        book.getId(), book.getTitle(), book.getCreatedAt(), book.getUpdatedAt());
+
+    return BookDto.from(book);
   }
 
   @Override

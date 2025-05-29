@@ -92,4 +92,22 @@ public class Book {
         .publisher(publisher)
         .publisherDate(publisherDate);
   }
+
+  private String updateField(String original, String newField) {
+    return (newField != null && !newField.equals(original) ? newField : original);
+  }
+
+  private LocalDate updateField(LocalDate original, LocalDate newField) {
+    return (newField != null && !newField.equals(original) ? newField : original);
+  }
+
+  public void update(String newTitle, String newAuthor, String newDescription, String newPublisher,
+      LocalDate newPublisherDate, String newThumbnailUrl) {
+    title = updateField(title, newTitle);
+    author = updateField(author, newAuthor);
+    description = updateField(description, newDescription);
+    publisher = updateField(publisher, newPublisher);
+    publisherDate = updateField(publisherDate, newPublisherDate);
+    thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
+  }
 }

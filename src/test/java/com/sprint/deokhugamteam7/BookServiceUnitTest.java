@@ -8,11 +8,16 @@ import static org.mockito.Mockito.when;
 
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
+import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
+import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.book.service.BasicBookService;
 import com.sprint.deokhugamteam7.domain.book.service.ImageService;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,11 +36,15 @@ public class BookServiceUnitTest {
 
   @InjectMocks
   private BasicBookService bookService;
+  LocalDate now;
+  @BeforeEach
+  void setUp() {
+    now = LocalDate.now();
+  }
 
   @Test
-  void createBookSuccess_WithNecessaryElement() {
+  void createBook_Success_WithNecessaryElement() {
     // given
-    LocalDate now = LocalDate.now();
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", null, "ccc", now, null);
     // when
     BookDto bookDto = bookService.create(request, null);
@@ -49,9 +58,8 @@ public class BookServiceUnitTest {
   }
 
   @Test
-  void createBookSuccess_WithAll() {
+  void createBook_Success_WithAll() {
     // given
-    LocalDate now = LocalDate.now();
     MockMultipartFile mockMultipartFile = new MockMultipartFile("name", "test.png", "image/png",
         new byte[0]);
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", "ccc", "ddd", now, "11111111");
@@ -79,6 +87,27 @@ public class BookServiceUnitTest {
     // when & then
     assertThrows(DeokhugamException.class, ()->
         bookService.create(mock, mock(MockMultipartFile.class)));
+  }
+
+  @Test
+  void updateBook_Success() {
+    // given
+    UUID mock = UUID.randomUUID();
+    LocalDate newDate = LocalDate.now().plusDays(1);
+    Book book = Book.create("aaa", "bbb", "ccc", now).build();
+    BookUpdateRequest request = new BookUpdateRequest("test111", "test222", "test333",
+        "test444", newDate);
+    when(bookRepository.findById(mock)).thenReturn(Optional.of(book));
+    // when
+    BookDto bookDto = bookService.update(mock, request, null);
+    // then
+    assertAll(
+        ()->assertThat(bookDto.title()).isEqualTo("test111"),
+        ()-> assertThat(bookDto.author()).isEqualTo("test222"),
+        ()-> assertThat(bookDto.description()).isEqualTo("test333"),
+        ()-> assertThat(bookDto.publisher()).isEqualTo("test444"),
+        ()->assertThat(bookDto.publishedDate()).isEqualTo(newDate)
+    );
   }
 
 }
