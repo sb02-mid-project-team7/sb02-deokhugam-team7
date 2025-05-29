@@ -2,6 +2,8 @@ package com.sprint.deokhugamteam7;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
@@ -44,7 +46,7 @@ public class BookIntegrationTest {
   }
 
   @Test
-  void createBookSuccess() {
+  void createSuccess() {
     // given
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", null, "ccc", now, null);
     // when
@@ -62,7 +64,7 @@ public class BookIntegrationTest {
   }
 
   @Test
-  void updateBookSuccess() {
+  void updateSuccess() {
     // given
     LocalDate newDate = LocalDate.now().plusDays(1);
     BookUpdateRequest request = new BookUpdateRequest("111", "222", "333", "444", newDate);
@@ -79,6 +81,23 @@ public class BookIntegrationTest {
         () -> assertThat(bookDto.publisher()).isEqualTo("444"),
         () -> assertThat(bookDto.publishedDate()).isEqualTo(newDate)
     );
+  }
+  
+  @Test
+  void delete_Logically_Success() {
+   // when
+    bookService.deleteLogically(testBook.getId());
+    // then
+    assertTrue(bookRepository.findById(testBook.getId()).isPresent());
+    assertTrue(testBook.getIsDeleted());
+  }
+  
+  @Test
+  void delete_Physical_Success() {
+    // when
+    bookService.deletePhysically(testBook.getId());
+    // then
+    assertFalse(bookRepository.findById(testBook.getId()).isPresent());
   }
 
 }

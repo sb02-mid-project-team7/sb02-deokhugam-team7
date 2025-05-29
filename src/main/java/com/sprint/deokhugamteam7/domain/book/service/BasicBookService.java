@@ -56,6 +56,10 @@ public class BasicBookService implements BookService{
         () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
     );
 
+    if (book.getIsDeleted()) {
+      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
     String thumbnailUrl = null;
     if (file != null) {
       thumbnailUrl = imageService.uploadImage(file);
@@ -82,12 +86,23 @@ public class BasicBookService implements BookService{
   }
 
   @Override
+  @Transactional
   public void deleteLogically(UUID id) {
-
+    Book book = bookRepository.findById(id).orElseThrow(
+        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+    );
+    book.setIsDeleted(true);
+    bookRepository.save(book);
+    log.info("[BasicBookService] delete logically : id {}", book.getId());
   }
 
   @Override
-  public void deletePhysically(UUID uuid) {
-
+  @Transactional
+  public void deletePhysically(UUID id) {
+    Book book = bookRepository.findById(id).orElseThrow(
+        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+    );
+    log.info("[BasicBookService] delete Physically : id {}", book.getId());
+    bookRepository.delete(book);
   }
 }
