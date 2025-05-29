@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
         savedUser.getId(),
         savedUser.getEmail(),
         savedUser.getNickname(),
-        savedUser.getCreateAt()
+        savedUser.getCreatedAt()
     );
   }
 
@@ -55,21 +55,49 @@ public class UserServiceImpl implements UserService {
         user.getId(),
         user.getEmail(),
         user.getNickname(),
-        user.getCreateAt()
+        user.getCreatedAt()
     );
   }
 
+  @Transactional(readOnly = true)
   public UserDto findById(UUID id) {
-    return null;
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreatedAt()
+    );
   }
 
   public UserDto update(UUID id, UserUpdateRequest request) {
-    return null;
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    user.update(request.nickname()); // 닉네임만 변경
+
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreatedAt()
+    );
   }
 
   public void softDeleteById(UUID id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    user.softDelete();
   }
 
   public void hardDeleteById(UUID id) {
+    if (!userRepository.existsById(id)) {
+      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    userRepository.deleteById(id);
   }
 }
