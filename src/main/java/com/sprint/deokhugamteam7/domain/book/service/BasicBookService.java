@@ -13,6 +13,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -24,6 +25,7 @@ public class BasicBookService implements BookService{
   private final BookRepository bookRepository;
 
   @Override
+  @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile file) {
     if (bookRepository.existsByIsbn(request.isbn())) {
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -48,6 +50,7 @@ public class BasicBookService implements BookService{
   }
 
   @Override
+  @Transactional
   public BookDto update(UUID id, BookUpdateRequest request, MultipartFile file) {
     Book book = bookRepository.findById(id).orElseThrow(
         () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
