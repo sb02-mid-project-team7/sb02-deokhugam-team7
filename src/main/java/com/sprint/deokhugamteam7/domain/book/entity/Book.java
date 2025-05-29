@@ -1,6 +1,8 @@
 package com.sprint.deokhugamteam7.domain.book.entity;
 
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
+import com.sprint.deokhugamteam7.exception.DeokhugamException;
+import com.sprint.deokhugamteam7.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -11,11 +13,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,7 +43,7 @@ public class Book {
   private LocalDateTime updatedAt;
 
   @Column(name = "is_deleted", nullable = false)
-  private Boolean isDeleted;
+  private Boolean isDeleted = false;
 
   @Column(name = "title", nullable = false)
   private String title;
@@ -72,6 +72,9 @@ public class Book {
   @Builder(builderMethodName = "of")
   private Book(String title, String author, String description, String publisher,
       LocalDate publisherDate, String isbn, String thumbnailUrl) {
+    if (title == null | author == null | publisher == null | publisherDate == null) {
+      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
     this.title = title;
     this.author = author;
     this.description = description;
