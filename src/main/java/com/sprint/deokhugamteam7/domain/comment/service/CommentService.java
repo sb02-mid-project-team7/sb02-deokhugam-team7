@@ -37,9 +37,16 @@ public class CommentService {
 		User user = userRepository.findById(userId).orElseThrow(
 			() -> new EntityNotFoundException("user not found")
 		);
+		if (user.isDeleted()) {
+			throw new IllegalArgumentException("user is deleted");
+		}
+		
 		Review review = reviewRepository.findById(reviewId).orElseThrow(
 			() -> new EntityNotFoundException("review not found")
 		);
+		if (review.getIsDeleted()) {
+			throw new IllegalArgumentException("review is deleted");
+		}
 
 		String content = commentCreateRequest.content();
 
