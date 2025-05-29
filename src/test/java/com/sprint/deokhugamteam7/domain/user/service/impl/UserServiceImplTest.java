@@ -41,7 +41,8 @@ class UserServiceImplTest {
     @DisplayName("성공")
     void register_success() {
       // given
-      UserRegisterRequest request = new UserRegisterRequest("test@example.com", "tester", "Password123!");
+      UserRegisterRequest request = new UserRegisterRequest("test@example.com", "tester",
+          "Password123!");
 
       when(userRepository.existsByEmail(request.email())).thenReturn(false);
       when(userRepository.save(any(User.class))).thenReturn(
@@ -59,7 +60,8 @@ class UserServiceImplTest {
     @Test
     @DisplayName("중복 이메일 예외")
     void register_duplicateEmail() {
-      UserRegisterRequest request = new UserRegisterRequest("test@example.com", "tester", "Password123!");
+      UserRegisterRequest request = new UserRegisterRequest("test@example.com", "tester",
+          "Password123!");
       when(userRepository.existsByEmail(request.email())).thenReturn(true);
 
       Throwable thrown = catchThrowable(() -> userService.register(request));
