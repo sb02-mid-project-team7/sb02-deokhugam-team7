@@ -2,6 +2,8 @@ package com.sprint.deokhugamteam7.domain.notification.entity;
 
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
+import com.sprint.deokhugamteam7.exception.ErrorCode;
+import com.sprint.deokhugamteam7.exception.notification.NotificationException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -50,16 +52,29 @@ public class Notification {
   @LastModifiedDate
   private LocalDateTime updated_at;
 
+  // confirmed이 getter 어노테이션으로 인식되지 않음
+  public boolean getConfirmed() {
+    return confirmed;
+  }
+
   private Notification(User user, Review review, String content) {
     this.user = user;
     this.review = review;
     this.content = content;
   }
 
+  public static Notification create(User user, Review review, String content) {
+    return new Notification(user, review, content);
+  }
 
   public void updateConfirmed(boolean confirmed) {
     this.confirmed = confirmed;
   }
 
+  public void validateUserAuthorization(UUID userId) {
+    if (!this.review.getUser().getId().equals(userId)) {
+      throw new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+  }
 
 }

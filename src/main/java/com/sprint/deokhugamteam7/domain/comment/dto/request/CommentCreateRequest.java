@@ -1,12 +1,11 @@
 package com.sprint.deokhugamteam7.domain.comment.dto.request;
 
 import java.util.UUID;
-import lombok.Data;
 
-@Data
-public class CommentCreateRequest {
+public record CommentCreateRequest(
+    UUID reviewId,
+    UUID userId,
+    String content
+) {
 
-  private UUID reviewId;
-  private UUID userId;
-  private String content;
 }
