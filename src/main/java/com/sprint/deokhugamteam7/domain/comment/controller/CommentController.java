@@ -65,13 +65,13 @@ public class CommentController {
 	public ResponseEntity<CursorPageResponseCommentDto> getCommentList(
 		@RequestParam UUID reviewId,
 		@RequestParam(defaultValue = "DESC") String direction,
-		@RequestParam(required = false) String cursor,
-		@RequestParam(required = false) LocalDateTime after, // 이전 페이지의 마지막 요소 생성 시간.
+		@RequestParam(required = false) UUID cursorId,
+		@RequestParam(required = false) LocalDateTime createdAt, // 이전 페이지의 마지막 요소 생성 시간.
 		@RequestParam(defaultValue = "30") int limit
 	) {
 		// 시간순 정렬해놔야함 .
 		// 마지막 요소의 ID + 마지막 요소의 생성시간 전달 .
-		commentService.getCommentList(reviewId, direction, cursor, after, limit);
+		commentService.getCommentList(reviewId, direction, cursorId, createdAt, limit);
 		return ResponseEntity.ok().build();
 	}
 
