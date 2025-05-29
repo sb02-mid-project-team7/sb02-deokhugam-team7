@@ -56,4 +56,8 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 		nativeQuery = true
 	)
 	Long countByReviewId(@Param("reviewId") UUID reviewId);
+
+  
+  @Query("SELECT COUNT(c) FROM Comment c WHERE c.review.id = :id AND c.isDeleted = false")
+  int countByReviewIdAndIsDeletedFalse(@Param("id") UUID reviewId);
 }
