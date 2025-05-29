@@ -9,6 +9,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,5 +40,21 @@ public class ReviewController {
       @RequestBody @Valid ReviewUpdateRequest request) {
     ReviewDto reviewDto = reviewService.update(reviewId, userId, request);
     return ResponseEntity.ok(reviewDto);
+  }
+
+  @DeleteMapping(path = "/{reviewId}")
+  public ResponseEntity<Void> deleteSoft(
+      @PathVariable UUID reviewId,
+      @RequestHeader(value = "Deokhugam-Request-User-ID") UUID userId) {
+    reviewService.deleteSoft(reviewId, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping(path = "/{reviewId}/hard")
+  public ResponseEntity<Void> deleteHard(
+      @PathVariable UUID reviewId,
+      @RequestHeader(value = "Deokhugam-Request-User-ID") UUID userId) {
+    reviewService.deleteHard(reviewId, userId);
+    return ResponseEntity.noContent().build();
   }
 }

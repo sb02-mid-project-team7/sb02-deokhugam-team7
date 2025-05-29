@@ -10,11 +10,11 @@ public interface ReviewService {
   ReviewDto create(ReviewCreateRequest request);
 
   ReviewDto update(UUID id, UUID userId, ReviewUpdateRequest request);
+
+  void deleteSoft(UUID id, UUID userId);
+
+  void deleteHard(UUID id, UUID userId);
 /*
-  void deleteLogically(UUID id, UUID userId);
-
-  void deletePhysically(UUID id, UUID userId);
-
   CursorPageResponseReviewDto findReviews(ReviewSearchCondition condition);
 */
 
