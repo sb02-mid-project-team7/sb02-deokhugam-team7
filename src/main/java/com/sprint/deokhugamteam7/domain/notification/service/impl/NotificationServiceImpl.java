@@ -9,6 +9,7 @@ import com.sprint.deokhugamteam7.domain.notification.service.NotificationService
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.notification.NotificationException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationServiceImpl implements NotificationService {
 
   private final NotificationRepository notificationRepository;
+  private final UserRepository userRepository;
 
   @Override
   public NotificationDto update(UUID notificationId, UUID userId,
       NotificationUpdateRequest request) {
-
-    System.out.println(notificationRepository.findAll());
-
 
     Notification notification = notificationRepository.findById(notificationId)
         .orElseThrow(() -> new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR));
@@ -36,30 +35,22 @@ public class NotificationServiceImpl implements NotificationService {
 
     notification.updateConfirmed(request.confirmed());
 
-    NotificationDto result = new NotificationDto(
-        notification.getId(),
-        notification.getUser().getId(),
-        notification.getReview().getId(),
-        notification.getReview().getUser().getNickname(),
-        notification.getContent(),
-        notification.getConfirmed(),
-        notification.getCreated_at(),
-        notification.getUpdated_at()
-    );
+    NotificationDto result = NotificationDto.fromEntity(notification);
 
     return result;
   }
 
   @Override
-  public List<NotificationDto> updateAll(UUID userId) {
-    notificationRepository.findAllByUserId(userId);
-    return List.of();
+  public void updateAll(UUID userId) {
+    userRepository.findById(userId)
+        .orElseThrow(() -> new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR));
+    notificationRepository.bulkUpdateConfirmed(userId);
   }
 
   @Override
   @Transactional(readOnly = true)
   public CursorPageResponseNotificationDto findAll(UUID userId) {
-    notificationRepository.findAllByUserId(userId);
+    notificationRepository.findAllByReviewerId(userId);
     return null;
   }
 
