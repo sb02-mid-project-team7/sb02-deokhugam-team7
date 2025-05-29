@@ -10,7 +10,6 @@ import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
-import com.sprint.deokhugamteam7.exception.comment.ForbiddenException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -65,7 +64,7 @@ public class CommentService {
 		);
 
 		if (comment.getUser().getId() != userId) {
-			throw new ForbiddenException("해당 댓글을 수정할 권한이 없습니다.");
+			throw new IllegalArgumentException("해당 댓글을 수정할 권한이 없습니다.");
 		}
 
 		String content = commentUpdateRequest.content();
@@ -95,7 +94,7 @@ public class CommentService {
 		);
 
 		if (comment.getUser().getId() != userId) {
-			throw new ForbiddenException("해당 댓글을 삭제할 권한이 없습니다.");
+			throw new IllegalArgumentException("해당 댓글을 삭제할 권한이 없습니다.");
 		}
 
 		// 삭제시에 리뷰의 댓글 수를 감소시켜야함 .
