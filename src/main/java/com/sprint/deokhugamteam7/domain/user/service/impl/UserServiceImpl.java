@@ -73,7 +73,17 @@ public class UserServiceImpl implements UserService {
   }
 
   public UserDto update(UUID id, UserUpdateRequest request) {
-    return null;
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    user.update(request.nickname()); // 닉네임만 변경
+
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreateAt()
+    );
   }
 
   public void softDeleteById(UUID id) {

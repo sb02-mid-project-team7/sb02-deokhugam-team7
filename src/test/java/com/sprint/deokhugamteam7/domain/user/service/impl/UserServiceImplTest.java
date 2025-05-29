@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserLoginRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserRegisterRequest;
+import com.sprint.deokhugamteam7.domain.user.dto.request.UserUpdateRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.response.UserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
@@ -151,6 +153,47 @@ class UserServiceImplTest {
       assertThatThrownBy(() -> userService.findById(userId))
           .isInstanceOf(UserException.class)
           .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+    }
+  }
+
+  @Nested
+  @DisplayName("수정")
+  class Update {
+
+    @Test
+    @DisplayName("사용자 닉네임 변경 성공")
+    void update_success() {
+      // given
+      UUID userId = UUID.randomUUID();
+      User user = User.create("test@example.com", "oldNick", "password123!");
+      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+      UserUpdateRequest request = new UserUpdateRequest("newNick");
+
+      // when
+      UserDto updatedUser = userService.update(userId, request);
+
+      // then
+      assertThat(updatedUser.nickname()).isEqualTo("newNick");
+      assertThat(updatedUser.email()).isEqualTo("test@example.com");
+      verify(userRepository).findById(userId);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 사용자 수정")
+    void update_userNotFound() {
+      // given
+      UUID userId = UUID.randomUUID();
+      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+      UserUpdateRequest request = new UserUpdateRequest("anyNick");
+
+      // when & then
+      assertThatThrownBy(() -> userService.update(userId, request))
+          .isInstanceOf(UserException.class)
+          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+
+      verify(userRepository).findById(userId);
     }
   }
 }
