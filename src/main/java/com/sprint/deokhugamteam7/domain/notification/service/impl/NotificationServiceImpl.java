@@ -9,10 +9,12 @@ import com.sprint.deokhugamteam7.domain.notification.service.NotificationService
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.notification.NotificationException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +54,11 @@ public class NotificationServiceImpl implements NotificationService {
   public CursorPageResponseNotificationDto findAll(UUID userId) {
     notificationRepository.findAllByReviewerId(userId);
     return null;
+  }
+
+  @Scheduled(cron = "0 0 0 * * Sun")
+  public void softDeleteNotificationsOlderThanAWeek() {
+    notificationRepository.softDeleteOldNotifications(LocalDateTime.now().minusWeeks(1));
   }
 
 }
