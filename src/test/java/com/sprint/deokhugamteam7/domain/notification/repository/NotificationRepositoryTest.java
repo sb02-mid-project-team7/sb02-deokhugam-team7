@@ -9,6 +9,7 @@ import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,5 +78,14 @@ class NotificationRepositoryTest {
 
         List<Notification> afterUpdate = notificationRepository.findAllByReviewerId(reviewer.getId());
         assertThat(afterUpdate).allMatch(Notification::getConfirmed);
+    }
+
+    @Test
+    void softDeleteNotificationsOlderThanNow() {
+        assertThat(notificationRepository.findAllByReviewerId(reviewer.getId())).hasSize(3);
+
+        notificationRepository.softDeleteOldNotifications(LocalDateTime.now());
+
+        assertThat(notificationRepository.findAllByReviewerId(reviewer.getId())).isEmpty();
     }
 }
