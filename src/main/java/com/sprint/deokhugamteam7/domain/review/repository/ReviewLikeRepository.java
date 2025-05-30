@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, UUID> {
 
-  @Query("SELECT COUNT(rl) FROM ReviewLike rl WHERE rl.id = :reviewId")
+  @Query("SELECT COUNT(rl) FROM ReviewLike rl WHERE rl.review.id = :reviewId")
   int countByReviewId(@Param("reviewId") UUID reviewId);
 
   @Query("SELECT CASE WHEN COUNT(rl) > 0 THEN true ELSE false END "
