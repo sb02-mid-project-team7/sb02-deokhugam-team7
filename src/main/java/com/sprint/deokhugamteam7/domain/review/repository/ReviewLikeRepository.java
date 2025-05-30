@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.review.repository;
 
 import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,6 @@ public interface ReviewLikeRepository extends JpaRepository<ReviewLike, UUID> {
       + "FROM ReviewLike rl "
       + "WHERE rl.user.id = :userId AND rl.review.id = :reviewId")
   boolean existsByUserIdAndReviewId(@Param("userId") UUID userId, @Param("reviewId") UUID reviewId);
+
+  Optional<ReviewLike> findByReviewIdAndUserId(UUID reviewId, UUID userId);
 }

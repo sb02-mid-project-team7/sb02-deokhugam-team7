@@ -3,6 +3,7 @@ package com.sprint.deokhugamteam7.domain.review.controller;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
+import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
 import com.sprint.deokhugamteam7.domain.review.service.ReviewService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -56,5 +57,15 @@ public class ReviewController {
       @RequestHeader(value = "Deokhugam-Request-User-ID") UUID userId) {
     reviewService.deleteHard(reviewId, userId);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping(path = "/{reviewId}/like")
+  public ResponseEntity<ReviewLikeDto> like(
+      @PathVariable UUID reviewId,
+      @RequestHeader(value = "Deokhugam-Request-User-ID") UUID userId) {
+    ReviewLikeDto reviewLikeDto = reviewService.like(reviewId, userId);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(reviewLikeDto);
   }
 }

@@ -6,7 +6,9 @@ import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
+import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
+import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewLikeRepository;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import com.sprint.deokhugamteam7.domain.review.service.ReviewService;
@@ -14,6 +16,7 @@ import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.review.ReviewException;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -93,5 +96,30 @@ public class BasicReviewService implements ReviewService {
     review.validateUserAuthorization(userId);
 
     reviewRepository.delete(review);
+  }
+
+
+  @Override
+  @Transactional
+  public ReviewLikeDto like(UUID id, UUID userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+    Review review = reviewRepository.findById(id)
+        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    Optional<ReviewLike> optional = reviewLikeRepository.findByReviewIdAndUserId(id, userId);
+    boolean liked;
+
+    if (optional.isPresent()) {
+      reviewLikeRepository.delete(optional.get());
+      liked = false;
+    } else {
+      liked = true;
+
+      ReviewLike reviewLike = ReviewLike.create(user, review);
+      reviewLikeRepository.save(reviewLike);
+    }
+
+    return new ReviewLikeDto(id, userId, liked);
   }
 }
