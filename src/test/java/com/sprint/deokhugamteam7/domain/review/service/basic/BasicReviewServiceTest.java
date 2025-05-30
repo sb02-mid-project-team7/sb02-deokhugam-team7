@@ -115,4 +115,36 @@ public class BasicReviewServiceTest {
     assertThat(expectedDto.commentCount()).isEqualTo(result.commentCount());
     assertThat(expectedDto.likedByMe()).isEqualTo(result.likedByMe());
   }
+  
+  @Test
+  @DisplayName("리뷰 삭제 - Soft")
+  void updateReview_Soft() {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    Review review = Review.create(book, user, "책의 리뷰입니다.", 3);
+    ReflectionTestUtils.setField(review, "id", reviewId);
+
+    when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+
+    // when
+    reviewService.deleteSoft(reviewId, userId);
+
+    assertThat(review.getIsDeleted()).isTrue();
+  }
+
+  @Test
+  @DisplayName("리뷰 삭제 - Hard")
+  void updateReview_Hard() {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    Review review = Review.create(book, user, "책의 리뷰입니다.", 3);
+    ReflectionTestUtils.setField(review, "id", reviewId);
+
+    when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+
+    // when
+    reviewService.deleteHard(reviewId, userId);
+
+    assertThat(reviewRepository.existsById(reviewId)).isFalse();
+  }
 }
