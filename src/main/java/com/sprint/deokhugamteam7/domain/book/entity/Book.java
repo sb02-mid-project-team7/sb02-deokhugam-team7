@@ -89,9 +89,9 @@ public class Book {
   public static BookBuilder create(String title, String author, String publisher,
       LocalDate publisherDate) {
     return Book.of()
-        .title(title)
-        .author(author)
-        .publisher(publisher)
+        .title(title.trim())
+        .author(author.trim())
+        .publisher(publisher.trim())
         .publisherDate(publisherDate);
   }
 
@@ -105,10 +105,10 @@ public class Book {
 
   public void update(String newTitle, String newAuthor, String newDescription, String newPublisher,
       LocalDate newPublisherDate, String newThumbnailUrl) {
-    title = updateField(title, newTitle);
-    author = updateField(author, newAuthor);
-    description = updateField(description, newDescription);
-    publisher = updateField(publisher, newPublisher);
+    title = updateField(title, newTitle.trim());
+    author = updateField(author, newAuthor.trim());
+    description = updateField(description, newDescription.trim());
+    publisher = updateField(publisher, newPublisher.trim());
     publisherDate = updateField(publisherDate, newPublisherDate);
     thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
   }
