@@ -33,7 +33,7 @@ public class BasicBookService implements BookService{
   @Override
   @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile file) {
-    if (bookRepository.existsByIsbnIsNotNullAndIsbn(request.isbn())) {
+    if (!request.isbn().isBlank() && bookRepository.existsByIsbn(request.isbn())){
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 

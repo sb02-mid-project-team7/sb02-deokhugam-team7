@@ -1,7 +1,6 @@
 package com.sprint.deokhugamteam7.domain.book.repository;
 
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,4 +27,6 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
 
   @Query("SELECT b FROM Book b WHERE b.id = :id AND b.isDeleted = false")
   Optional<Book> findByIdAndIsDeletedFalse(UUID id);
+
+  boolean existsByIsbn(String isbn);
 }
