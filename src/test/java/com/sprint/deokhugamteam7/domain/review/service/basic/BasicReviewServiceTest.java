@@ -206,4 +206,35 @@ public class BasicReviewServiceTest {
     verify(reviewLikeRepository, never()).save(any(ReviewLike.class));
     verify(reviewLikeRepository).delete(any());
   }
+
+  @Test
+  @DisplayName("리뷰 상세 조회")
+  void findById_returnsReviewDto() {
+    UUID reviewId = UUID.randomUUID();
+    Review review = Review.create(book, user, "내용입니다.", 5);
+    ReflectionTestUtils.setField(review, "id", reviewId);
+
+    when(userRepository.existsById(userId)).thenReturn(true);
+    when(reviewRepository.findByIdWithUserAndBook(reviewId)).thenReturn(Optional.of(review));
+    when(reviewLikeRepository.countByReviewId(reviewId)).thenReturn(3);
+    when(commentRepository.countByReviewIdAndIsDeletedFalse(reviewId)).thenReturn(2);
+    when(reviewLikeRepository.existsByUserIdAndReviewId(userId, reviewId)).thenReturn(true);
+
+    ReviewDto result = reviewService.findById(reviewId, userId);
+
+    verify(userRepository).existsById(userId);
+    verify(reviewRepository).findByIdWithUserAndBook(reviewId);
+    verify(reviewLikeRepository).countByReviewId(reviewId);
+    verify(commentRepository).countByReviewIdAndIsDeletedFalse(reviewId);
+    verify(reviewLikeRepository).existsByUserIdAndReviewId(userId, reviewId);
+
+    assertThat(result.id()).isEqualTo(reviewId);
+    assertThat(result.userId()).isEqualTo(userId);
+    assertThat(result.bookId()).isEqualTo(bookId);
+    assertThat(result.content()).isEqualTo("내용입니다.");
+    assertThat(result.rating()).isEqualTo(5);
+    assertThat(result.likeCount()).isEqualTo(3);
+    assertThat(result.commentCount()).isEqualTo(2);
+    assertThat(result.likedByMe()).isTrue();
+  }
 }

@@ -98,6 +98,22 @@ public class BasicReviewService implements ReviewService {
     reviewRepository.delete(review);
   }
 
+  @Override
+  @Transactional
+  public ReviewDto findById(UUID id, UUID userId) {
+    if (!userRepository.existsById(userId)) {
+      throw new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    Review review = reviewRepository.findByIdWithUserAndBook(id)
+        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    int likeCount = reviewLikeRepository.countByReviewId(id);
+    int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);
+    boolean likedByMe = reviewLikeRepository.existsByUserIdAndReviewId(userId, id);
+
+    return ReviewDto.of(review, likeCount, commentCount, likedByMe);
+  }
 
   @Override
   @Transactional

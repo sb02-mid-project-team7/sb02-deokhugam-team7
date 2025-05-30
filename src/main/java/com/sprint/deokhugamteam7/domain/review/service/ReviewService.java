@@ -16,6 +16,8 @@ public interface ReviewService {
 
   void deleteHard(UUID id, UUID userId);
 
+  ReviewDto findById(UUID id, UUID userId);
+
   ReviewLikeDto like(UUID id, UUID userId);
 /*
   CursorPageResponseReviewDto findReviews(ReviewSearchCondition condition);
