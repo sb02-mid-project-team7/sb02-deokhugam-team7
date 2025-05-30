@@ -1,6 +1,9 @@
 package com.sprint.deokhugamteam7.domain.review.service.basic;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
@@ -9,7 +12,9 @@ import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
+import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
+import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewLikeRepository;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
@@ -115,7 +120,7 @@ public class BasicReviewServiceTest {
     assertThat(expectedDto.commentCount()).isEqualTo(result.commentCount());
     assertThat(expectedDto.likedByMe()).isEqualTo(result.likedByMe());
   }
-  
+
   @Test
   @DisplayName("리뷰 삭제 - Soft")
   void updateReview_Soft() {
@@ -129,6 +134,7 @@ public class BasicReviewServiceTest {
     // when
     reviewService.deleteSoft(reviewId, userId);
 
+    // then
     assertThat(review.getIsDeleted()).isTrue();
   }
 
@@ -145,6 +151,59 @@ public class BasicReviewServiceTest {
     // when
     reviewService.deleteHard(reviewId, userId);
 
+    // then
     assertThat(reviewRepository.existsById(reviewId)).isFalse();
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 - 추가 성공")
+  void addLikeReview_Success() {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    Review review = Review.create(book, user, "책의 리뷰입니다.", 3);
+    ReflectionTestUtils.setField(review, "id", reviewId);
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+    when(reviewLikeRepository.findByReviewIdAndUserId(reviewId, userId))
+        .thenReturn(Optional.empty());
+
+    // when
+    ReviewLikeDto result = reviewService.like(reviewId, userId);
+
+    // then
+    assertThat(result.reviewId()).isEqualTo(reviewId);
+    assertThat(result.userId()).isEqualTo(userId);
+    assertThat(result.liked()).isTrue();
+
+    verify(reviewLikeRepository).save(any(ReviewLike.class));
+    verify(reviewLikeRepository, never()).delete(any());
+  }
+
+  @Test
+  @DisplayName("리뷰 좋아요 - 취소 성공")
+  void removeLikeReview_Success() {
+    // given
+    UUID reviewId = UUID.randomUUID();
+    Review review = Review.create(book, user, "책의 리뷰입니다.", 3);
+    ReflectionTestUtils.setField(review, "id", reviewId);
+
+    ReviewLike reviewLike = ReviewLike.create(user, review);
+    ReflectionTestUtils.setField(reviewLike, "id", UUID.randomUUID());
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+    when(reviewLikeRepository.findByReviewIdAndUserId(reviewId, userId))
+        .thenReturn(Optional.of(reviewLike));
+
+    // when
+    ReviewLikeDto result = reviewService.like(reviewId, userId);
+
+    assertThat(result.reviewId()).isEqualTo(reviewId);
+    assertThat(result.userId()).isEqualTo(userId);
+    assertThat(result.liked()).isFalse();
+
+    verify(reviewLikeRepository, never()).save(any(ReviewLike.class));
+    verify(reviewLikeRepository).delete(any());
   }
 }
