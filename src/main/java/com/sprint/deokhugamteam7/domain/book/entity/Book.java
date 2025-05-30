@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -42,6 +43,7 @@ public class Book {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
+  @Setter
   @Column(name = "is_deleted", nullable = false)
   private Boolean isDeleted = false;
 
@@ -110,4 +112,5 @@ public class Book {
     publisherDate = updateField(publisherDate, newPublisherDate);
     thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
   }
+
 }
