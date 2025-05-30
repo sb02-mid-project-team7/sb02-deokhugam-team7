@@ -10,7 +10,7 @@ public interface NotificationService {
 
   NotificationDto update(UUID notificationId, UUID userId, NotificationUpdateRequest request);
 
-  List<NotificationDto> updateAll(UUID userId);
+  void updateAll(UUID userId);
 
   CursorPageResponseNotificationDto findAll(UUID userId);
 }
