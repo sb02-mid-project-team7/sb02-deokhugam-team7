@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
@@ -12,12 +13,11 @@ import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.book.service.BasicBookService;
-import com.sprint.deokhugamteam7.domain.book.service.ImageService;
+import com.sprint.deokhugamteam7.domain.book.service.S3ImageService;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,22 +29,19 @@ import org.springframework.mock.web.MockMultipartFile;
 public class BookServiceUnitTest {
 
   @Mock
-  private ImageService imageService;
+  private S3ImageService s3ImageService;
 
   @Mock
   private BookRepository bookRepository;
 
   @InjectMocks
   private BasicBookService bookService;
-  LocalDate now;
-  @BeforeEach
-  void setUp() {
-    now = LocalDate.now();
-  }
+
 
   @Test
-  void createBook_Success_WithNecessaryElement() {
+  void create_Success_WithNecessaryElement() {
     // given
+    LocalDate now = LocalDate.now();
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", null, "ccc", now, null);
     // when
     BookDto bookDto = bookService.create(request, null);
@@ -53,17 +50,18 @@ public class BookServiceUnitTest {
         ()->assertThat(bookDto.title()).isEqualTo("aaa"),
         ()-> assertThat(bookDto.author()).isEqualTo("bbb"),
         ()-> assertThat(bookDto.publisher()).isEqualTo("ccc"),
-        ()->assertThat(bookDto.publishedDate()).isEqualTo(now)
+        ()-> assertThat(bookDto.publishedDate()).isEqualTo(now)
     );
   }
 
   @Test
-  void createBook_Success_WithAll() {
+  void create_Success_WithAll() {
     // given
+    LocalDate now = LocalDate.now();
     MockMultipartFile mockMultipartFile = new MockMultipartFile("name", "test.png", "image/png",
         new byte[0]);
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", "ccc", "ddd", now, "11111111");
-    when(imageService.uploadImage(mockMultipartFile)).thenReturn("testUrl");
+    when(s3ImageService.uploadImage(mockMultipartFile)).thenReturn("testUrl");
     // when
     BookDto bookDto = bookService.create(request, mockMultipartFile);
     // then
@@ -79,27 +77,28 @@ public class BookServiceUnitTest {
   }
 
   @Test
-  void createBook_WithSameIsbn_ShouldThrowException() {
+  void create_WithSameIsbn_ShouldThrowException() {
     // given
     BookCreateRequest mock = mock(BookCreateRequest.class);
     when(mock.isbn()).thenReturn("1234567");
-    when(bookRepository.existsByIsbn("1234567")).thenReturn(false);
+    when(bookRepository.existsByIsbnIsNotNullAndIsbn("1234567")).thenReturn(false);
     // when & then
     assertThrows(DeokhugamException.class, ()->
         bookService.create(mock, mock(MockMultipartFile.class)));
   }
 
   @Test
-  void updateBook_Success() {
+  void update_Success() {
     // given
-    UUID mock = UUID.randomUUID();
+    LocalDate now = LocalDate.now();
+    UUID id = UUID.randomUUID();
     LocalDate newDate = LocalDate.now().plusDays(1);
     Book book = Book.create("aaa", "bbb", "ccc", now).build();
     BookUpdateRequest request = new BookUpdateRequest("test111", "test222", "test333",
         "test444", newDate);
-    when(bookRepository.findById(mock)).thenReturn(Optional.of(book));
+    when(bookRepository.findById(id)).thenReturn(Optional.of(book));
     // when
-    BookDto bookDto = bookService.update(mock, request, null);
+    BookDto bookDto = bookService.update(id, request, null);
     // then
     assertAll(
         ()->assertThat(bookDto.title()).isEqualTo("test111"),
@@ -108,6 +107,45 @@ public class BookServiceUnitTest {
         ()-> assertThat(bookDto.publisher()).isEqualTo("test444"),
         ()->assertThat(bookDto.publishedDate()).isEqualTo(newDate)
     );
+  }
+
+  @Test
+  void delete_Logically_Success() {
+    // given
+    LocalDate now = LocalDate.now();
+    UUID id = UUID.randomUUID();
+    Book book = Book.create("aaa", "bbb", "ccc", now).build();
+    when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+    // when
+    bookService.deleteLogically(id);
+    // then
+    assertThat(book.getIsDeleted()).isTrue();
+    verify(bookRepository).findById(id);
+    verify(bookRepository).save(book);
+  }
+  
+  @Test
+  void delete_Logically_WithoutBook_ShouldThrowException() {
+    // given
+    UUID id = UUID.randomUUID();
+    when(bookRepository.findById(id)).thenReturn(Optional.empty());
+    // when & then
+    assertThrows(DeokhugamException.class,
+        () -> bookService.deleteLogically(id));
+  }
+
+  @Test
+  void delete_Physically_Success() {
+    // given
+    LocalDate now = LocalDate.now();
+    UUID id = UUID.randomUUID();
+    Book book = Book.create("aaa", "bbb", "ccc", now).build();
+    when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+    // when
+    bookService.deletePhysically(id);
+    // then
+    verify(bookRepository).findById(id);
+    verify(bookRepository).delete(book);
   }
 
 }

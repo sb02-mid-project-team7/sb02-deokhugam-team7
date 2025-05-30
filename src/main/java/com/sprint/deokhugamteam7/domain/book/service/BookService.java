@@ -22,6 +22,6 @@ public interface BookService {
 
   void deleteLogically(UUID id);
 
-  void deletePhysically(UUID uuid);
+  void deletePhysically(UUID id);
 
 }

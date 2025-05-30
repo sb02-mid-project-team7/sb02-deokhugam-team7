@@ -1,15 +1,20 @@
 package com.sprint.deokhugamteam7.domain.book.controller;
 
+import com.sprint.deokhugamteam7.domain.book.dto.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
+import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
+import com.sprint.deokhugamteam7.domain.book.service.APIService;
 import com.sprint.deokhugamteam7.domain.book.service.BookService;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/books")
 public class BookController implements BookApi {
 
+  private final APIService apiService;
   private final BookService bookService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -46,4 +52,34 @@ public class BookController implements BookApi {
     return ResponseEntity.ok(bookDto);
   }
 
+  @GetMapping("/info")
+  public ResponseEntity<NaverBookDto> info(String isbn) {
+    NaverBookDto naverBookDto = apiService.searchBooks(isbn);
+    return ResponseEntity.ok(naverBookDto);
+  }
+
+  @DeleteMapping("/{bookId}")
+  public ResponseEntity<Void> deleteLogically(@PathVariable UUID bookId) {
+    bookService.deleteLogically(bookId);
+    return ResponseEntity.status(204).build();
+  }
+
+  @DeleteMapping("/{bookId}/hard")
+  public ResponseEntity<Void> deletePhysically(@PathVariable UUID bookId) {
+    bookService.deletePhysically(bookId);
+    return ResponseEntity.status(204).build();
+  }
+
+  @GetMapping
+  public ResponseEntity<CursorPageResponseBookDto> findAll(
+      BookCondition condition) {
+    CursorPageResponseBookDto result = bookService.findAll(condition);
+    return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("/{bookId}")
+  public ResponseEntity<BookDto> findById(@PathVariable UUID bookId) {
+    BookDto bookDto = bookService.findById(bookId);
+    return ResponseEntity.ok(bookDto);
+  }
 }
