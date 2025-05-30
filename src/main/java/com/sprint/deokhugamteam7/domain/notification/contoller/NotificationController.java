@@ -22,12 +22,20 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PatchMapping("/{notificationId}")
-    public ResponseEntity<NotificationDto> updateNotification(
+    public ResponseEntity<NotificationDto> update(
         @PathVariable("notificationId") UUID notificationId,
         @RequestBody NotificationUpdateRequest request,
         @RequestHeader("Deokhugam-Request-User-ID") UUID userId
     ) {
         NotificationDto notificationDto = notificationService.update(notificationId, userId, request);
         return ResponseEntity.status(HttpStatus.OK).body(notificationDto);
+    }
+
+    @PatchMapping("/read-all")
+    public ResponseEntity<Void> updateAll(
+        @RequestHeader("Deokhugam-Request-User-ID") UUID userId
+    ) {
+        notificationService.updateAll(userId);
+        return ResponseEntity.noContent().build();
     }
 }
