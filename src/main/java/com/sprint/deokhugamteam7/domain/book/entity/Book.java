@@ -1,8 +1,10 @@
 package com.sprint.deokhugamteam7.domain.book.entity;
 
+import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -13,8 +15,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -57,7 +62,7 @@ public class Book {
   private String publisher;
 
   @Column(name = "published_date", nullable = false)
-  private LocalDate publisherDate;
+  private LocalDate publishedDate;
 
   @Column(name = "description")
   private String description;
@@ -68,31 +73,35 @@ public class Book {
   @Column(name = "thumbnail_url")
   private String thumbnailUrl;
 
+  @Setter
+  @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<RankingBook> rankingBooks = new ArrayList<>();
+
+  @Setter
   @OneToMany(mappedBy = "book")
   private List<Review> reviews;
 
   @Builder(builderMethodName = "of")
   private Book(String title, String author, String description, String publisher,
-      LocalDate publisherDate, String isbn, String thumbnailUrl) {
-    if (title == null | author == null | publisher == null | publisherDate == null) {
-      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
-    }
+      LocalDate publishedDate, String isbn, String thumbnailUrl) {
+    validate(title, author, publisher, publishedDate);
     this.title = title;
     this.author = author;
     this.description = description;
     this.publisher = publisher;
-    this.publisherDate = publisherDate;
+    this.publishedDate = publishedDate;
     this.isbn = isbn;
     this.thumbnailUrl = thumbnailUrl;
+    this.addRankingBooks();
   }
 
   public static BookBuilder create(String title, String author, String publisher,
-      LocalDate publisherDate) {
+      LocalDate publishedDate) {
     return Book.of()
         .title(title.trim())
         .author(author.trim())
         .publisher(publisher.trim())
-        .publisherDate(publisherDate);
+        .publishedDate(publishedDate);
   }
 
   private String updateField(String original, String newField) {
@@ -109,8 +118,23 @@ public class Book {
     author = updateField(author, newAuthor.trim());
     description = updateField(description, newDescription.trim());
     publisher = updateField(publisher, newPublisher.trim());
-    publisherDate = updateField(publisherDate, newPublisherDate);
+    publishedDate = updateField(publishedDate, newPublisherDate);
     thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
   }
 
+  private void addRankingBooks() {
+    this.rankingBooks = Stream.of(Period.values()).map(
+        period -> {
+          RankingBook rankingBook = RankingBook.create(period);
+          rankingBook.setBook(this);
+          return rankingBook;
+        }
+    ).collect(Collectors.toList());
+  }
+
+  private void validate(String title, String author, String publisher, LocalDate publishedDate) {
+    if (title == null | author == null | publisher == null | publishedDate == null) {
+      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

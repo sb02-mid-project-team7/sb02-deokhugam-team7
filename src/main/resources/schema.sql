@@ -38,6 +38,18 @@ create table if not exists books
     thumbnail_url  VARCHAR(255)
 );
 
+create table ranking_books
+(
+    id           UUID PRIMARY KEY,
+    book_id      UUID UNIQUE ,
+    rank         BIGINT,
+    period       VARCHAR(255) NOT NULL ,
+    score        DOUBLE PRECISION,
+    total_rating INTEGER,
+    review_count BIGINT,
+    constraint fk_ranking_book foreign key (book_id) references books (id) on delete cascade
+);
+
 create table if not exists reviews
 (
     id         UUID      PRIMARY KEY,
