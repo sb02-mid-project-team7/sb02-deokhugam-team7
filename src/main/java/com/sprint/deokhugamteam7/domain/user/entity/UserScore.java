@@ -82,13 +82,6 @@ public class UserScore {
     return userScore;
   }
 
-  public void update(double reviewScoreSum, long likeCount, long commentCount) {
-    this.reviewScoreSum = reviewScoreSum;
-    this.likeCount = likeCount;
-    this.commentCount = commentCount;
-    this.score = reviewScoreSum * 0.5 + likeCount * 0.2 + commentCount * 0.3;
-  }
-
   public void updateRank(long rank) {
     this.rank = rank;
   }
