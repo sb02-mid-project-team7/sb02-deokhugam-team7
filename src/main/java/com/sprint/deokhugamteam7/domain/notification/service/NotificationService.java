@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.notification.service;
 
 import com.sprint.deokhugamteam7.domain.notification.dto.CursorPageResponseNotificationDto;
+import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorRequest;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationUpdateRequest;
 import java.util.List;
@@ -12,5 +13,5 @@ public interface NotificationService {
 
   void updateAll(UUID userId);
 
-  CursorPageResponseNotificationDto findAll(UUID userId);
+  CursorPageResponseNotificationDto findAll(NotificationCursorRequest request);
 }
