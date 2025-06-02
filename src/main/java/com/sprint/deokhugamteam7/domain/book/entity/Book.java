@@ -122,6 +122,11 @@ public class Book {
     thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
   }
 
+  public void addReview(Review review) {
+    // this.reviews.add(review);
+    // review.setBook(this);
+  }
+
   private void addRankingBooks() {
     this.rankingBooks = Stream.of(Period.values()).map(
         period -> {
