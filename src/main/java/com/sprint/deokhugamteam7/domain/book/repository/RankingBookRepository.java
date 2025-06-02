@@ -18,7 +18,7 @@ public interface RankingBookRepository extends JpaRepository<RankingBook, UUID> 
             SELECT new com.sprint.deokhugamteam7.domain.book.dto.FindBookDto(
                 b.id, b.title, b.author, b.description, b.publisher,
                 b.publishedDate, b.isbn, b.thumbnailUrl,
-                rb.reviewCount, rb.totalRating,
+                rb.reviewCount, rb.rating,
                 b.createdAt, b.updatedAt
             )
           FROM RankingBook rb
@@ -44,7 +44,7 @@ public interface RankingBookRepository extends JpaRepository<RankingBook, UUID> 
                 CAST(rb.period as string),
                 rb.score,
                 rb.reviewCount,
-                rb.totalRating
+                rb.rating
                 ) FROM RankingBook rb
           JOIN rb.book b
           WHERE rb.period = :keyword AND b.isDeleted = false

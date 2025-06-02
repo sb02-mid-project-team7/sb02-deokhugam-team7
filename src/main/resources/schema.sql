@@ -47,6 +47,7 @@ create table ranking_books
     score        DOUBLE PRECISION,
     total_rating INTEGER,
     review_count BIGINT,
+    rating        DOUBLE PRECISION,
     constraint fk_ranking_book foreign key (book_id) references books (id) on delete cascade
 );
 

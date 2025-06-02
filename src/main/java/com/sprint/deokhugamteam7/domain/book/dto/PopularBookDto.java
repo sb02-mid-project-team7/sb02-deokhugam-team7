@@ -21,8 +21,6 @@ public record PopularBookDto(
 ) {
 
   public static PopularBookDto from(FindPopularBookDto bookDto, int rank) {
-    double rating =
-        bookDto.reviewCount() == 0 ? 0.0 : (double) bookDto.totalRating() / bookDto.reviewCount();
     return PopularBookDto.builder()
         .id(bookDto.id())
         .bookId(bookDto.bookId())
@@ -34,7 +32,7 @@ public record PopularBookDto(
         .rank(rank)
         .score(bookDto.score())
         .reviewCount(bookDto.reviewCount())
-        .rating(rating)
+        .rating(bookDto.rating())
         .build();
   }
 }

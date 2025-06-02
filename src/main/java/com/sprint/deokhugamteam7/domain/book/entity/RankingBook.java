@@ -50,26 +50,36 @@ public class RankingBook {
   @Column(name = "review_count")
   private long reviewCount;
 
+  @Column(name = "rating")
+  private double rating;
+
   private RankingBook(Period period) {
     this.period = period;
     this.rank = 0;
     this.score = 0.0;
     this.totalRating = 0;
     this.reviewCount = 0;
+    this.rating = 0.0;
   }
 
   public static RankingBook create(Period period) {
     return new RankingBook(period);
   }
 
-  public void update(int rating) {
+  public void update(int rating, boolean isDeleted) {
     totalRating += rating;
-    if (rating >= 0) {
-      this.reviewCount++;
+    if (!isDeleted) {
+      reviewCount++;
     } else {
-      this.reviewCount--;
+      reviewCount--;
     }
-    this.score = (reviewCount * 0.4) + ((double) totalRating / reviewCount) * 0.6;
+    if (reviewCount > 0) {
+      this.rating = (double) totalRating / reviewCount;
+      this.score = (reviewCount * 0.4) + (this.rating * 0.6);
+    } else {
+      this.rating = 0.0;
+      this.score = 0.0;
+    }
   }
 
   public double getRating() {

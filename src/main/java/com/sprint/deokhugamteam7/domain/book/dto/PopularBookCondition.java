@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class PopularBookCondition {
+
   String period = "DAILY";
   String cursor = "10";
   LocalDateTime after;

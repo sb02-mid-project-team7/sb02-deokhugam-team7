@@ -13,6 +13,7 @@ public record FindPopularBookDto(
     String period,
     double score,
     long reviewCount,
-    int totalRating
+    double rating
 ) {
+
 }

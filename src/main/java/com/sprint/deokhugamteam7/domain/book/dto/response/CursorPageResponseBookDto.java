@@ -15,9 +15,11 @@ public record CursorPageResponseBookDto(
     Long totalElements,
     boolean hasNext
 ) {
-  public static CursorPageResponseBookDto of(Slice<BookDto> slice,String keyword) {
+
+  public static CursorPageResponseBookDto of(Slice<BookDto> slice, String keyword) {
     List<BookDto> content = slice.getContent();
-    LocalDateTime nextAfter = content.isEmpty() ? null : content.get(content.size() - 1).createdAt();
+    LocalDateTime nextAfter =
+        content.isEmpty() ? null : content.get(content.size() - 1).createdAt();
     return CursorPageResponseBookDto.builder()
         .content(content)
         .size(slice.getSize())

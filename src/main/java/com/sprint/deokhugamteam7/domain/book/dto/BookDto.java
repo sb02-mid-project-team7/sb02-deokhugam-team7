@@ -63,9 +63,8 @@ public record BookDto(
         .reviewCount((int) rankingBook.getReviewCount())
         .rating(rankingBook.getRating()).build();
   }
+
   public static BookDto from(FindBookDto book) {
-    double rating =
-        book.reviewCount() == 0 ? 0.0 : (double) book.totalRating() / book.reviewCount();
     return BookDto.builder()
         .id(book.id())
         .title(book.title())
@@ -78,6 +77,6 @@ public record BookDto(
         .createdAt(book.createdAt())
         .updatedAt(book.updatedAt())
         .reviewCount((int) book.reviewCount())
-        .rating(rating).build();
+        .rating(book.rating()).build();
   }
 }

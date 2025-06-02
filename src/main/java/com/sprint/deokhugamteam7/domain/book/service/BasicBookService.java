@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BasicBookService implements BookService{
+public class BasicBookService implements BookService {
 
   private final ImageService imageService;
   private final BookRepository bookRepository;
@@ -25,7 +25,7 @@ public class BasicBookService implements BookService{
   @Override
   @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile file) {
-    if (!request.isbn().isBlank() && bookRepository.existsByIsbn(request.isbn().trim())){
+    if (!request.isbn().isBlank() && bookRepository.existsByIsbn(request.isbn().trim())) {
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 

@@ -45,8 +45,6 @@ public class BookSearchService {
       sort = Sort.by(direction, "book.title");
     } else if (orderBy.equals("publishedDate")) {
       sort = Sort.by(direction, "book.publishedDate");
-    } else if (orderBy.equals("totalRating")) {
-      sort = Sort.by(direction, "totalRating");
     } else {
       sort = Sort.by(direction, orderBy);
     }
