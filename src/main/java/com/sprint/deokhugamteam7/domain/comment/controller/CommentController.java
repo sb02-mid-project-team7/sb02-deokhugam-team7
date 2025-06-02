@@ -71,8 +71,9 @@ public class CommentController {
 	) {
 		// 시간순 정렬해놔야함 .
 		// 마지막 요소의 ID + 마지막 요소의 생성시간 전달 .
-		commentService.getCommentList(reviewId, direction, cursorId, createdAt, limit);
-		return ResponseEntity.ok().build();
+		CursorPageResponseCommentDto response = commentService.getCommentList(reviewId,
+			direction, cursorId, createdAt, limit);
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/api/comments/{commentId}")
@@ -82,5 +83,13 @@ public class CommentController {
 		CommentDto commentDto = commentService.getComment(commentId);
 
 		return ResponseEntity.ok(commentDto);
+	}
+
+	// TODO 전체 댓글 수를 따로 카운트 해주는게 더 효율이 좋을 것 같음. review_comment_count table 같은거 만들어서 ./
+	@GetMapping("/api/comments/reviews/{reviewId}")
+	public Long count(
+		@PathVariable("reviewId") Long reviewId
+	) {
+		return commentService.count(reviewId);
 	}
 }
