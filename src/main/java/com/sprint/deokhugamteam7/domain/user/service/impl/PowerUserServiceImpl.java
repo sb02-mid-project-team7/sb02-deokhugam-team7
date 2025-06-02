@@ -1,7 +1,7 @@
 package com.sprint.deokhugamteam7.domain.user.service.impl;
 
 import com.sprint.deokhugamteam7.constant.Period;
-import com.sprint.deokhugamteam7.domain.user.dto.request.UserActivity;
+import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.dto.response.CursorPageResponsePowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;

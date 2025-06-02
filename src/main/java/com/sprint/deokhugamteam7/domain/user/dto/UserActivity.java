@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.user.dto.request;
+package com.sprint.deokhugamteam7.domain.user.dto;
 
 import java.util.UUID;
 

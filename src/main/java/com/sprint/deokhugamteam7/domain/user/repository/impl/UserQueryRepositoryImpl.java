@@ -8,7 +8,7 @@ import com.sprint.deokhugamteam7.domain.comment.entity.QComment;
 import com.sprint.deokhugamteam7.domain.review.entity.QRankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.QReview;
 import com.sprint.deokhugamteam7.domain.review.entity.QReviewLike;
-import com.sprint.deokhugamteam7.domain.user.dto.request.UserActivity;
+import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.dto.response.CursorPageResponsePowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.dto.response.PowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.QUser;
