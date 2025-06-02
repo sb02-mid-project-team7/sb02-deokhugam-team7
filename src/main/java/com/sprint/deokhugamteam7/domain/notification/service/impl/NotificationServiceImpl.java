@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.notification.service.impl;
 
 import com.sprint.deokhugamteam7.domain.notification.dto.CursorPageResponseNotificationDto;
+import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorRequest;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationUpdateRequest;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,9 +53,17 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Override
   @Transactional(readOnly = true)
-  public CursorPageResponseNotificationDto findAll(UUID userId) {
-    notificationRepository.findAllByReviewerId(userId);
-    return null;
+  public CursorPageResponseNotificationDto findAll(NotificationCursorRequest request) {
+    userRepository.findById(request.userId())
+        .orElseThrow(() -> new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR));
+
+    Slice<NotificationDto> sliceNotificationDto = notificationRepository.findAllByCursor(request);
+    long totalElements = notificationRepository.countAllById(request.userId());
+
+    return CursorPageResponseNotificationDto.fromSlice(
+        sliceNotificationDto,
+        totalElements
+    );
   }
 
   @Scheduled(cron = "0 0 0 * * Sun")

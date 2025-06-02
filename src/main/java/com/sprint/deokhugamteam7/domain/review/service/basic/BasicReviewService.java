@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.review.service.basic;
 
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
+import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
@@ -16,6 +17,7 @@ import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.review.ReviewException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,9 @@ public class BasicReviewService implements ReviewService {
     Book book = bookRepository.findByIdAndIsDeletedFalse(bookId)
         .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
 
+    List<RankingBook> rankingBooks = book.getRankingBooks();
+    rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(),false));
+
     Review review = Review.create(book, user, request.content(), request.rating());
     reviewRepository.save(review);
 
@@ -65,9 +70,16 @@ public class BasicReviewService implements ReviewService {
     }
 
     String newContent = request.content();
+    int beforeRating = review.getRating();
     int newRating = request.rating();
 
     review.update(newContent, newRating);
+
+    int diff = beforeRating > newRating ? newRating - beforeRating
+        : beforeRating - newRating;
+
+    List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
+    rankingBooks.forEach(rankingBook -> rankingBook.update(diff,false));
 
     int likeCount = reviewLikeRepository.countByReviewId(id);
     int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);
@@ -85,6 +97,9 @@ public class BasicReviewService implements ReviewService {
     review.validateUserAuthorization(userId);
 
     review.delete();
+
+    List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
+    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(),true));
   }
 
   @Override
@@ -96,6 +111,9 @@ public class BasicReviewService implements ReviewService {
     review.validateUserAuthorization(userId);
 
     reviewRepository.delete(review);
+
+    List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
+    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(),true));
   }
 
   @Override

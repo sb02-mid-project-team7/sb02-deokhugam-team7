@@ -42,7 +42,7 @@ public class APIService {
     log.info(query);
     try {
       UriComponents uri = UriComponentsBuilder.fromUriString(NAVER_BOOK_API_URL)
-          .queryParam("query",query).build(true);
+          .queryParam("query", query).build(true);
       HttpHeaders httpHeaders = new HttpHeaders();
       httpHeaders.set("X-Naver-Client-Id", clientId);
       httpHeaders.set("X-Naver-Client-Secret", clientSecret);

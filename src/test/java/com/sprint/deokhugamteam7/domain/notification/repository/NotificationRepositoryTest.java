@@ -4,7 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.deokhugamteam7.config.AppConfig;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
+import com.sprint.deokhugamteam7.domain.notification.config.TestConfig;
+import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorRequest;
+import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
+import com.sprint.deokhugamteam7.domain.notification.repository.impl.NotificationRepositoryImpl;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
@@ -16,10 +20,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Slice;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @DataJpaTest
-@Import(value = AppConfig.class)
+@Import(TestConfig.class)
+@ActiveProfiles("test")
 @Transactional
 class NotificationRepositoryTest {
 
@@ -30,7 +38,6 @@ class NotificationRepositoryTest {
     private EntityManager em;
 
     private User user;
-    private User reviewer;
     private Review review;
     private Book book;
 
@@ -38,15 +45,13 @@ class NotificationRepositoryTest {
     void setUp() {
         // 유저 생성
         user = User.create("test1", "test1", "test1");
-        reviewer = User.create("test2", "test2", "test2");
         book = Book.create("test", "test", "???", LocalDate.now()).build();
 
         em.persist(user);
-        em.persist(reviewer);
         em.persist(book);
 
         // 리뷰 생성
-        review = Review.create(book, reviewer, "test", 5);
+        review = Review.create(book, user, "test", 5);
         em.persist(review);
 
         for (int i = 0; i < 3; i++) {
@@ -60,32 +65,50 @@ class NotificationRepositoryTest {
 
     @Test
     void findAllByUserId_성공() {
-        List<Notification> notifications = notificationRepository.findAllByReviewerId(reviewer.getId());
+        List<Notification> notifications = notificationRepository.findByUserId(user.getId());
 
         assertThat(notifications).hasSize(3);
-        assertThat(notifications).allMatch(n -> n.getReview().getUser().getId().equals(reviewer.getId()));
+        assertThat(notifications).allMatch(n -> n.getUser().getId().equals(user.getId()));
     }
 
     @Test
     void bulkUpdateConfirmed_성공() {
 
-        List<Notification> beforeUpdate = notificationRepository.findAllByReviewerId(reviewer.getId());
+        List<Notification> beforeUpdate = notificationRepository.findByUserId(user.getId());
         assertThat(beforeUpdate).allMatch(n -> !n.getConfirmed());
 
-        notificationRepository.bulkUpdateConfirmed(reviewer.getId());
+        notificationRepository.bulkUpdateConfirmed(user.getId());
         em.flush();
         em.clear();
 
-        List<Notification> afterUpdate = notificationRepository.findAllByReviewerId(reviewer.getId());
+        List<Notification> afterUpdate = notificationRepository.findByUserId(user.getId());
         assertThat(afterUpdate).allMatch(Notification::getConfirmed);
     }
 
     @Test
     void softDeleteNotificationsOlderThanNow() {
-        assertThat(notificationRepository.findAllByReviewerId(reviewer.getId())).hasSize(3);
+        assertThat(notificationRepository.findByUserId(user.getId())).hasSize(3);
 
         notificationRepository.softDeleteOldNotifications(LocalDateTime.now());
 
-        assertThat(notificationRepository.findAllByReviewerId(reviewer.getId())).isEmpty();
+        assertThat(notificationRepository.findByUserId(user.getId())).isEmpty();
     }
+
+    @Test
+    void 커서_기반_목록_조회_desc() {
+        NotificationCursorRequest request = new NotificationCursorRequest(
+            user.getId(),
+            "DESC",
+            null,
+            null,
+            2
+        );
+
+        Slice<NotificationDto> result = notificationRepository.findAllByCursor(request);
+
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.hasNext()).isTrue();
+        assertThat(result.getContent().get(0).content()).startsWith("알림 내용");
+    }
+
 }

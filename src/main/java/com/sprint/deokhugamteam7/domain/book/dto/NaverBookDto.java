@@ -18,6 +18,7 @@ public record NaverBookDto(
     String isbn,
     byte[] thumbnailImage
 ) {
+
   public static NaverBookDto from(Item item) {
     return NaverBookDto.builder()
         .title(item.title())
