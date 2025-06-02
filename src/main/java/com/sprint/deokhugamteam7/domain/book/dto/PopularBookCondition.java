@@ -6,12 +6,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BookCondition {
+public class PopularBookCondition {
 
-  String keyword;
-  String cursor;
+  String period = "DAILY";
+  String cursor = "10";
   LocalDateTime after;
-  String orderBy = "title";
   String direction = "desc";
   int limit = 50;
 }
