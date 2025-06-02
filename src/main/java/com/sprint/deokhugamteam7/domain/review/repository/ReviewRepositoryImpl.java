@@ -45,7 +45,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
           review.content.lower().like(keyword)
               .or(user.nickname.lower().like(keyword))
               .or(book.title.lower().like(keyword))
-              .or(book.description.lower().like(keyword))
+              .or(review.content.lower().like(keyword))
       );
     }
 
