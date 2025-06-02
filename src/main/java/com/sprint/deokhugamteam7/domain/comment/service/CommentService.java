@@ -155,4 +155,9 @@ public class CommentService {
 
 		return CommentDto.from(comment);
 	}
+
+	public Long count(Long reviewId) {
+		// TODO: review_comment_count 이런 테이블 하나 만들어서 댓글 수 반환하기
+		return 0L;
+	}
 }

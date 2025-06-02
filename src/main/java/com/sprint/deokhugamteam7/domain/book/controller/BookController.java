@@ -2,11 +2,14 @@ package com.sprint.deokhugamteam7.domain.book.controller;
 
 import com.sprint.deokhugamteam7.domain.book.dto.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.PopularBookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
-import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponsePopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.service.APIService;
+import com.sprint.deokhugamteam7.domain.book.service.BookSearchService;
 import com.sprint.deokhugamteam7.domain.book.service.BookService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,7 @@ public class BookController implements BookApi {
 
   private final APIService apiService;
   private final BookService bookService;
+  private final BookSearchService bookSearchService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<BookDto> create(
@@ -73,7 +77,14 @@ public class BookController implements BookApi {
   @GetMapping
   public ResponseEntity<CursorPageResponseBookDto> findAll(
       BookCondition condition) {
-    CursorPageResponseBookDto result = bookService.findAll(condition);
+    CursorPageResponseBookDto result = bookSearchService.findAll(condition);
+    return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("/popular")
+  public ResponseEntity<CursorPageResponsePopularBookDto> findAll(
+      PopularBookCondition condition) {
+    CursorPageResponsePopularBookDto result = bookSearchService.findPopularBooks(condition);
     return ResponseEntity.ok(result);
   }
 
