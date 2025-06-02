@@ -9,8 +9,6 @@ import com.sprint.deokhugamteam7.domain.review.entity.QRankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.QReview;
 import com.sprint.deokhugamteam7.domain.review.entity.QReviewLike;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
-import com.sprint.deokhugamteam7.domain.user.dto.response.CursorPageResponsePowerUserDto;
-import com.sprint.deokhugamteam7.domain.user.dto.response.PowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.QUser;
 import com.sprint.deokhugamteam7.domain.user.entity.QUserScore;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
@@ -41,7 +39,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
   private final QComment comment = QComment.comment;
 
   @Override
-  public CursorPageResponsePowerUserDto findPowerUsersByPeriod(
+  public List<UserScore> findPowerUserScoresByPeriod(
       Period period,
       Double cursorScore,
       LocalDateTime afterCreatedAt,
@@ -51,7 +49,6 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
     BooleanBuilder whereCondition = new BooleanBuilder();
     whereCondition.and(userScore.period.eq(period));
 
-    // 커서 조건 분기
     if (cursorScore != null && afterCreatedAt != null) {
       BooleanBuilder cursorCondition = new BooleanBuilder();
       if (direction == Sort.Direction.DESC) {
@@ -64,53 +61,20 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
       whereCondition.and(cursorCondition);
     }
 
-    // 정렬
     JPAQuery<UserScore> query = queryFactory
         .selectFrom(userScore)
         .join(userScore.user, QUser.user).fetchJoin()
         .where(whereCondition);
 
-    // 기본 정렬: score + createdAt
     if (direction == Sort.Direction.DESC) {
       query.orderBy(userScore.score.desc(), userScore.createdAt.desc());
     } else {
       query.orderBy(userScore.score.asc(), userScore.createdAt.asc());
     }
 
-    List<UserScore> results = query
-        .limit(size + 1)
-        .fetch();
-
-    boolean hasNext = results.size() > size;
-    if (hasNext) {
-      results.remove(size);
-    }
-
-    List<PowerUserDto> content = results.stream()
-        .map(us -> new PowerUserDto(
-            us.getUser().getId(),
-            us.getUser().getNickname(),
-            us.getPeriod(),
-            us.getCreatedAt(),
-            us.getRank() != null ? us.getRank() : 0L,
-            us.getScore(),
-            us.getReviewScoreSum(),
-            us.getLikeCount(),
-            us.getCommentCount()
-        )).toList();
-
-    String nextCursor = hasNext ? String.valueOf(results.get(results.size() - 1).getScore()) : null;
-    String nextAfter = hasNext ? results.get(results.size() - 1).getCreatedAt().toString() : null;
-
-    return new CursorPageResponsePowerUserDto(
-        content,
-        nextCursor,
-        nextAfter,
-        content.size(),
-        content.size(),
-        hasNext
-    );
+    return query.limit(size + 1).fetch();
   }
+
 
   @Override
   public List<UserActivity> collectUserActivityScores(Period period, LocalDate baseDate) {

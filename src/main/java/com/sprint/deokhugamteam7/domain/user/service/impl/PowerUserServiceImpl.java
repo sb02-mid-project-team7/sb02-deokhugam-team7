@@ -3,6 +3,7 @@ package com.sprint.deokhugamteam7.domain.user.service.impl;
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.dto.response.CursorPageResponsePowerUserDto;
+import com.sprint.deokhugamteam7.domain.user.dto.response.PowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
 import com.sprint.deokhugamteam7.domain.user.repository.UserQueryRepository;
@@ -36,8 +37,42 @@ public class PowerUserServiceImpl implements PowerUserService {
       Period period, String cursor, LocalDateTime after, int size, Sort.Direction direction
   ) {
     Double cursorScore = cursor != null ? Double.parseDouble(cursor) : null;
-    return userQueryRepository.findPowerUsersByPeriod(period, cursorScore, after, size, direction);
+
+    List<UserScore> results = userQueryRepository.findPowerUserScoresByPeriod(
+        period, cursorScore, after, size, direction
+    );
+
+    boolean hasNext = results.size() > size;
+    if (hasNext) {
+      results.remove(size); // 마지막 요소 제거
+    }
+
+    List<PowerUserDto> content = results.stream()
+        .map(us -> new PowerUserDto(
+            us.getUser().getId(),
+            us.getUser().getNickname(),
+            us.getPeriod(),
+            us.getCreatedAt(),
+            us.getRank() != null ? us.getRank() : 0L,
+            us.getScore(),
+            us.getReviewScoreSum(),
+            us.getLikeCount(),
+            us.getCommentCount()
+        )).toList();
+
+    String nextCursor = hasNext ? String.valueOf(results.get(results.size() - 1).getScore()) : null;
+    String nextAfter = hasNext ? results.get(results.size() - 1).getCreatedAt().toString() : null;
+
+    return new CursorPageResponsePowerUserDto(
+        content,
+        nextCursor,
+        nextAfter,
+        content.size(),
+        content.size(), // 필요시 총 개수 쿼리 추가
+        hasNext
+    );
   }
+
 
   @Override
   public void calculateAndSaveUserScores(Period period, LocalDate baseDate) {
