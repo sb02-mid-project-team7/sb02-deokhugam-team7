@@ -1,8 +1,6 @@
 package com.sprint.deokhugamteam7.domain.book.entity;
 
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
-import com.sprint.deokhugamteam7.exception.DeokhugamException;
-import com.sprint.deokhugamteam7.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -13,9 +11,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,7 +43,7 @@ public class Book {
   private LocalDateTime updatedAt;
 
   @Column(name = "is_deleted", nullable = false)
-  private Boolean isDeleted = false;
+  private Boolean isDeleted;
 
   @Column(name = "title", nullable = false)
   private String title;
@@ -72,9 +72,6 @@ public class Book {
   @Builder(builderMethodName = "of")
   private Book(String title, String author, String description, String publisher,
       LocalDate publisherDate, String isbn, String thumbnailUrl) {
-    if (title == null | author == null | publisher == null | publisherDate == null) {
-      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
-    }
     this.title = title;
     this.author = author;
     this.description = description;
@@ -91,23 +88,5 @@ public class Book {
         .author(author)
         .publisher(publisher)
         .publisherDate(publisherDate);
-  }
-
-  private String updateField(String original, String newField) {
-    return (newField != null && !newField.equals(original) ? newField : original);
-  }
-
-  private LocalDate updateField(LocalDate original, LocalDate newField) {
-    return (newField != null && !newField.equals(original) ? newField : original);
-  }
-
-  public void update(String newTitle, String newAuthor, String newDescription, String newPublisher,
-      LocalDate newPublisherDate, String newThumbnailUrl) {
-    title = updateField(title, newTitle);
-    author = updateField(author, newAuthor);
-    description = updateField(description, newDescription);
-    publisher = updateField(publisher, newPublisher);
-    publisherDate = updateField(publisherDate, newPublisherDate);
-    thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
   }
 }

@@ -10,7 +10,6 @@ import java.util.UUID;
 public interface ReviewService {
 
   ReviewDto create(ReviewCreateRequest request);
-/*
 
   ReviewDto update(ReviewUpdateRequest request);
 
@@ -19,6 +18,4 @@ public interface ReviewService {
   void deletePhysically(UUID id, UUID userId);
 
   CursorPageResponseReviewDto findReviews(ReviewSearchCondition condition);
-*/
-
 }

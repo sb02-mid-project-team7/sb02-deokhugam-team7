@@ -1,7 +1,9 @@
 package com.sprint.deokhugamteam7.domain.comment.dto.request;
 
-public record CommentUpdateRequest(
-    String content
-) {
+import lombok.Data;
 
+@Data
+public class CommentUpdateRequest {
+
+  private String content;
 }
