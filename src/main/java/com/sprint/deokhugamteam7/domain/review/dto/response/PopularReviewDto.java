@@ -1,7 +1,7 @@
 package com.sprint.deokhugamteam7.domain.review.dto.response;
 
 import com.sprint.deokhugamteam7.constant.Period;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record PopularReviewDto(
@@ -15,7 +15,7 @@ public record PopularReviewDto(
     String reviewContent,
     double reviewRating,
     Period period,
-    LocalDateTime createdAt,
+    Instant createdAt,
     int rank,
     double score,
     long likeCount,
