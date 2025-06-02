@@ -1,7 +1,9 @@
 package com.sprint.deokhugamteam7.domain.review.controller;
 
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponseReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
 import com.sprint.deokhugamteam7.domain.review.service.ReviewService;
@@ -76,5 +78,13 @@ public class ReviewController {
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(reviewLikeDto);
+  }
+
+  @GetMapping
+  public ResponseEntity<CursorPageResponseReviewDto> findAll(
+      ReviewSearchCondition condition,
+      @RequestHeader(value = "Deokhugam-Request-User-ID") UUID headerUserId) {
+    CursorPageResponseReviewDto reviewDto = reviewService.findAll(condition, headerUserId);
+    return ResponseEntity.ok(reviewDto);
   }
 }

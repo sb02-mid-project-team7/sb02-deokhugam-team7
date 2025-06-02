@@ -63,7 +63,6 @@ public class Review {
   @Column(updatable = false)
   private LocalDateTime updatedAt;
 
-  // 두 List가 필요없다는게 확인 됨. 그래도 혹시 모르니, 기능 구현이 끝나기 전까진 놔둘 예정.
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Comment> commentList;
 
