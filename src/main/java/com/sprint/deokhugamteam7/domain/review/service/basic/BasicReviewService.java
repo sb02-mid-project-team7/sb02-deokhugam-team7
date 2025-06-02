@@ -5,18 +5,22 @@ import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponseReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewLikeRepository;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
+import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepositoryCustom;
 import com.sprint.deokhugamteam7.domain.review.service.ReviewService;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.review.ReviewException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +37,7 @@ public class BasicReviewService implements ReviewService {
   private final BookRepository bookRepository;
   private final ReviewLikeRepository reviewLikeRepository;
   private final CommentRepository commentRepository;
+  private final ReviewRepositoryCustom reviewRepositoryCustom;
 
   @Override
   @Transactional
@@ -46,7 +51,7 @@ public class BasicReviewService implements ReviewService {
         .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
 
     List<RankingBook> rankingBooks = book.getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(),false));
+    rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(), false));
 
     Review review = Review.create(book, user, request.content(), request.rating());
     reviewRepository.save(review);
@@ -79,7 +84,7 @@ public class BasicReviewService implements ReviewService {
         : beforeRating - newRating;
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(diff,false));
+    rankingBooks.forEach(rankingBook -> rankingBook.update(diff, false));
 
     int likeCount = reviewLikeRepository.countByReviewId(id);
     int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);
@@ -99,7 +104,7 @@ public class BasicReviewService implements ReviewService {
     review.delete();
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(),true));
+    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
   }
 
   @Override
@@ -113,11 +118,11 @@ public class BasicReviewService implements ReviewService {
     reviewRepository.delete(review);
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(),true));
+    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public ReviewDto findById(UUID id, UUID userId) {
     if (!userRepository.existsById(userId)) {
       throw new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -155,5 +160,51 @@ public class BasicReviewService implements ReviewService {
     }
 
     return new ReviewLikeDto(id, userId, liked);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public CursorPageResponseReviewDto findAll(ReviewSearchCondition condition, UUID headerUserId) {
+    int limit = condition.getLimit();
+    List<Review> res = reviewRepositoryCustom.findAll(condition, limit);
+
+    boolean hasNext = res.size() > limit;
+    List<Review> currentPage = hasNext ? res.subList(0, limit) : res;
+
+    List<ReviewDto> reviewDtoList = currentPage.stream()
+        .map(review -> {
+          int likeCount = reviewLikeRepository.countByReviewId(review.getId());
+          int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(review.getId());
+          boolean likedByMe = reviewLikeRepository
+              .existsByUserIdAndReviewId(headerUserId, review.getId());
+          return ReviewDto.of(review, likeCount, commentCount, likedByMe);
+        })
+        .toList();
+
+    String nextCursor = null;
+    LocalDateTime nextAfter = null;
+
+    if (hasNext) {
+      Review last = currentPage.get(currentPage.size() - 1);
+      nextAfter = last.getCreatedAt();
+
+      if (condition.getOrderBy().equals("createdAt")) {
+        nextCursor = nextAfter.toString();
+      } else {
+        double lastRating = last.getRating();
+        nextCursor = Double.toString(lastRating);
+      }
+    }
+
+    long totalElements = reviewRepositoryCustom.countByCondition(condition);
+
+    return new CursorPageResponseReviewDto(
+        reviewDtoList,
+        nextCursor,
+        nextAfter,
+        limit,
+        totalElements,
+        hasNext
+    );
   }
 }

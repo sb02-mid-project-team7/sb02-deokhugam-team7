@@ -10,16 +10,21 @@ import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponseReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewLikeRepository;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
+import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepositoryCustom;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -48,6 +54,9 @@ public class BasicReviewServiceTest {
 
   @Mock
   private CommentRepository commentRepository;
+
+  @Mock
+  private ReviewRepositoryCustom reviewRepositoryCustom;
 
   @InjectMocks
   private BasicReviewService reviewService;
@@ -236,5 +245,75 @@ public class BasicReviewServiceTest {
     assertThat(result.likeCount()).isEqualTo(3);
     assertThat(result.commentCount()).isEqualTo(2);
     assertThat(result.likedByMe()).isTrue();
+  }
+
+  @Test
+  @DisplayName("리뷰 목록 조회")
+  void findAll_returnsCursorPageResponseReviewDto() {
+    // given
+    ReviewSearchCondition condition = new ReviewSearchCondition();
+    condition.setLimit(2);
+
+    UUID user2Id = UUID.randomUUID();
+    User user2 = User.create("test2@gmail.com", "test2", "test1234!");
+    ReflectionTestUtils.setField(user2, "id", user2Id);
+
+    UUID user3Id = UUID.randomUUID();
+    User user3 = User.create("test3@gmail.com", "test3", "test1234!");
+    ReflectionTestUtils.setField(user3, "id", user3Id);
+
+    Review review1 = Review.create(book, user, "리뷰1", 5);
+    Review review2 = Review.create(book, user2, "리뷰2", 4);
+    Review review3 = Review.create(book, user3, "리뷰3", 3);
+
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+
+    LocalDateTime created1 = LocalDateTime.of(2025, 5, 10, 12, 0);
+    LocalDateTime created2 = LocalDateTime.of(2025, 5, 9, 12, 0);
+    LocalDateTime created3 = LocalDateTime.of(2025, 5, 8, 12, 0);
+
+    ReflectionTestUtils.setField(review1, "id", id1);
+    ReflectionTestUtils.setField(review2, "id", id2);
+    ReflectionTestUtils.setField(review3, "id", id3);
+
+    ReflectionTestUtils.setField(review1, "createdAt", created1);
+    ReflectionTestUtils.setField(review2, "createdAt", created2);
+    ReflectionTestUtils.setField(review3, "createdAt", created3);
+
+    List<Review> reviews = List.of(review1, review2, review3);
+
+    Mockito.when(reviewRepositoryCustom.findAll(condition, 2)).thenReturn(reviews);
+    Mockito.when(reviewLikeRepository.countByReviewId(Mockito.any())).thenReturn(3);
+    Mockito.when(commentRepository.countByReviewIdAndIsDeletedFalse(Mockito.any())).thenReturn(2);
+    Mockito.when(reviewLikeRepository.existsByUserIdAndReviewId(Mockito.any(), Mockito.any()))
+        .thenReturn(true);
+    Mockito.when(reviewRepositoryCustom.countByCondition(condition)).thenReturn(3L);
+
+    // when
+    CursorPageResponseReviewDto result = reviewService.findAll(condition, userId);
+
+    // then
+    verify(reviewRepositoryCustom).findAll(condition, 2);
+    verify(reviewLikeRepository).countByReviewId(id1);
+    verify(reviewLikeRepository).countByReviewId(id2);
+    verify(commentRepository).countByReviewIdAndIsDeletedFalse(id1);
+    verify(commentRepository).countByReviewIdAndIsDeletedFalse(id2);
+    verify(reviewLikeRepository).existsByUserIdAndReviewId(userId, id1);
+    verify(reviewLikeRepository).existsByUserIdAndReviewId(userId, id2);
+    verify(reviewRepositoryCustom).countByCondition(condition);
+
+    assertThat(result.content()).hasSize(2);
+    assertThat(result.hasNext()).isTrue();
+    assertThat(result.totalElements()).isEqualTo(3L);
+    assertThat(result.nextAfter()).isEqualTo(created2);
+    assertThat(result.nextCursor()).isEqualTo(created2.toString());
+
+    assertThat(result.content().get(0).content()).isEqualTo("리뷰1");
+    assertThat(result.content().get(1).content()).isEqualTo("리뷰2");
+    assertThat(result.content().get(0).likeCount()).isEqualTo(3);
+    assertThat(result.content().get(0).commentCount()).isEqualTo(2);
+    assertThat(result.content().get(0).likedByMe()).isTrue();
   }
 }
