@@ -1,5 +1,7 @@
 package com.sprint.deokhugamteam7.domain.notification.contoller;
 
+import com.sprint.deokhugamteam7.domain.notification.dto.CursorPageResponseNotificationDto;
+import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorRequest;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationUpdateRequest;
 import com.sprint.deokhugamteam7.domain.notification.service.NotificationService;
@@ -7,6 +9,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,5 +42,13 @@ public class NotificationController {
     ) {
         notificationService.updateAll(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("")
+    public ResponseEntity<CursorPageResponseNotificationDto> findAll(
+        @Validated @ModelAttribute NotificationCursorRequest request
+    ) {
+        CursorPageResponseNotificationDto result = notificationService.findAll(request);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }
