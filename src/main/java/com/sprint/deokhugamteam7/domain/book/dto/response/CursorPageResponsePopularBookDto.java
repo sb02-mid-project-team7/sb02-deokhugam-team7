@@ -1,5 +1,6 @@
 package com.sprint.deokhugamteam7.domain.book.dto.response;
 
+import com.sprint.deokhugamteam7.domain.book.dto.PopularBookDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
