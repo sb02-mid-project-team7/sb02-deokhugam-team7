@@ -38,6 +38,46 @@ create table if not exists books
     thumbnail_url  VARCHAR(255)
 );
 
+create table if not exists reviews
+(
+    id         UUID      PRIMARY KEY,
+    user_id    UUID      NOT NULL,
+    book_id    UUID      NOT NULL,
+    content    TEXT      NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    is_deleted BOOLEAN   NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP,
+
+    CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
+    CONSTRAINT uk_reviews_user_book UNIQUE (user_id, book_id)
+);
+
+create table if not exists review_likes
+(
+    id         UUID      PRIMARY KEY,
+    user_id    UUID      NOT NULL,
+    review_id  UUID      NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+
+    CONSTRAINT fk_reviewlikes_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviewlikes_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE,
+    CONSTRAINT uk_reviewlikes_user_review UNIQUE (user_id, review_id)
+);
+
+create table if not exists ranking_reviews
+(
+    id         UUID             PRIMARY KEY,
+    review_id  UUID             NOT NULL,
+    score      DOUBLE PRECISION NOT NULL,
+    period     VARCHAR(20)      NOT NULL CHECK (period IN ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME')),
+    created_at TIMESTAMP        NOT NULL,
+
+    CONSTRAINT fk_rankingreviews_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
+    CONSTRAINT uk_reviewlikes_user_review UNIQUE (user_id, review_id)
+);
+
 create table if not exists comments
 (
     id         UUID PRIMARY KEY,
@@ -64,41 +104,4 @@ create table if not exists notifications
     updated_at TIMESTAMP,
     CONSTRAINT fk_notification_user FOREIGN KEY (user_id) references users (id),
     CONSTRAINT fk_notification_review FOREIGN KEY (review_id) references reviews (id)
-);
-
-create table if not exists reviews
-(
-    id         UUID      PRIMARY KEY,
-    user_id    UUID      NOT NULL,
-    book_id    UUID      NOT NULL,
-    content    TEXT      NOT NULL,
-    rating     INT       NOT NULL,
-    is_deleted BOOLEAN   NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP,
-
-    CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_reviews_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
-);
-
-create table if not exists review_likes
-(
-    id         UUID      PRIMARY KEY,
-    user_id    UUID      NOT NULL,
-    review_id  UUID      NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-
-    CONSTRAINT fk_reviewlikes_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_reviewlikes_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
-);
-
-create table if not exists ranking_reviews
-(
-    id         UUID             PRIMARY KEY,
-    review_id  UUID             NOT NULL,
-    score      DOUBLE PRECISION NOT NULL,
-    period     VARCHAR(20)      NOT NULL CHECK (period IN ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME')),
-    created_at TIMESTAMP        NOT NULL,
-
-    CONSTRAINT fk_rankingreviews_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
 );

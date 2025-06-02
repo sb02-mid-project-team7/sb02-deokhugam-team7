@@ -11,6 +11,9 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 5
       idle-timeout: 60000
+  h2:
+    console:
+      enabled: true
   jpa:
     hibernate:
       ddl-auto: create-drop
