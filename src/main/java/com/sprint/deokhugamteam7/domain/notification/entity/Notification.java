@@ -81,7 +81,7 @@ public class Notification {
 
   public void validateUserAuthorization(UUID userId) {
     if (!this.review.getUser().getId().equals(userId)) {
-      throw new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new NotificationException(ErrorCode.NOTIFICATION_NOT_OWNED);
     }
   }
 

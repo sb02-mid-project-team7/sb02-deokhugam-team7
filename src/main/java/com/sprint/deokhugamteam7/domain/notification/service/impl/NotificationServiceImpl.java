@@ -10,6 +10,7 @@ import com.sprint.deokhugamteam7.domain.notification.service.NotificationService
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.notification.NotificationException;
+import com.sprint.deokhugamteam7.exception.user.UserException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,21 +34,22 @@ public class NotificationServiceImpl implements NotificationService {
       NotificationUpdateRequest request) {
 
     Notification notification = notificationRepository.findById(notificationId)
-        .orElseThrow(() -> new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new NotificationException(ErrorCode.NOTIFICATION_NOT_FOUND));
+
+    userRepository.findById(userId)
+            .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
     notification.validateUserAuthorization(userId);
-
     notification.updateConfirmed(request.confirmed());
 
-    NotificationDto result = NotificationDto.fromEntity(notification);
-
-    return result;
+    return NotificationDto.fromEntity(notification);
   }
 
   @Override
   public void updateAll(UUID userId) {
+    System.out.println("요청 아이디: " + userId);
     userRepository.findById(userId)
-        .orElseThrow(() -> new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
     notificationRepository.bulkUpdateConfirmed(userId);
   }
 
@@ -55,7 +57,7 @@ public class NotificationServiceImpl implements NotificationService {
   @Transactional(readOnly = true)
   public CursorPageResponseNotificationDto findAll(NotificationCursorRequest request) {
     userRepository.findById(request.userId())
-        .orElseThrow(() -> new NotificationException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
     Slice<NotificationDto> sliceNotificationDto = notificationRepository.findAllByCursor(request);
     long totalElements = notificationRepository.countAllById(request.userId());
