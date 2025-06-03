@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.user.service.impl;
 
 import com.sprint.deokhugamteam7.constant.Period;
+import com.sprint.deokhugamteam7.domain.user.dto.PowerUserSearchCondition;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.dto.response.CursorPageResponsePowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.dto.response.PowerUserDto;
@@ -33,32 +34,17 @@ public class PowerUserServiceImpl implements PowerUserService {
 
   @Override
   @Transactional(readOnly = true)
-  public CursorPageResponsePowerUserDto getPowerUsers(
-      Period period, String cursor, LocalDateTime after, int size, Sort.Direction direction
-  ) {
-    Double cursorScore = cursor != null ? Double.parseDouble(cursor) : null;
-
-    List<UserScore> results = userQueryRepository.findPowerUserScoresByPeriod(
-        period, cursorScore, after, size, direction
-    );
-
-    boolean hasNext = results.size() > size;
-    if (hasNext) {
-      results.remove(size); // 마지막 요소 제거
-    }
+  public CursorPageResponsePowerUserDto getPowerUsers(PowerUserSearchCondition condition) {
+    List<UserScore> results = userQueryRepository.findPowerUserScoresByPeriod(condition);
 
     List<PowerUserDto> content = results.stream()
-        .map(us -> new PowerUserDto(
-            us.getUser().getId(),
-            us.getUser().getNickname(),
-            us.getPeriod(),
-            us.getCreatedAt(),
-            us.getRank() != null ? us.getRank() : 0L,
-            us.getScore(),
-            us.getReviewScoreSum(),
-            us.getLikeCount(),
-            us.getCommentCount()
-        )).toList();
+        .map(PowerUserDto::from)
+        .toList();
+
+    boolean hasNext = results.size() > condition.size();
+    if (hasNext) {
+      results.remove(condition.size());
+    }
 
     String nextCursor = hasNext ? String.valueOf(results.get(results.size() - 1).getScore()) : null;
     String nextAfter = hasNext ? results.get(results.size() - 1).getCreatedAt().toString() : null;
@@ -68,7 +54,7 @@ public class PowerUserServiceImpl implements PowerUserService {
         nextCursor,
         nextAfter,
         content.size(),
-        content.size(), // 필요시 총 개수 쿼리 추가
+        content.size(), // 필요시 총 개수 쿼리 추가(프로토타입 화면에서는 총 개수 안보임)
         hasNext
     );
   }

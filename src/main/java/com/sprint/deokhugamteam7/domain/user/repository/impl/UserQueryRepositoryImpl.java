@@ -8,6 +8,7 @@ import com.sprint.deokhugamteam7.domain.comment.entity.QComment;
 import com.sprint.deokhugamteam7.domain.review.entity.QRankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.QReview;
 import com.sprint.deokhugamteam7.domain.review.entity.QReviewLike;
+import com.sprint.deokhugamteam7.domain.user.dto.PowerUserSearchCondition;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.entity.QUser;
 import com.sprint.deokhugamteam7.domain.user.entity.QUserScore;
@@ -39,19 +40,16 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
   private final QComment comment = QComment.comment;
 
   @Override
-  public List<UserScore> findPowerUserScoresByPeriod(
-      Period period,
-      Double cursorScore,
-      LocalDateTime afterCreatedAt,
-      int size,
-      Sort.Direction direction
-  ) {
+  public List<UserScore> findPowerUserScoresByPeriod(PowerUserSearchCondition condition) {
+    Double cursorScore = condition.parsedCursorScore();
+    LocalDateTime afterCreatedAt = condition.after();
+
     BooleanBuilder whereCondition = new BooleanBuilder();
-    whereCondition.and(userScore.period.eq(period));
+    whereCondition.and(userScore.period.eq(condition.period()));
 
     if (cursorScore != null && afterCreatedAt != null) {
       BooleanBuilder cursorCondition = new BooleanBuilder();
-      if (direction == Sort.Direction.DESC) {
+      if (condition.direction() == Sort.Direction.DESC) {
         cursorCondition.and(userScore.score.lt(cursorScore)
             .or(userScore.score.eq(cursorScore).and(userScore.createdAt.lt(afterCreatedAt))));
       } else {
@@ -66,13 +64,13 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         .join(userScore.user, QUser.user).fetchJoin()
         .where(whereCondition);
 
-    if (direction == Sort.Direction.DESC) {
+    if (condition.direction() == Sort.Direction.DESC) {
       query.orderBy(userScore.score.desc(), userScore.createdAt.desc());
     } else {
       query.orderBy(userScore.score.asc(), userScore.createdAt.asc());
     }
 
-    return query.limit(size + 1).fetch();
+    return query.limit(condition.size() + 1).fetch();
   }
 
 

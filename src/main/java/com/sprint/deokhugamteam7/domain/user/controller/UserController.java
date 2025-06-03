@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.user.controller;
 
 import com.sprint.deokhugamteam7.constant.Period;
+import com.sprint.deokhugamteam7.domain.user.dto.PowerUserSearchCondition;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserLoginRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserRegisterRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserUpdateRequest;
@@ -85,8 +86,14 @@ public class UserController {
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(defaultValue = "DESC") Sort.Direction direction
   ) {
-    CursorPageResponsePowerUserDto response =
-        powerUserService.getPowerUsers(period, cursor, after, size, direction);
+    PowerUserSearchCondition condition = new PowerUserSearchCondition(
+        period,
+        cursor,
+        after,
+        size,
+        direction
+    );
+    CursorPageResponsePowerUserDto response = powerUserService.getPowerUsers(condition);
     return ResponseEntity.ok(response);
   }
 }
