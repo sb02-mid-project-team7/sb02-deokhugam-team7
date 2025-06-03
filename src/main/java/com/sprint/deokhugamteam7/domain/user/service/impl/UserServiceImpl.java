@@ -35,18 +35,28 @@ public class UserServiceImpl implements UserService {
 
     User savedUser = userRepository.save(user);
 
-    return UserDto.from(savedUser);
+    return new UserDto(
+        savedUser.getId(),
+        savedUser.getEmail(),
+        savedUser.getNickname(),
+        savedUser.getCreatedAt()
+    );
   }
 
   public UserDto login(UserLoginRequest request) {
-    User user = userRepository.findByEmailIsDeletedFalse(request.email())
+    User user = userRepository.findByEmail(request.email())
         .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
     if (!user.getPassword().equals(request.password())) {
       throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
-    return UserDto.from(user);
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreatedAt()
+    );
   }
 
   @Transactional(readOnly = true)
@@ -54,7 +64,12 @@ public class UserServiceImpl implements UserService {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
-    return UserDto.from(user);
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreatedAt()
+    );
   }
 
   public UserDto update(UUID id, UserUpdateRequest request) {
@@ -63,7 +78,12 @@ public class UserServiceImpl implements UserService {
 
     user.update(request.nickname()); // 닉네임만 변경
 
-    return UserDto.from(user);
+    return new UserDto(
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getCreatedAt()
+    );
   }
 
   public void softDeleteById(UUID id) {

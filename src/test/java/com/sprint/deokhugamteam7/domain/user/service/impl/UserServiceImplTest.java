@@ -86,7 +86,7 @@ class UserServiceImplTest {
       UserLoginRequest request = new UserLoginRequest("test@example.com", "Password123!");
       User user = User.create("test@example.com", "tester", "Password123!");
 
-      when(userRepository.findByEmailIsDeletedFalse(request.email())).thenReturn(Optional.of(user));
+      when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
 
       UserDto result = userService.login(request);
 
@@ -99,7 +99,7 @@ class UserServiceImplTest {
     @DisplayName("존재하지 않는 유저 예외")
     void login_userNotFound() {
       UserLoginRequest request = new UserLoginRequest("noone@example.com", "pw");
-      when(userRepository.findByEmailIsDeletedFalse(request.email())).thenReturn(Optional.empty());
+      when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
 
       Throwable thrown = catchThrowable(() -> userService.login(request));
 
@@ -114,7 +114,7 @@ class UserServiceImplTest {
       UserLoginRequest request = new UserLoginRequest("test@example.com", "wrongpassword");
       User user = User.create("test@example.com", "tester", "Password123!");
 
-      when(userRepository.findByEmailIsDeletedFalse(request.email())).thenReturn(Optional.of(user));
+      when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
 
       Throwable thrown = catchThrowable(() -> userService.login(request));
 
