@@ -48,7 +48,7 @@ public class BookIntegrationTest {
   @Test
   void createSuccess() {
     // given
-    BookCreateRequest request = new BookCreateRequest("aaaa", "bbbb", null, "cccc", now, null);
+    BookCreateRequest request = new BookCreateRequest("aaaa", "bbbb", null, "cccc", now, "123");
     // when
     BookDto bookDto = bookService.create(request, null);
     // then

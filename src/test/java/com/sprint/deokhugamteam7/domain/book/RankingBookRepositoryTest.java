@@ -10,7 +10,6 @@ import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
@@ -46,14 +45,6 @@ public class RankingBookRepositoryTest {
     review = Review.create(book, user, "test", 3);
     reviewRepository.save(review);
   }
+  //TODO 커스텀 쿼리 로직 테스트해야함
 
-  @Test
-  void findPopularBooks() {
-    // given
-
-    // when
-
-    // then
-
-  }
 }

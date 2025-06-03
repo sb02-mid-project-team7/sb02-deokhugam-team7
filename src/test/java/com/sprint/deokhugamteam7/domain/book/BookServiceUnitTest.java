@@ -42,7 +42,8 @@ public class BookServiceUnitTest {
   void create_Success_WithNecessaryElement() {
     // given
     LocalDate now = LocalDate.now();
-    BookCreateRequest request = new BookCreateRequest("aaa", "bbb", null, "ccc", now, null);
+    BookCreateRequest request = new BookCreateRequest("aaa", "bbb", null, "ccc", now, "123");
+    when(bookRepository.existsByIsbn(request.isbn())).thenReturn(false);
     // when
     BookDto bookDto = bookService.create(request, null);
     // then
@@ -79,12 +80,12 @@ public class BookServiceUnitTest {
   @Test
   void create_WithSameIsbn_ShouldThrowException() {
     // given
-    BookCreateRequest mock = mock(BookCreateRequest.class);
-    when(mock.isbn()).thenReturn("1234567");
-    when(bookRepository.existsByIsbnIsNotNullAndIsbn("1234567")).thenReturn(false);
+    LocalDate now = LocalDate.now();
+    BookCreateRequest request = new BookCreateRequest("aaa", "bbb", "ccc", "ddd", now, "1234567");
+    when(bookRepository.existsByIsbn("1234567")).thenReturn(true);
     // when & then
     assertThrows(DeokhugamException.class, ()->
-        bookService.create(mock, mock(MockMultipartFile.class)));
+        bookService.create(request, mock(MockMultipartFile.class)));
   }
 
   @Test
@@ -96,7 +97,7 @@ public class BookServiceUnitTest {
     Book book = Book.create("aaa", "bbb", "ccc", now).build();
     BookUpdateRequest request = new BookUpdateRequest("test111", "test222", "test333",
         "test444", newDate);
-    when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+    when(bookRepository.findByIdAndIsDeletedFalse(id)).thenReturn(Optional.of(book));
     // when
     BookDto bookDto = bookService.update(id, request, null);
     // then
