@@ -47,7 +47,6 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Override
   public void updateAll(UUID userId) {
-    System.out.println("요청 아이디: " + userId);
     userRepository.findById(userId)
         .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
     notificationRepository.bulkUpdateConfirmed(userId);
