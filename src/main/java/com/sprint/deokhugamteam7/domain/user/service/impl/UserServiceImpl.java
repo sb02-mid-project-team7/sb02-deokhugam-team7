@@ -12,6 +12,7 @@ import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.user.UserException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,16 +22,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   public UserDto register(UserRegisterRequest request) {
     if (userRepository.existsByEmail(request.email())) {
       throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
+    String encodedPassword = passwordEncoder.encode(request.password());
+
     User user = User.create(
         request.email(),
         request.nickname(),
-        request.password()
+        encodedPassword
     );
 
     User savedUser = userRepository.save(user);
@@ -42,7 +46,7 @@ public class UserServiceImpl implements UserService {
     User user = userRepository.findByEmailIsDeletedFalse(request.email())
         .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
-    if (!user.getPassword().equals(request.password())) {
+    if (!passwordEncoder.matches(request.password(), user.getPassword())) {
       throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
