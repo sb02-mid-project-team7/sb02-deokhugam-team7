@@ -30,6 +30,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class UserQueryRepositoryImpl implements UserQueryRepository {
+
   private final JPAQueryFactory queryFactory;
 
   private final QUserScore userScore = QUserScore.userScore;
@@ -84,7 +85,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         .select(rankingReview.review.user.id, rankingReview.score.sum())
         .from(rankingReview)
         .where(rankingReview.period.eq(period),
-            rankingReview.createdAt.between(start, end.minusNanos(1)))
+            rankingReview.reviewCreatedAt.between(start, end.minusNanos(1)))
         .groupBy(rankingReview.review.user.id)
         .fetch()
         .stream()

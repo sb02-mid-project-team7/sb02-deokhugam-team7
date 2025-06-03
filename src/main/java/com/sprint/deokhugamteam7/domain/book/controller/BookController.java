@@ -45,7 +45,7 @@ public class BookController implements BookApi {
     return ResponseEntity.status(HttpStatus.CREATED).body(bookDto);
   }
 
-  @PatchMapping("/{bookId}")
+  @PatchMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<BookDto> update(
       @PathVariable UUID bookId,
       @RequestPart("bookData") BookUpdateRequest request,
@@ -65,13 +65,13 @@ public class BookController implements BookApi {
   @DeleteMapping("/{bookId}")
   public ResponseEntity<Void> deleteLogically(@PathVariable UUID bookId) {
     bookService.deleteLogically(bookId);
-    return ResponseEntity.status(204).build();
+    return ResponseEntity.noContent().build();
   }
 
   @DeleteMapping("/{bookId}/hard")
   public ResponseEntity<Void> deletePhysically(@PathVariable UUID bookId) {
     bookService.deletePhysically(bookId);
-    return ResponseEntity.status(204).build();
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping

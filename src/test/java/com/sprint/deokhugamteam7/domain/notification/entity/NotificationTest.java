@@ -76,7 +76,7 @@ class NotificationTest {
     void validateUserAuthorization_fail() {
         assertThatThrownBy(() -> notification.validateUserAuthorization(OTHER_USER_ID))
             .isInstanceOf(NotificationException.class)
-            .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+            .hasMessageContaining(ErrorCode.NOTIFICATION_NOT_OWNED.getMessage());
     }
 
     private void setPrivateField(Object target, String fieldName, Object value) {

@@ -11,17 +11,17 @@ create table if not exists users
 
 create table if not exists user_score
 (
-    id         UUID PRIMARY KEY,
-    user_id    UUID        NOT NULL,
-    period VARCHAR(20) NOT NULL CHECK (period IN ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME')),
-    created_at TIMESTAMP   NOT NULL,
-    score DOUBLE PRECISION NOT NULL,
+    id               UUID PRIMARY KEY,
+    user_id          UUID             NOT NULL,
+    period           VARCHAR(20)      NOT NULL CHECK (period IN ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME')),
+    created_at       TIMESTAMP        NOT NULL,
+    score            DOUBLE PRECISION NOT NULL,
     review_score_sum DOUBLE PRECISION,
-    like_count BIGINT,
-    comment_count BIGINT,
-    date DATE NOT NULL,
-    rank BIGINT,
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    like_count       BIGINT,
+    comment_count    BIGINT,
+    date             DATE             NOT NULL,
+    rank             BIGINT,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT uq_user_period_date UNIQUE (user_id, period, date)
 );
 
@@ -45,22 +45,22 @@ create table if not exists ranking_books
     id           UUID PRIMARY KEY,
     book_id      UUID,
     rank         BIGINT,
-    period       VARCHAR(255) NOT NULL ,
+    period       VARCHAR(255) NOT NULL,
     score        DOUBLE PRECISION,
     total_rating INTEGER,
     review_count BIGINT,
-    rating        DOUBLE PRECISION,
+    rating       DOUBLE PRECISION,
     CONSTRAINT uk_book_period UNIQUE (book_id, period),
     constraint fk_ranking_book foreign key (book_id) references books (id) on delete cascade
 );
 
 create table if not exists reviews
 (
-    id         UUID      PRIMARY KEY,
+    id         UUID PRIMARY KEY,
     user_id    UUID      NOT NULL,
     book_id    UUID      NOT NULL,
     content    TEXT      NOT NULL,
-    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    rating     INT       NOT NULL CHECK (rating BETWEEN 1 AND 5),
     is_deleted BOOLEAN   NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
@@ -72,7 +72,7 @@ create table if not exists reviews
 
 create table if not exists review_likes
 (
-    id         UUID      PRIMARY KEY,
+    id         UUID PRIMARY KEY,
     user_id    UUID      NOT NULL,
     review_id  UUID      NOT NULL,
     created_at TIMESTAMP NOT NULL,
@@ -84,28 +84,30 @@ create table if not exists review_likes
 
 create table if not exists ranking_reviews
 (
-    id         UUID             PRIMARY KEY,
-    review_id  UUID             NOT NULL,
-    score      DOUBLE PRECISION NOT NULL,
-    period     VARCHAR(20)      NOT NULL CHECK (period IN ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME')),
-    created_at TIMESTAMP        NOT NULL,
+    id                UUID PRIMARY KEY,
+    review_id         UUID             NOT NULL,
+    score             DOUBLE PRECISION NOT NULL,
+    period            VARCHAR(20)      NOT NULL CHECK (period IN ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME')),
+    review_created_at TIMESTAMP        NOT NULL,
 
-    CONSTRAINT fk_rankingreviews_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
---     CONSTRAINT uk_reviewlikes_user_review UNIQUE (user_id, review_id)
+    CONSTRAINT fk_rankingreviews_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE,
+    CONSTRAINT uk_rankingreviews_review_period UNIQUE (review_id, period)
 );
+
+CREATE INDEX idx_ranking_period_score ON ranking_reviews (period, score DESC);
 
 create table if not exists comments
 (
     id         UUID PRIMARY KEY,
-    user_id    UUID             NOT NULL,
-    review_id  UUID             NOT NULL,
-    content    VARCHAR(255)     NOT NULL,
-    is_deleted BOOLEAN          NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP        NOT NULL,
+    user_id    UUID         NOT NULL,
+    review_id  UUID         NOT NULL,
+    content    VARCHAR(255) NOT NULL,
+    is_deleted BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP    NOT NULL,
     updated_at TIMESTAMP,
 
-    CONSTRAINT fk_comment_user   FOREIGN KEY (user_id)   REFERENCES users   (id)  ON DELETE CASCADE,
-    CONSTRAINT fk_comment_review FOREIGN KEY (review_id) REFERENCES reviews (id)  ON DELETE CASCADE
+    CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_comment_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
 );
 
 create table if not exists notifications
