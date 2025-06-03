@@ -1,9 +1,12 @@
 package com.sprint.deokhugamteam7.domain.review.service.basic;
 
+import com.sprint.deokhugamteam7.constant.NotificationType;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
+import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
+import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
@@ -38,6 +41,7 @@ public class BasicReviewService implements ReviewService {
   private final ReviewLikeRepository reviewLikeRepository;
   private final CommentRepository commentRepository;
   private final ReviewRepositoryCustom reviewRepositoryCustom;
+  private final NotificationRepository notificationRepository;
 
   @Override
   @Transactional
@@ -157,6 +161,9 @@ public class BasicReviewService implements ReviewService {
 
       ReviewLike reviewLike = ReviewLike.create(user, review);
       reviewLikeRepository.save(reviewLike);
+
+      Notification notification = Notification.create(review.getUser(), review, NotificationType.LIKE.formatMessage(user, null));
+      notificationRepository.save(notification);
     }
 
     return new ReviewLikeDto(id, userId, liked);
