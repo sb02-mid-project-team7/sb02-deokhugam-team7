@@ -54,26 +54,26 @@ public class UserController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<UserDto> findById(@PathVariable UUID id) {
+  public ResponseEntity<UserDto> findById(@PathVariable("id") UUID id) {
     UserDto user = userService.findById(id);
     return ResponseEntity.status(200).body(user);
   }
 
   @PatchMapping("/{id}")
-  public ResponseEntity<UserDto> update(@PathVariable UUID id,
+  public ResponseEntity<UserDto> update(@PathVariable("id") UUID id,
       @Valid @RequestBody UserUpdateRequest request) {
     UserDto updated = userService.update(id, request);
     return ResponseEntity.ok(updated);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> softDelete(@PathVariable UUID id) {
+  public ResponseEntity<Void> softDelete(@PathVariable("id") UUID id) {
     userService.softDeleteById(id);
     return ResponseEntity.noContent().build();
   }
 
   @DeleteMapping("/{id}/hard")
-  public ResponseEntity<Void> hardDelete(@PathVariable UUID id) {
+  public ResponseEntity<Void> hardDelete(@PathVariable("id") UUID id) {
     userService.hardDeleteById(id);
     return ResponseEntity.noContent().build();
   }

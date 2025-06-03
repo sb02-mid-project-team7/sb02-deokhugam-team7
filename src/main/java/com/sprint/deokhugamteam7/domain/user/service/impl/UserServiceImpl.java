@@ -35,55 +35,35 @@ public class UserServiceImpl implements UserService {
 
     User savedUser = userRepository.save(user);
 
-    return new UserDto(
-        savedUser.getId(),
-        savedUser.getEmail(),
-        savedUser.getNickname(),
-        savedUser.getCreatedAt()
-    );
+    return UserDto.from(savedUser);
   }
 
   public UserDto login(UserLoginRequest request) {
-    User user = userRepository.findByEmail(request.email())
+    User user = userRepository.findByEmailIsDeletedFalse(request.email())
         .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
     if (!user.getPassword().equals(request.password())) {
       throw new UserException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
-    return new UserDto(
-        user.getId(),
-        user.getEmail(),
-        user.getNickname(),
-        user.getCreatedAt()
-    );
+    return UserDto.from(user);
   }
 
   @Transactional(readOnly = true)
   public UserDto findById(UUID id) {
-    User user = userRepository.findById(id)
+    User user = userRepository.findByIdAndIsDeletedFalse(id)
         .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
-    return new UserDto(
-        user.getId(),
-        user.getEmail(),
-        user.getNickname(),
-        user.getCreatedAt()
-    );
+    return UserDto.from(user);
   }
 
   public UserDto update(UUID id, UserUpdateRequest request) {
-    User user = userRepository.findById(id)
+    User user = userRepository.findByIdAndIsDeletedFalse(id)
         .orElseThrow(() -> new UserException(ErrorCode.INTERNAL_SERVER_ERROR));
 
     user.update(request.nickname()); // 닉네임만 변경
 
-    return new UserDto(
-        user.getId(),
-        user.getEmail(),
-        user.getNickname(),
-        user.getCreatedAt()
-    );
+    return UserDto.from(user);
   }
 
   public void softDeleteById(UUID id) {
