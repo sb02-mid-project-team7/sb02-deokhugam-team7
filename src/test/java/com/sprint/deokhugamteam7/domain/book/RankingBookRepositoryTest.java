@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7;
+package com.sprint.deokhugamteam7.domain.book;
 
 import com.sprint.deokhugamteam7.config.TestAuditingConfig;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;

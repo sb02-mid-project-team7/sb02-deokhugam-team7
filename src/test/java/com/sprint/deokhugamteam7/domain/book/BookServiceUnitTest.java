@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7;
+package com.sprint.deokhugamteam7.domain.book;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;

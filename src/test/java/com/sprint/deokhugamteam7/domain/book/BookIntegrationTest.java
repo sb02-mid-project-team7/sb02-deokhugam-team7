@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7;
+package com.sprint.deokhugamteam7.domain.book;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -11,7 +11,7 @@ import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.book.service.BookService;
-import com.sprint.deokhugamteam7.domain.book.service.S3ImageService;
+import com.sprint.deokhugamteam7.domain.book.service.ImageService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookIntegrationTest {
 
   @MockitoBean
-  private S3ImageService s3ImageService;
+  private ImageService imageService;
 
   @Autowired
   private BookService bookService;
