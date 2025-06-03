@@ -18,6 +18,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -30,46 +32,46 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class Comment {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+  @ManyToOne
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-	@Setter
-	@ManyToOne
-	@JoinColumn(name = "review_id", nullable = false)
-	private Review review;
+  @Setter
+  @ManyToOne
+  @JoinColumn(name = "review_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Review review;
 
-	@Column(nullable = false)
-	private String content;
+  @Column(nullable = false)
+  private String content;
 
-	private Boolean isDeleted = false;
+  private Boolean isDeleted = false;
 
-	@CreatedDate
-	private LocalDateTime createdAt;
+  @CreatedDate
+  private LocalDateTime createdAt;
 
-	@LastModifiedDate
-	private LocalDateTime updatedAt;
+  @LastModifiedDate
+  private LocalDateTime updatedAt;
 
-	public static Comment create(User user, Review review, String content) {
-		Comment comment = new Comment();
-		comment.user = user;
-		// comment.review = review;
-		comment.content = content;
+  public static Comment create(User user, Review review, String content) {
+    Comment comment = new Comment();
+    comment.user = user;
+    comment.review = review;
+    comment.content = content;
 
-		comment.isDeleted = false;
-		review.addComment(comment);
-		return comment;
-	}
+    comment.isDeleted = false;
+    return comment;
+  }
 
-	public void update(String content) {
-		this.content = content;
-	}
+  public void update(String content) {
+    this.content = content;
+  }
 
-	public void delete() {
-		isDeleted = true;
-	}
+  public void delete() {
+    isDeleted = true;
+  }
 }
