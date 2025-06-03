@@ -5,12 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationUpdateRequest;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
 import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +49,9 @@ class NotificationServiceImplTest {
         otherUser = User.create("test2", "test2", "test2");
         setPrivateField(otherUser, "id", OTHER_USER_ID);
 
-        review = new Review();
+        Book book = Book.create("testBook", "testBook", "testBook", LocalDate.now()).build();
+
+        review = Review.create(book, user, "책의 리뷰입니다.", 3);
         setPrivateField(review, "user", user);
 
         notification = Notification.create(user, review, "테스트 알림");

@@ -1,11 +1,14 @@
 package com.sprint.deokhugamteam7.domain.comment.service;
 
+import com.sprint.deokhugamteam7.constant.NotificationType;
 import com.sprint.deokhugamteam7.domain.comment.dto.CommentDto;
 import com.sprint.deokhugamteam7.domain.comment.dto.request.CommentCreateRequest;
 import com.sprint.deokhugamteam7.domain.comment.dto.request.CommentUpdateRequest;
 import com.sprint.deokhugamteam7.domain.comment.dto.response.CursorPageResponseCommentDto;
 import com.sprint.deokhugamteam7.domain.comment.entity.Comment;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
+import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
+import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
@@ -27,6 +30,7 @@ public class CommentService {
 	private final CommentRepository commentRepository;
 	private final UserRepository userRepository;
 	private final ReviewRepository reviewRepository;
+	private final NotificationRepository notificationRepository;
 
 	@Transactional
 	public CommentDto create(CommentCreateRequest commentCreateRequest) {
@@ -52,6 +56,8 @@ public class CommentService {
 		Comment newComment = Comment.create(user, review, content);
 		Comment savedComment = commentRepository.save(newComment);
 		// 댓글 생성 시 리뷰의 댓글 수를 증가 + 알림 생성 해야함.
+		Notification notification = Notification.create(review.getUser(), review, NotificationType.COMMENT.formatMessage(user, newComment));
+		notificationRepository.save(notification);
 
 		return CommentDto.from(savedComment);
 	}

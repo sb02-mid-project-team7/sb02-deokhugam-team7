@@ -1,12 +1,17 @@
 package com.sprint.deokhugamteam7.domain.notification.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import com.sprint.deokhugamteam7.constant.NotificationType;
+import com.sprint.deokhugamteam7.domain.book.entity.Book;
+import com.sprint.deokhugamteam7.domain.comment.entity.Comment;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.notification.NotificationException;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,11 +36,33 @@ class NotificationTest {
         otherUser = User.create("test2", "test2", "test2");
         setPrivateField(otherUser, "id", OTHER_USER_ID);
 
-        review = new Review();
+        Book book = Book.create("testBook", "testBook", "testBook", LocalDate.now()).build();
+
+        review = Review.create(book, user, "책의 리뷰입니다.", 3);
         setPrivateField(review, "user", user);
 
         notification = Notification.create(user, review, "테스트 알림");
         setPrivateField(notification, "id", NOTIFICATION_ID);
+    }
+
+    @Test
+    @DisplayName("알림 생성 성공 - Like")
+    void createNotificationWithNotificationTypeToLike() {
+        Notification likeNotification = Notification.create(user, review, NotificationType.LIKE.formatMessage(otherUser, null));
+
+        assertThat(likeNotification.getContent()).isEqualTo("[test2]님이 나의 리뷰를 좋아합니다.");
+        assertThat(likeNotification.isDelete()).isFalse();
+    }
+
+    @Test
+    @DisplayName("알림 생성 성공 - Like")
+    void createNotificationWithNotificationTypeToComment() {
+        Comment comment = Comment.create(otherUser, review, "댓글 테스트"); // 에러 발생 부분
+
+        Notification likeNotification = Notification.create(user, review, NotificationType.COMMENT.formatMessage(otherUser, comment));
+
+        assertThat(likeNotification.getContent()).isEqualTo("[test2]님이 나의 리뷰에 댓글을 남겼습니다.\n댓글 테스트");
+        assertThat(likeNotification.isDelete()).isFalse();
     }
 
     @Test
