@@ -1,8 +1,10 @@
 package com.sprint.deokhugamteam7.domain.review.controller;
 
+import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponsePopularReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponseReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
@@ -86,5 +88,12 @@ public class ReviewController {
       @RequestHeader(value = "Deokhugam-Request-User-ID") UUID headerUserId) {
     CursorPageResponseReviewDto reviewDto = reviewService.findAll(condition, headerUserId);
     return ResponseEntity.ok(reviewDto);
+  }
+
+  @GetMapping("/popular")
+  public ResponseEntity<CursorPageResponsePopularReviewDto> popular(
+      RankingReviewRequest request) {
+    CursorPageResponsePopularReviewDto popularReviewDto = reviewService.popular(request);
+    return ResponseEntity.ok(popularReviewDto);
   }
 }
