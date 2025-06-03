@@ -17,6 +17,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -38,6 +40,7 @@ public class ReviewLike {
   @Setter
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "review_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Review review;
 
   @CreatedDate
@@ -47,10 +50,9 @@ public class ReviewLike {
   public static ReviewLike create(User user, Review review) {
     ReviewLike reviewLike = new ReviewLike();
     reviewLike.user = user;
+    reviewLike.review = review;
 
-    review.addReviewLike(reviewLike);
     return reviewLike;
   }
-
 
 }

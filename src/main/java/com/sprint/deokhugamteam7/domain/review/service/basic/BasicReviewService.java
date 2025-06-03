@@ -7,12 +7,16 @@ import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
 import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
+import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponsePopularReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponseReviewDto;
+import com.sprint.deokhugamteam7.domain.review.dto.response.PopularReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
+import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewLikeRepository;
@@ -27,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -162,7 +167,8 @@ public class BasicReviewService implements ReviewService {
       ReviewLike reviewLike = ReviewLike.create(user, review);
       reviewLikeRepository.save(reviewLike);
 
-      Notification notification = Notification.create(review.getUser(), review, NotificationType.LIKE.formatMessage(user, null));
+      Notification notification = Notification.create(review.getUser(), review,
+          NotificationType.LIKE.formatMessage(user, null));
       notificationRepository.save(notification);
     }
 
@@ -214,4 +220,47 @@ public class BasicReviewService implements ReviewService {
         hasNext
     );
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public CursorPageResponsePopularReviewDto popular(RankingReviewRequest request) {
+    List<RankingReview> rankingReviews
+        = reviewRepositoryCustom.findRankingReviewsByPeriod(request, request.getLimit());
+
+    boolean hasNext = rankingReviews.size() > request.getLimit();
+    List<RankingReview> currentPage =
+        hasNext ? rankingReviews.subList(0, request.getLimit()) : rankingReviews;
+
+    long start = (request.getCursor() != null ?
+        Long.parseLong(request.getCursor()) : 0) + 1;
+
+    List<PopularReviewDto> content = IntStream.range(0, currentPage.size())
+        .mapToObj(i -> {
+          RankingReview ranking = currentPage.get(i);
+          int likeCount = reviewLikeRepository.countByReviewId(ranking.getReview().getId());
+          int commentCount
+              = commentRepository.countByReviewIdAndIsDeletedFalse(ranking.getReview().getId());
+
+          return PopularReviewDto.of(ranking, ranking.getReview(), start + i, likeCount,
+              commentCount);
+        }).toList();
+
+    String nextCursor = hasNext ? String.valueOf(start + request.getLimit() - 1) : null;
+    LocalDateTime nextAfter = null;
+
+    if (hasNext) {
+      RankingReview last = currentPage.get(currentPage.size() - 1);
+      nextAfter = last.getReviewCreatedAt();
+    }
+
+    return new CursorPageResponsePopularReviewDto(
+        content,
+        nextCursor,
+        nextAfter,
+        currentPage.size(),
+        reviewRepositoryCustom.countRakingReviewByPeriod(request.getPeriod()),
+        hasNext
+    );
+  }
+
 }
