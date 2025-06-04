@@ -94,8 +94,6 @@ create table if not exists ranking_reviews
     CONSTRAINT uk_rankingreviews_review_period UNIQUE (review_id, period)
 );
 
-CREATE INDEX if not exists idx_ranking_period_score ON ranking_reviews (period, score DESC);
-
 create table if not exists comments
 (
     id         UUID PRIMARY KEY,

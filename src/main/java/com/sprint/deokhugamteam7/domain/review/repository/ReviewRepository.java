@@ -2,6 +2,7 @@ package com.sprint.deokhugamteam7.domain.review.repository;
 
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
+import com.sprint.deokhugamteam7.domain.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -18,5 +19,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
       + " WHERE r.id = :id")
   Optional<Review> findByIdWithUserAndBook(@Param("id") UUID id);
 
-  List<Review> findAllByBookAndCreatedAtBetween(Book book, LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
+  List<Review> findAllByBookAndCreatedAtBetween(Book book, LocalDateTime createdAtAfter,
+      LocalDateTime createdAtBefore);
+
+  boolean existsByUserAndBook(User user, Book book);
 }

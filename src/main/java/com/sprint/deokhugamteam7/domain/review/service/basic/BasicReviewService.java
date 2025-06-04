@@ -61,6 +61,10 @@ public class BasicReviewService implements ReviewService {
     Book book = bookRepository.findByIdAndIsDeletedFalse(bookId)
         .orElseThrow(() -> new ReviewException(ErrorCode.BOOK_NOT_FOUND));
 
+    if (reviewRepository.existsByUserAndBook(user, book)) {
+      throw new ReviewException(ErrorCode.REVIEW_ALREADY_EXISTS);
+    }
+
     List<RankingBook> rankingBooks = book.getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(), false));
 
@@ -68,8 +72,8 @@ public class BasicReviewService implements ReviewService {
     reviewRepository.save(review);
 
     log.info("[BasicReviewService] create Review: id {}, "
-        + "User {}, Book {}, content {}, rating {}, isDeleted {},createdAt {}, updatedAt {}",
-        review.getId(), review.getUser(), review.getBook(), review.getContent(),
+            + "userId {}, bookId {}, content {}, rating {}, isDeleted {},createdAt {}, updatedAt {}",
+        review.getId(), user.getId(), book.getId(), review.getContent(),
         review.getRating(), review.getIsDeleted(), review.getCreatedAt(), review.getUpdatedAt());
 
     return ReviewDto.of(review, 0, 0, false);
@@ -84,11 +88,11 @@ public class BasicReviewService implements ReviewService {
     Review review = reviewRepository.findByIdWithUserAndBook(id)
         .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
 
-    review.validateUserAuthorization(userId);
-
-    if (review.getUser().isDeleted() || review.getBook().getIsDeleted()) {
+    if (review.getUser().isDeleted() || review.getBook().getIsDeleted() || review.getIsDeleted()) {
       throw new ReviewException(ErrorCode.INTERNAL_BAD_REQUEST);
     }
+
+    review.validateUserAuthorization(userId);
 
     String newContent = request.content();
     int beforeRating = review.getRating();
@@ -107,11 +111,10 @@ public class BasicReviewService implements ReviewService {
     boolean likedByMe = reviewLikeRepository.existsByUserIdAndReviewId(userId, id);
 
     log.info("[BasicReviewService] update Review: id {}, userId {}"
-            + "User {}, Book {}, content {}, rating {}, isDeleted {}, "
+            + "content {}, rating {}, isDeleted {}, "
             + "updatedAt {}, likeCount {}, commentCount {} , likedByMe {}",
-        review.getId(), userId, review.getUser(), review.getBook(), review.getContent(),
-        review.getRating(), review.getIsDeleted(), review.getUpdatedAt(),
-        likeCount, commentCount, likedByMe);
+        review.getId(), userId, review.getContent(), review.getRating(),
+        review.getIsDeleted(), review.getUpdatedAt(), likeCount, commentCount, likedByMe);
 
     return ReviewDto.of(review, likeCount, commentCount, likedByMe);
   }
@@ -121,6 +124,10 @@ public class BasicReviewService implements ReviewService {
   public void deleteSoft(UUID id, UUID userId) {
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    if (review.getIsDeleted()) {
+      throw new ReviewException(ErrorCode.REVIEW_NOT_FOUND);
+    }
 
     review.validateUserAuthorization(userId);
 
@@ -141,7 +148,8 @@ public class BasicReviewService implements ReviewService {
     review.validateUserAuthorization(userId);
 
     reviewRepository.delete(review);
-    log.info("[BasicReviewService] deleteHard Review: isDeleted id {}, userId {}", review.getId(), userId);
+    log.info("[BasicReviewService] deleteHard Review: isDeleted id {}, userId {}", review.getId(),
+        userId);
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
