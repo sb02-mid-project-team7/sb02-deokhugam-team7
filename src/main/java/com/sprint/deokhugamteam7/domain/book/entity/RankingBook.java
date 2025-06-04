@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.book.entity;
 
 import com.sprint.deokhugamteam7.constant.Period;
+import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -92,6 +94,12 @@ public class RankingBook {
     this.totalRating = 0;
     this.reviewCount = 0;
     this.rating = 0.0;
+  }
+
+  public void reCalculate() {
+    List<Review> reviews = this.book.getReviews();
+    reset();
+    reviews.forEach(review -> update(review.getRating(), false));
   }
 
 }
