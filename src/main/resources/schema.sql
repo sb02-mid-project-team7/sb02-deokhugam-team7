@@ -60,7 +60,7 @@ create table if not exists reviews
     user_id    UUID      NOT NULL,
     book_id    UUID      NOT NULL,
     content    TEXT      NOT NULL,
-    rating     INT       NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    rating     INT       NOT NULL CHECK (rating BETWEEN 0 AND 5),
     is_deleted BOOLEAN   NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
@@ -94,7 +94,7 @@ create table if not exists ranking_reviews
     CONSTRAINT uk_rankingreviews_review_period UNIQUE (review_id, period)
 );
 
-CREATE INDEX idx_ranking_period_score ON ranking_reviews (period, score DESC);
+CREATE INDEX if not exists idx_ranking_period_score ON ranking_reviews (period, score DESC);
 
 create table if not exists comments
 (

@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component;
 public class PowerUserScoreSchedule {
   private final PowerUserService powerUserService;
 
-  @Scheduled(cron = "0 0 09 * * *")
+  @Scheduled(cron = "0 0/1 * * * *")
+//  @Scheduled(cron = "0 0 09 * * *")
   public void calculatePowerUserScoresDaily() {
     LocalDate today = LocalDate.now();
     log.info("파워 유저 점수 계산 시작: {}", today);

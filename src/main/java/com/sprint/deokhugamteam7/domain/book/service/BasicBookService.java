@@ -5,8 +5,8 @@ import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
-import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
+import com.sprint.deokhugamteam7.exception.book.BookException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +26,12 @@ public class BasicBookService implements BookService {
   @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile file) {
     if (!request.isbn().isBlank() && bookRepository.existsByIsbn(request.isbn().trim())) {
-      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
     }
+    log.info(
+        "[BasicBookService] create Request : title {}, author {}, description {}, publisher {}, publishedDate {}, isbn {}",
+        request.title(), request.author(), request.description(), request.publisher(),
+        request.publishedDate(), request.isbn());
 
     String thumbnailUrl = null;
     if (file != null) {
@@ -50,8 +54,12 @@ public class BasicBookService implements BookService {
   @Override
   @Transactional
   public BookDto update(UUID id, BookUpdateRequest request, MultipartFile file) {
+    log.info(
+        "[BasicBookService] update Request : id {}, title {}, author {}, description {}, publisher {}, publishedDate {} ",
+        id, request.title(), request.author(), request.description(), request.publisher(),
+        request.publishedDate());
     Book book = bookRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
-        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+        () -> new BookException(ErrorCode.BOOK_NOT_FOUND)
     );
 
     String thumbnailUrl = null;
@@ -72,8 +80,9 @@ public class BasicBookService implements BookService {
   @Override
   @Transactional(readOnly = true)
   public BookDto findById(UUID id) {
+    log.info("[BasicBookService] find Request : id {}", id);
     Book book = bookRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
-        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+        () -> new BookException(ErrorCode.BOOK_NOT_FOUND)
     );
     return BookDto.from(book);
   }
@@ -81,21 +90,23 @@ public class BasicBookService implements BookService {
   @Override
   @Transactional
   public void deleteLogically(UUID id) {
+    log.info("[BasicBookService] delete Logically Request : id {}", id);
     Book book = bookRepository.findById(id).orElseThrow(
-        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+        () -> new BookException(ErrorCode.BOOK_NOT_FOUND)
     );
     book.setIsDeleted(true);
     bookRepository.save(book);
-    log.info("[BasicBookService] delete logically : id {}", book.getId());
+    log.info("[BasicBookService] delete logically Successfully: id {}", book.getId());
   }
 
   @Override
   @Transactional
   public void deletePhysically(UUID id) {
+    log.info("[BasicBookService] delete Physically Request : id {}", id);
     Book book = bookRepository.findById(id).orElseThrow(
-        () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
+        () -> new BookException(ErrorCode.BOOK_NOT_FOUND)
     );
-    log.info("[BasicBookService] delete Physically : id {}", book.getId());
+    log.info("[BasicBookService] delete Physically Successfully: id {}", book.getId());
     bookRepository.delete(book);
   }
 }

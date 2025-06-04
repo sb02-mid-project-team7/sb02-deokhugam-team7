@@ -13,13 +13,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -31,6 +31,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class Notification {
 
   @Id
@@ -81,6 +82,7 @@ public class Notification {
 
   public void validateUserAuthorization(UUID userId) {
     if (!this.review.getUser().getId().equals(userId)) {
+      log.info("알람 수정: userId: {} 권한 검증 실패", userId);
       throw new NotificationException(ErrorCode.NOTIFICATION_NOT_OWNED);
     }
   }

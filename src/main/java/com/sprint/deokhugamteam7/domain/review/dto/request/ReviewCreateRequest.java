@@ -10,7 +10,7 @@ public record ReviewCreateRequest(
     @NotNull UUID bookId,
     @NotNull UUID userId,
     @NotBlank String content,
-    @Min(1) @Max(5)
+    @Min(0) @Max(5)
     int rating
 ) {
 

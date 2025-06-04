@@ -45,7 +45,7 @@ public class RankingReview {
   @Column(nullable = false)
   private Period period;
 
-  @Column(nullable = false)
+  @Column(name="review_created_at",nullable = false)
   private LocalDateTime reviewCreatedAt;
 
   public static RankingReview create(Review review, Double score, Period period) {
