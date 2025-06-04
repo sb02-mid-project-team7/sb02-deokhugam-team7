@@ -170,8 +170,8 @@ public class CommentService {
 		// 리뷰 id를 사용해서 count 구하기 .
 		Long totalElements = commentRepository.countByReviewId(reviewId);
 
-		log.info("✅ nextCursor: {}", nextCursor);
-		log.info("✅ nextAfter: {}", nextAfter);
+		log.info("nextCursor: {}", nextCursor);
+		log.info("nextAfter: {}", nextAfter);
 
 		return new CursorPageResponseCommentDto(
 			commentsDtos, // 현재 페이지
