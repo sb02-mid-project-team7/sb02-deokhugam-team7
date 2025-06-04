@@ -37,9 +37,7 @@ public class APIService {
   private static final String NAVER_BOOK_API_URL = "https://openapi.naver.com/v1/search/book.json";
 
   public NaverBookDto searchBooks(String query) {
-    log.info(clientId);
-    log.info(clientSecret);
-    log.info(query);
+    log.info("API 호출: query {}", query);
     try {
       UriComponents uri = UriComponentsBuilder.fromUriString(NAVER_BOOK_API_URL)
           .queryParam("query", query).build(true);

@@ -71,7 +71,7 @@ public class Review {
   }
 
   public void delete() {
-    isDeleted = true;
+    this.isDeleted = true;
   }
 
   public void update(String content, int rating) {
@@ -81,7 +81,7 @@ public class Review {
 
   public void validateUserAuthorization(UUID userId) {
     if (!this.user.getId().equals(userId)) {
-      throw new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new ReviewException(ErrorCode.REVIEW_NOT_OWNED);
     }
   }
 }

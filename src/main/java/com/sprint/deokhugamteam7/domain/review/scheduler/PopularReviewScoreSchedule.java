@@ -27,7 +27,8 @@ public class PopularReviewScoreSchedule {
   private final ReviewRepositoryCustom reviewRepositoryCustom;
   private final RankingReviewRepository rankingReviewRepository;
 
-  @Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(cron = "0 0/1 * * * *")
+  //@Scheduled(cron = "0 0 0 * * *")
   public void scheduleScore() {
     LocalDateTime end = LocalDate.now().atStartOfDay();
     calculateReviewScore(end.minusDays(1), end, Period.DAILY);

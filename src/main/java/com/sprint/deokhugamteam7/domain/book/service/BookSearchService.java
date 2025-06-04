@@ -1,11 +1,11 @@
 package com.sprint.deokhugamteam7.domain.book.service;
 
 import com.sprint.deokhugamteam7.constant.Period;
-import com.sprint.deokhugamteam7.domain.book.dto.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.FindPopularBookDto;
-import com.sprint.deokhugamteam7.domain.book.dto.PopularBookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.PopularBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.condition.BookCondition;
+import com.sprint.deokhugamteam7.domain.book.dto.condition.PopularBookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponsePopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
@@ -88,7 +88,12 @@ public class BookSearchService {
         condition.getKeyword(), direction);
 
     Slice<BookDto> bookSlice = rankingBookRepository.findAllByKeyword(condition.getKeyword(),
-        cursor, pageable).map(BookDto::from);
+        cursor, pageable).map(findBookDto -> {
+      BookDto bookDto = BookDto.from(findBookDto);
+      log.info("BookDto - title {}, reviewCount {}, rating {}", bookDto.title(),
+          bookDto.reviewCount(), bookDto.rating());
+      return bookDto;
+    });
 
     return CursorPageResponseBookDto.of(bookSlice, condition.getKeyword());
   }

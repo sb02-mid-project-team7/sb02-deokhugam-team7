@@ -33,9 +33,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicReviewService implements ReviewService {
@@ -55,15 +57,20 @@ public class BasicReviewService implements ReviewService {
     UUID bookId = request.bookId();
 
     User user = userRepository.findByIdAndIsDeletedFalse(userId)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.USER_NOT_FOUND));
     Book book = bookRepository.findByIdAndIsDeletedFalse(bookId)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.BOOK_NOT_FOUND));
 
     List<RankingBook> rankingBooks = book.getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(), false));
 
     Review review = Review.create(book, user, request.content(), request.rating());
     reviewRepository.save(review);
+
+    log.info("[BasicReviewService] create Review: id {}, "
+        + "User {}, Book {}, content {}, rating {}, isDeleted {},createdAt {}, updatedAt {}",
+        review.getId(), review.getUser(), review.getBook(), review.getContent(),
+        review.getRating(), review.getIsDeleted(), review.getCreatedAt(), review.getUpdatedAt());
 
     return ReviewDto.of(review, 0, 0, false);
   }
@@ -72,15 +79,15 @@ public class BasicReviewService implements ReviewService {
   @Transactional
   public ReviewDto update(UUID id, UUID userId, ReviewUpdateRequest request) {
     if (!userRepository.existsById(userId)) {
-      throw new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new ReviewException(ErrorCode.USER_NOT_FOUND);
     }
     Review review = reviewRepository.findByIdWithUserAndBook(id)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     review.validateUserAuthorization(userId);
 
     if (review.getUser().isDeleted() || review.getBook().getIsDeleted()) {
-      throw new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new ReviewException(ErrorCode.INTERNAL_BAD_REQUEST);
     }
 
     String newContent = request.content();
@@ -99,32 +106,42 @@ public class BasicReviewService implements ReviewService {
     int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);
     boolean likedByMe = reviewLikeRepository.existsByUserIdAndReviewId(userId, id);
 
+    log.info("[BasicReviewService] update Review: id {}, userId {}"
+            + "User {}, Book {}, content {}, rating {}, isDeleted {}, "
+            + "updatedAt {}, likeCount {}, commentCount {} , likedByMe {}",
+        review.getId(), userId, review.getUser(), review.getBook(), review.getContent(),
+        review.getRating(), review.getIsDeleted(), review.getUpdatedAt(),
+        likeCount, commentCount, likedByMe);
+
     return ReviewDto.of(review, likeCount, commentCount, likedByMe);
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @Transactional
   public void deleteSoft(UUID id, UUID userId) {
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     review.validateUserAuthorization(userId);
 
     review.delete();
+    reviewRepository.save(review);
+    log.info("[BasicReviewService] deleteSoft Review: isDeleted {}", review.getIsDeleted());
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @Transactional
   public void deleteHard(UUID id, UUID userId) {
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     review.validateUserAuthorization(userId);
 
     reviewRepository.delete(review);
+    log.info("[BasicReviewService] deleteHard Review: isDeleted id {}, userId {}", review.getId(), userId);
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
@@ -134,11 +151,11 @@ public class BasicReviewService implements ReviewService {
   @Transactional(readOnly = true)
   public ReviewDto findById(UUID id, UUID userId) {
     if (!userRepository.existsById(userId)) {
-      throw new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new ReviewException(ErrorCode.USER_NOT_FOUND);
     }
 
     Review review = reviewRepository.findByIdWithUserAndBook(id)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     int likeCount = reviewLikeRepository.countByReviewId(id);
     int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);
@@ -151,9 +168,9 @@ public class BasicReviewService implements ReviewService {
   @Transactional
   public ReviewLikeDto like(UUID id, UUID userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.USER_NOT_FOUND));
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+        .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     Optional<ReviewLike> optional = reviewLikeRepository.findByReviewIdAndUserId(id, userId);
     boolean liked;
@@ -166,10 +183,14 @@ public class BasicReviewService implements ReviewService {
 
       ReviewLike reviewLike = ReviewLike.create(user, review);
       reviewLikeRepository.save(reviewLike);
+      log.info("[BasicReviewService] like Review: id {}, userId {}, like",
+          review.getId(), userId);
 
+      log.info("알림 생성 진행: userId: {}", review.getUser().getId());
       Notification notification = Notification.create(review.getUser(), review,
           NotificationType.LIKE.formatMessage(user, null));
       notificationRepository.save(notification);
+      log.info("알림 생성 완료");
     }
 
     return new ReviewLikeDto(id, userId, liked);
@@ -252,6 +273,9 @@ public class BasicReviewService implements ReviewService {
       RankingReview last = currentPage.get(currentPage.size() - 1);
       nextAfter = last.getReviewCreatedAt();
     }
+    log.info(
+        "[BasicReviewService] popular Review: period  {}, direction {}, nextCursor {}, size{}, hasNext {}",
+        request.getPeriod(), request.getDirection(), nextCursor, currentPage.size(), hasNext);
 
     return new CursorPageResponsePopularReviewDto(
         content,

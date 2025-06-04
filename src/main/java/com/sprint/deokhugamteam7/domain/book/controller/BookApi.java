@@ -1,8 +1,8 @@
 package com.sprint.deokhugamteam7.domain.book.controller;
 
-import com.sprint.deokhugamteam7.domain.book.dto.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.condition.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;

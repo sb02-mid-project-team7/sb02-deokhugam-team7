@@ -49,15 +49,14 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 		@Param("direction") String direction,
 		@Param("limit") int limit);
 
-	@Query(
-		value = "SELECT COUNT(*) FROM from ("
-			+ "select comment_id from comments where review_id =: review_id AND is_deleted =: false"
-			+ ") t",
-		nativeQuery = true
-	)
+  @Query(
+      value = "SELECT COUNT(*) FROM ("
+          + "select comments.id from comments where review_id = :reviewId AND is_deleted = false"
+          + ") t",
+      nativeQuery = true
+  )
 	Long countByReviewId(@Param("reviewId") UUID reviewId);
 
-  
   @Query("SELECT COUNT(c) FROM Comment c WHERE c.review.id = :id AND c.isDeleted = false")
   int countByReviewIdAndIsDeletedFalse(@Param("id") UUID reviewId);
 }

@@ -126,7 +126,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     }
 
     List<ReviewCountDto> likeCounts = queryFactory
-        .select(Projections.constructor(ReviewCountDto.class, rl.review.id, rl.count()))
+        .select(Projections.constructor(ReviewCountDto.class, rl.review.id, rl.count(), review))
         .from(rl)
         .join(rl.review, review).fetchJoin()
         .where(builder.and(review.isDeleted.eq(false)))
@@ -147,7 +147,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     }
 
     List<ReviewCountDto> commentCounts = queryFactory
-        .select(Projections.constructor(ReviewCountDto.class, c.review.id, c.count()))
+        .select(Projections.constructor(ReviewCountDto.class, c.review.id, c.count(), review))
         .from(c)
         .join(c.review, review).fetchJoin()
         .where(
