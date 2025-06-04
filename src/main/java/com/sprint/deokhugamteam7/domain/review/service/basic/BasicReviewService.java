@@ -186,7 +186,7 @@ public class BasicReviewService implements ReviewService {
       log.info("[BasicReviewService] like Review: id {}, userId {}, like",
           review.getId(), userId);
 
-      log.info("알림 생성 진행: userId: {}", review.getUser());
+      log.info("알림 생성 진행: userId: {}", review.getUser().getId());
       Notification notification = Notification.create(review.getUser(), review,
           NotificationType.LIKE.formatMessage(user, null));
       notificationRepository.save(notification);
