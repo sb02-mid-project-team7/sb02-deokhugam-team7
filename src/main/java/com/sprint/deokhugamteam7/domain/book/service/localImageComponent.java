@@ -17,11 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 @ConditionalOnProperty(name = "deokhugam.storage.type", havingValue = "local")
 @Component
 @Slf4j
-public class localImageService implements ImageService {
+public class localImageComponent implements ImageComponent {
 
   private final Path storagePath;
 
-  public localImageService(
+  public localImageComponent(
       @Value("${deokhugam.storage.local.root-path}") String storagePath) {
     this.storagePath = Paths.get(storagePath);
     init();

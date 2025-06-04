@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class BasicBookService implements BookService {
 
-  private final ImageService imageService;
+  private final ImageComponent imageComponent;
   private final BookRepository bookRepository;
 
   @Override
@@ -35,7 +35,7 @@ public class BasicBookService implements BookService {
 
     String thumbnailUrl = null;
     if (file != null) {
-      thumbnailUrl = imageService.uploadImage(file);
+      thumbnailUrl = imageComponent.uploadImage(file);
     }
 
     Book book = Book.create(request.title(), request.author(), request.publisher(),
@@ -64,7 +64,7 @@ public class BasicBookService implements BookService {
 
     String thumbnailUrl = null;
     if (file != null) {
-      thumbnailUrl = imageService.uploadImage(file);
+      thumbnailUrl = imageComponent.uploadImage(file);
     }
 
     book.update(request.title(), request.author(), request.description(), request.publisher(),
