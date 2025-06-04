@@ -78,7 +78,7 @@ public class NotificationServiceImpl implements NotificationService {
     log.info("알림 목록 조회: userId: {} 조회 진행", request.userId());
     userRepository.findById(request.userId())
         .orElseThrow(() -> {
-          log.info("알림 목록 조회: userId: {} 조화 실패", request.userId());
+          log.info("알림 목록 조회: userId: {} 조회 실패", request.userId());
           return new UserException(ErrorCode.INTERNAL_SERVER_ERROR);
         });
     log.info("알림 목록 조회: userId: {} 조회 성공", request.userId());
