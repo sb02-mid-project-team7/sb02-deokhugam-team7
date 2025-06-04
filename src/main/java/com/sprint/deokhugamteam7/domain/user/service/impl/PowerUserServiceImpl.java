@@ -36,8 +36,8 @@ public class PowerUserServiceImpl implements PowerUserService {
   @Transactional(readOnly = true)
   public CursorPageResponsePowerUserDto getPowerUsers(PowerUserSearchCondition condition) {
     log.info("파워 유저 목록 조회 요청: period={}, direction={}, cursor={}, after={}, limit={}",
-        condition.period(), condition.direction(), condition.cursor(), condition.after(),
-        condition.size());
+        condition.getPeriod(), condition.getDirection(), condition.getCursor(), condition.getAfter(),
+        condition.getSize());
     List<UserScore> results;
     try {
       results = userQueryRepository.findPowerUserScoresByPeriod(condition);
@@ -56,9 +56,9 @@ public class PowerUserServiceImpl implements PowerUserService {
       throw new IllegalStateException("결과 매핑 중 오류 발생", e);
     }
 
-    boolean hasNext = results.size() > condition.size();
+    boolean hasNext = results.size() > condition.getSize();
     if (hasNext) {
-      results.remove(condition.size());
+      results.remove(condition.getSize());
     }
 
     String nextCursor = hasNext ? String.valueOf(results.get(results.size() - 1).getScore()) : null;
