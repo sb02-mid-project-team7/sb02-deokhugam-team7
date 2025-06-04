@@ -4,7 +4,6 @@ import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
