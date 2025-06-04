@@ -9,16 +9,17 @@ import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepositoryCustom
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.review.ReviewException;
 import jakarta.annotation.Nullable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PopularReviewScoreSchedule {
@@ -30,7 +31,8 @@ public class PopularReviewScoreSchedule {
   @Scheduled(cron = "0 0/1 * * * *")
   //@Scheduled(cron = "0 0 0 * * *")
   public void scheduleScore() {
-    LocalDateTime end = LocalDate.now().atStartOfDay();
+    //LocalDateTime end = LocalDate.now().atStartOfDay();
+    LocalDateTime end = LocalDateTime.now();
     calculateReviewScore(end.minusDays(1), end, Period.DAILY);
     calculateReviewScore(end.minusWeeks(1), end, Period.WEEKLY);
     calculateReviewScore(end.minusMonths(1), end, Period.MONTHLY);
@@ -39,6 +41,8 @@ public class PopularReviewScoreSchedule {
 
   public void calculateReviewScore
       (@Nullable LocalDateTime start, @Nullable LocalDateTime end, Period period) {
+    log.info("[PopularReviewScoreSchedule] 인기 유저 점수 계산 시작: period={}, start={}", period, start);
+
     Map<UUID, Long> likeMap = reviewRepositoryCustom.findLikeCountsByPeriod(start, end);
     Map<UUID, Long> commentMap = reviewRepositoryCustom.findCommentCountsByPeriod(start, end);
 
