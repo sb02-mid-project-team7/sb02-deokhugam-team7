@@ -48,7 +48,10 @@ public class PowerUserServiceImpl implements PowerUserService {
 
     List<PowerUserDto> content;
     try {
-      content = results.stream()
+      List<UserScore> trimmedResults = results.size() > condition.getSize()
+          ? results.subList(0, condition.getSize())
+          : results;
+      content = trimmedResults.stream()
           .map(PowerUserDto::from)
           .toList();
     } catch (Exception e) {
