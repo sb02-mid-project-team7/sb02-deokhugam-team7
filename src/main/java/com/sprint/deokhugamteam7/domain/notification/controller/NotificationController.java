@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.notification.contoller;
+package com.sprint.deokhugamteam7.domain.notification.controller;
 
 import com.sprint.deokhugamteam7.domain.notification.dto.CursorPageResponseNotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorRequest;
