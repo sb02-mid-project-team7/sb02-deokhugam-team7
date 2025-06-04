@@ -98,6 +98,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   public long countByCondition(ReviewSearchCondition condition) {
     BooleanBuilder where = new BooleanBuilder();
 
+    where.and(review.user.isDeleted.eq(false));
+    where.and(review.book.isDeleted.eq(false));
+    where.and(review.isDeleted.eq(false));
+
     if (condition.getUserId() != null) {
       where.and(review.user.id.eq(condition.getUserId()));
     }
@@ -134,7 +138,13 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .select(Projections.constructor(ReviewCountDto.class, rl.review.id, rl.count()))
         .from(rl)
         .join(rl.review, review)
-        .where(builder.and(review.isDeleted.eq(false)))
+        .join(rl.user, user)
+        .where(builder
+            .and(review.user.isDeleted.eq(false))
+            .and(review.book.isDeleted.eq(false))
+            .and(review.isDeleted.eq(false))
+            .and(user.isDeleted.eq(false))
+        )
         .groupBy(rl.review.id)
         .fetch();
 
@@ -157,14 +167,20 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .select(Projections.constructor(ReviewCountDto.class, c.review.id, c.count()))
         .from(c)
         .join(c.review, review)
+        .join(review.user, user)
+        .join(review.book, book)
         .where(
-            builder
-                .and(review.isDeleted.eq(false))
+            builder.and(review.isDeleted.eq(false))
                 .and(c.isDeleted.eq(false))
+                .and(review.user.isDeleted.eq(false))
+                .and(review.book.isDeleted.eq(false))
+                .and(c.user.isDeleted.eq(false))
         )
         .groupBy(c.review.id)
         .fetch();
+
     log.info("해당 기간의 총 댓글 수: {}", commentCounts.size());
+
     return commentCounts.stream()
         .collect(Collectors.toMap(
             ReviewCountDto::reviewId, ReviewCountDto::count
