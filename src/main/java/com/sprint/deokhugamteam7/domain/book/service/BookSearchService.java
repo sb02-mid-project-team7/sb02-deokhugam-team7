@@ -8,8 +8,12 @@ import com.sprint.deokhugamteam7.domain.book.dto.PopularBookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.PopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponsePopularBookDto;
+import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.book.repository.RankingBookRepository;
+import com.sprint.deokhugamteam7.domain.review.entity.Review;
+import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +30,39 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class BookSearchService {
 
+  private final ReviewRepository reviewRepository;
   private final RankingBookRepository rankingBookRepository;
 
   @Transactional
+  @Scheduled(cron = "0 0/1 * * * *")
+//  @Scheduled(cron = "0 0 09 * * *")
   public void updateRanking() {
-    // 오늘 기준 일일, 주간, 월간, 역대 랭킹 생성
-    // 오늘 - period에 적힌 기간 이전 날짜의 리뷰를 몽땅 가져온 뒤, 평점 삭제
-    // 매일 오전 9시에 일괄적으로 갱신
+    log.info("[Book Search Service] Update Ranking Books");
+    LocalDateTime now = LocalDateTime.now();
+    List<RankingBook> rankingBooks = rankingBookRepository.findAll();
+    for (RankingBook rankingBook : rankingBooks) {
+      rankingBook.reset();
+      LocalDateTime afterDate = calculateDateTime(now, rankingBook.getPeriod());
+      List<Review> between = reviewRepository.findAllByBookAndCreatedAtBetween(
+          rankingBook.getBook(), afterDate,
+          now);
+      between.forEach(review -> rankingBook.update(review.getRating(), false));
+    }
+    rankingBookRepository.saveAll(rankingBooks);
+    log.info("[Book Search Service] Updated Successfully");
+  }
 
+  private LocalDateTime calculateDateTime(LocalDateTime now, Period period) {
+    if (period.equals(Period.DAILY)) {
+      return now.minusDays(1);
+    } else if (period.equals(Period.WEEKLY)) {
+      return now.minusWeeks(1);
+    } else if (period.equals(Period.MONTHLY)) {
+      return now.minusMonths(1);
+    } else {
+      //TODO 전체를 가져올 로직이 생각이 안나서 일단 1년까지 가져오는 걸로
+      return now.minusYears(1);
+    }
   }
 
   @Transactional(readOnly = true)
@@ -54,6 +84,9 @@ public class BookSearchService {
     LocalDateTime cursor = Optional.ofNullable(condition.getCursor()).map(LocalDateTime::parse)
         .orElse(LocalDateTime.now());
 
+    log.info("[Book Search Service] findAll condition - keyword : {}, direction : {}",
+        condition.getKeyword(), direction);
+
     Slice<BookDto> bookSlice = rankingBookRepository.findAllByKeyword(condition.getKeyword(),
         cursor, pageable).map(BookDto::from);
 
@@ -66,10 +99,11 @@ public class BookSearchService {
     String direction = condition.getDirection();
     int limit = condition.getLimit();
 
-    Sort sort = Sort.by(Sort.Direction.fromString(condition.getDirection()), "rank");
+    Sort sort = Sort.by(Sort.Direction.fromString(condition.getDirection()), "score");
     Pageable pageable = PageRequest.of(0, limit, sort);
 
-    log.info("[Basic Book Service] condition - period : {}, direction : {}, size : {}",
+    log.info(
+        "[Book Search Service] findPopularBooks condition - period : {}, direction : {}, size : {}",
         keyword, direction, limit);
 
     Slice<FindPopularBookDto> popularBooks = rankingBookRepository.findPopularBooks(keyword,
@@ -78,8 +112,13 @@ public class BookSearchService {
     //커서 10일 경우, -9 + 현재 인덱스(1~10)
     //커서 20일 경우, -9 + 현재 인덱스(11~20)
     int cursor = Integer.parseInt(condition.getCursor());
-    Slice<PopularBookDto> dtoSlice = popularBooks.map(book ->
-        PopularBookDto.from(book, cursor + popularBooks.getContent().indexOf(book) - 9)
+    Slice<PopularBookDto> dtoSlice = popularBooks.map(book -> {
+          PopularBookDto popularBookDto = PopularBookDto.from(book,
+              cursor + popularBooks.getContent().indexOf(book) - 9);
+      log.info("popularBookDto - title {}, score {}, rank {}", popularBookDto.title(),
+          popularBookDto.score(), popularBookDto.rank());
+      return popularBookDto;
+        }
     );
 
     return CursorPageResponsePopularBookDto.from(dtoSlice, String.valueOf(cursor + 10));

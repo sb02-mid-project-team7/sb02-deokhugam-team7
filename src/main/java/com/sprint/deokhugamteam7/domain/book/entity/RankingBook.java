@@ -86,4 +86,12 @@ public class RankingBook {
     return reviewCount == 0 ? 0.0 : (double) totalRating / reviewCount;
   }
 
+  public void reset() {
+    this.rank = 0;
+    this.score = 0.0;
+    this.totalRating = 0;
+    this.reviewCount = 0;
+    this.rating = 0.0;
+  }
+
 }
