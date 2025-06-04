@@ -8,6 +8,7 @@ import com.sprint.deokhugamteam7.domain.comment.service.CommentService;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,12 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class CommentController {
 
 	private final CommentService commentService;
 
 	@PostMapping("/api/comments")
-	public ResponseEntity<CommentDto> create(@RequestBody CommentCreateRequest commentCreateRequest) {
+	public ResponseEntity<CommentDto> create(
+		@RequestBody CommentCreateRequest commentCreateRequest) {
 		CommentDto commentDto = commentService.create(commentCreateRequest);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(commentDto);
@@ -65,14 +68,15 @@ public class CommentController {
 	public ResponseEntity<CursorPageResponseCommentDto> getCommentList(
 		@RequestParam UUID reviewId,
 		@RequestParam(defaultValue = "DESC") String direction,
-		@RequestParam(required = false) UUID cursorId,
-		@RequestParam(required = false) LocalDateTime createdAt, // 이전 페이지의 마지막 요소 생성 시간.
+		@RequestParam(required = false) UUID cursor,
+		@RequestParam(required = false) LocalDateTime after, // 이전 페이지의 마지막 요소 생성 시간.
 		@RequestParam(defaultValue = "30") int limit
 	) {
 		// 시간순 정렬해놔야함 .
 		// 마지막 요소의 ID + 마지막 요소의 생성시간 전달 .
+		log.info("cursorID: {}, nextAfter: {}", cursor, after);
 		CursorPageResponseCommentDto response = commentService.getCommentList(reviewId,
-			direction, cursorId, createdAt, limit);
+			direction, cursor, after, limit);
 		return ResponseEntity.ok(response);
 	}
 
