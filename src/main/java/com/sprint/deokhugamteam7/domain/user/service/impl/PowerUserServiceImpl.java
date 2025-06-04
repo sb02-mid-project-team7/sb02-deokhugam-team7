@@ -69,31 +69,58 @@ public class PowerUserServiceImpl implements PowerUserService {
   public void calculateAndSaveUserScores(Period period, LocalDate baseDate) {
     log.info("파워 유저 점수 계산 시작: period={}, baseDate={}", period, baseDate);
 
-    userScoreRepository.deleteByPeriodAndDate(period, baseDate);
-    log.info("기존 점수 삭제 완료");
-
     List<UserActivity> activities = userQueryRepository.collectUserActivityScores(period, baseDate);
+
     if (activities.isEmpty()) {
       log.info("점수 계산 대상 없음 - 저장 생략: period={}, baseDate={}", period, baseDate);
       return;
     }
 
-    Map<UUID, User> userMap = userRepository.findAllById(
-        activities.stream().map(UserActivity::userId).toList()
-    ).stream().collect(Collectors.toMap(User::getId, Function.identity()));
+    // 활동 대상 사용자들의 ID 추출
+    List<UUID> userIds = activities.stream()
+        .map(UserActivity::userId)
+        .toList();
 
-    List<UserScore> scores = activities.stream()
-        .map(activity -> UserScore.create(
-            userMap.get(activity.userId()),
-            period,
-            baseDate,
-            activity.reviewScoreSum(),
-            activity.likeCount(),
-            activity.commentCount()
-        )).toList();
+    // 사용자들을 Map으로 구성
+    Map<UUID, User> userMap = userRepository.findAllById(userIds).stream()
+        .collect(Collectors.toMap(User::getId, Function.identity()));
 
-    userScoreRepository.saveAll(scores);
-    log.info("유저 점수 저장 완료: 저장된 개수={}", scores.size());
+    List<UserScore> savedScores = userScoreRepository.findAllByPeriodAndDate(period, baseDate);
+
+    // 기존 점수들을 Map으로 구성
+    Map<UUID, UserScore> userScoreMap = savedScores.stream()
+        .collect(Collectors.toMap(score -> score.getUser().getId(), Function.identity()));
+
+    // 결과 집계 변수
+    int inserted = 0;
+    int updated = 0;
+    int skipped = 0;
+
+    // 점수 계산 및 저장
+    for (UserActivity activity : activities) {
+      UUID userId = activity.userId();
+      User user = userMap.get(userId);
+      UserScore existing = userScoreMap.get(userId);
+
+      double reviewScoreSum = activity.reviewScoreSum();
+      long likeCount = activity.likeCount();
+      long commentCount = activity.commentCount();
+
+      if (existing != null) {
+        if (!existing.isSameScores(reviewScoreSum, likeCount, commentCount)) {
+          existing.updateScores(reviewScoreSum, likeCount, commentCount);
+          updated++;
+        } else {
+          skipped++;
+        }
+      } else {
+        UserScore newScore = UserScore.create(user, period, baseDate, reviewScoreSum, likeCount, commentCount);
+        userScoreRepository.save(newScore);
+        inserted++;
+      }
+    }
+
+    log.info("유저 점수 저장 완료 - 신규: {}, 업데이트: {}, 생략: {}", inserted, updated, skipped);
   }
 
   @Override

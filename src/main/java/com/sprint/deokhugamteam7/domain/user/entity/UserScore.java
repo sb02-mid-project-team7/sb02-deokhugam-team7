@@ -21,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -47,6 +48,10 @@ public class UserScore {
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
+  @LastModifiedDate
+  @Column(name = "updated_at")
+  private LocalDateTime updatedAt;
+
   @Column(nullable = false)
   private double score;
 
@@ -65,21 +70,38 @@ public class UserScore {
   @Column(name = "rank")
   private Long rank;
 
+  private static double calculateScore(double reviewScoreSum, long likeCount, long commentCount) {
+    return reviewScoreSum * 0.5 + likeCount * 0.2 + commentCount * 0.3;
+  }
+
   public static UserScore create(User user, Period period, LocalDate date, double reviewScoreSum,
       long likeCount, long commentCount) {
-    double score = reviewScoreSum * 0.5 + likeCount * 0.2 + commentCount * 0.3;
 
     UserScore userScore = new UserScore();
     userScore.user = user;
     userScore.period = period;
     userScore.date = date;
-    userScore.score = score;
+    userScore.score = calculateScore(reviewScoreSum, likeCount, commentCount);
     userScore.reviewScoreSum = reviewScoreSum;
     userScore.likeCount = likeCount;
     userScore.commentCount = commentCount;
     userScore.rank = null;
 
     return userScore;
+  }
+
+  public void updateScores(double reviewScoreSum, long likeCount, long commentCount) {
+    this.reviewScoreSum = reviewScoreSum;
+    this.likeCount = likeCount;
+    this.commentCount = commentCount;
+    this.score = calculateScore(reviewScoreSum, likeCount, commentCount);
+  }
+
+  public boolean isSameScores(double reviewScoreSum, long likeCount, long commentCount) {
+    return this.reviewScoreSum == reviewScoreSum &&
+        this.likeCount == likeCount &&
+        this.commentCount == commentCount &&
+        this.score == calculateScore(reviewScoreSum, likeCount, commentCount);
   }
 
   public void updateRank(long rank) {

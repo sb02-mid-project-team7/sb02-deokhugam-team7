@@ -15,6 +15,7 @@ create table if not exists user_score
     user_id          UUID             NOT NULL,
     period           VARCHAR(20)      NOT NULL CHECK (period IN ('DAILY', 'WEEKLY', 'MONTHLY', 'ALL_TIME')),
     created_at       TIMESTAMP        NOT NULL,
+    updated_at       TIMESTAMP,
     score            DOUBLE PRECISION NOT NULL,
     review_score_sum DOUBLE PRECISION,
     like_count       BIGINT,
