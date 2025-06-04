@@ -148,6 +148,7 @@ public class PowerUserServiceImpl implements PowerUserService {
         if (existing != null) {
           if (!existing.isSameScores(reviewScoreSum, likeCount, commentCount)) {
             existing.updateScores(reviewScoreSum, likeCount, commentCount);
+            userScoreRepository.save(existing);
             updated++;
           } else {
             skipped++;
