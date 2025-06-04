@@ -11,4 +11,6 @@ public interface UserQueryRepository {
   List<UserScore> findPowerUserScoresByPeriod(PowerUserSearchCondition condition);
 
   List<UserActivity> collectUserActivityScores(Period period, LocalDate baseDate);
+
+  Long countByCondition(PowerUserSearchCondition condition);
 }

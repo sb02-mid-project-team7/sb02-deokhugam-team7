@@ -59,7 +59,7 @@ public class PowerUserServiceImpl implements PowerUserService {
         nextCursor,
         nextAfter,
         content.size(),
-        content.size(), // 필요시 총 개수 쿼리 추가(프로토타입 화면에서는 총 개수 안보임)
+        userQueryRepository.countByCondition(condition),
         hasNext
     );
   }

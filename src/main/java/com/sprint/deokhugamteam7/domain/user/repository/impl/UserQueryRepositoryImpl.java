@@ -144,4 +144,17 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
       case ALL_TIME -> LocalDate.of(2000, 1, 1); // 임의의 과거 시점
     };
   }
+
+  @Override
+  public Long countByCondition(PowerUserSearchCondition condition) {
+
+    BooleanBuilder builder = new BooleanBuilder();
+    builder.and(userScore.period.eq(condition.period()));
+
+    return queryFactory
+        .select(userScore.count())
+        .from(userScore)
+        .where(builder)
+        .fetchOne();
+  }
 }
