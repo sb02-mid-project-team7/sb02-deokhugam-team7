@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.user.controller;
 
 import com.sprint.deokhugamteam7.constant.Period;
+import com.sprint.deokhugamteam7.domain.user.dto.PowerUserSearchCondition;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserLoginRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserRegisterRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserUpdateRequest;
@@ -53,26 +54,26 @@ public class UserController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<UserDto> findById(@PathVariable UUID id) {
+  public ResponseEntity<UserDto> findById(@PathVariable("id") UUID id) {
     UserDto user = userService.findById(id);
     return ResponseEntity.status(200).body(user);
   }
 
   @PatchMapping("/{id}")
-  public ResponseEntity<UserDto> update(@PathVariable UUID id,
+  public ResponseEntity<UserDto> update(@PathVariable("id") UUID id,
       @Valid @RequestBody UserUpdateRequest request) {
     UserDto updated = userService.update(id, request);
     return ResponseEntity.ok(updated);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> softDelete(@PathVariable UUID id) {
+  public ResponseEntity<Void> softDelete(@PathVariable("id") UUID id) {
     userService.softDeleteById(id);
     return ResponseEntity.noContent().build();
   }
 
   @DeleteMapping("/{id}/hard")
-  public ResponseEntity<Void> hardDelete(@PathVariable UUID id) {
+  public ResponseEntity<Void> hardDelete(@PathVariable("id") UUID id) {
     userService.hardDeleteById(id);
     return ResponseEntity.noContent().build();
   }
@@ -85,8 +86,14 @@ public class UserController {
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(defaultValue = "DESC") Sort.Direction direction
   ) {
-    CursorPageResponsePowerUserDto response =
-        powerUserService.getPowerUsers(period, cursor, after, size, direction);
+    PowerUserSearchCondition condition = new PowerUserSearchCondition(
+        period,
+        cursor,
+        after,
+        size,
+        direction
+    );
+    CursorPageResponsePowerUserDto response = powerUserService.getPowerUsers(condition);
     return ResponseEntity.ok(response);
   }
 }
