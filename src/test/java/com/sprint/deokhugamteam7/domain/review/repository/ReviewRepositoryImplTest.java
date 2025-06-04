@@ -243,7 +243,7 @@ public class ReviewRepositoryImplTest {
 
   @Test
   @DisplayName("해당 기간의 모든 랭킹리뷰 조회")
-  void countRakingReviewByPeriod_ShouldReturnCountWithinPeriod() {
+  void countRankingReviewByPeriod_ShouldReturnCountWithinPeriod() {
     createOtherReviews();
 
     RankingReview ranking1 = RankingReview.create(review, 9.0, Period.DAILY);
