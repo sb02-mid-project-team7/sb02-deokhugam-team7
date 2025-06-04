@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class S3ImageService implements ImageService {
+public class S3ImageComponent implements ImageComponent {
 
   @Value("${aws.s3.bucket}")
   private String bucketName;

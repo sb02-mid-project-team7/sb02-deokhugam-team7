@@ -100,11 +100,8 @@ public class BasicReviewService implements ReviewService {
 
     review.update(newContent, newRating);
 
-    int diff = beforeRating > newRating ? newRating - beforeRating
-        : beforeRating - newRating;
-
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(diff, false));
+    rankingBooks.forEach(RankingBook::reCalculate);
 
     int likeCount = reviewLikeRepository.countByReviewId(id);
     int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);

@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.deokhugamteam7.config.TestSecurityConfig;
 import com.sprint.deokhugamteam7.domain.book.controller.BookController;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
@@ -26,6 +27,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -33,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
 @WebMvcTest(BookController.class)
+@Import(TestSecurityConfig.class)
 public class BookControllerTest {
 
   private final UUID BOOK_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
