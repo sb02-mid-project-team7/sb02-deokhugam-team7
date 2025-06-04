@@ -25,7 +25,7 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 				"limit :limit",
 		nativeQuery = true
 	)
-	List<Comment> findAllInfiniteScroll(
+	List<Comment> findNextPage(
 		@Param("reviewId") UUID reviewId,
 		@Param("direction") String direction,
 		@Param("cursorId") UUID cursorId,
@@ -44,19 +44,19 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 				"LIMIT :limit",
 		nativeQuery = true
 	)
-	List<Comment> findAllInfiniteScroll(
+	List<Comment> findFirstPage(
 		@Param("reviewId") UUID reviewId,
 		@Param("direction") String direction,
 		@Param("limit") int limit);
 
-  @Query(
-      value = "SELECT COUNT(*) FROM ("
-          + "select comments.id from comments where review_id = :reviewId AND is_deleted = false"
-          + ") t",
-      nativeQuery = true
-  )
+	@Query(
+		value = "SELECT COUNT(*) FROM ("
+			+ "select comments.id from comments where review_id = :reviewId AND is_deleted = false"
+			+ ") t",
+		nativeQuery = true
+	)
 	Long countByReviewId(@Param("reviewId") UUID reviewId);
 
-  @Query("SELECT COUNT(c) FROM Comment c WHERE c.review.id = :id AND c.isDeleted = false")
-  int countByReviewIdAndIsDeletedFalse(@Param("id") UUID reviewId);
+	@Query("SELECT COUNT(c) FROM Comment c WHERE c.review.id = :id AND c.isDeleted = false")
+	int countByReviewIdAndIsDeletedFalse(@Param("id") UUID reviewId);
 }

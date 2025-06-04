@@ -110,6 +110,8 @@ create table if not exists comments
     CONSTRAINT fk_comment_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
 );
 
+CREATE INDEX idx_comments_for_infinite_scroll ON comments (review_id, is_deleted, created_at DESC, id DESC)
+
 create table if not exists notifications
 (
     id         UUID PRIMARY KEY,
