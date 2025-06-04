@@ -31,6 +31,8 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class UserQueryRepositoryImpl implements UserQueryRepository {
 
+  private static final int SIZE_OFFSET = 1;
+
   private final JPAQueryFactory queryFactory;
 
   private final QUserScore userScore = QUserScore.userScore;
@@ -43,14 +45,14 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
   @Override
   public List<UserScore> findPowerUserScoresByPeriod(PowerUserSearchCondition condition) {
     Double cursorScore = condition.parsedCursorScore();
-    LocalDateTime afterCreatedAt = condition.after();
+    LocalDateTime afterCreatedAt = condition.getAfter();
 
     BooleanBuilder whereCondition = new BooleanBuilder();
-    whereCondition.and(userScore.period.eq(condition.period()));
+    whereCondition.and(userScore.period.eq(condition.getPeriod()));
 
     if (cursorScore != null && afterCreatedAt != null) {
       BooleanBuilder cursorCondition = new BooleanBuilder();
-      if (condition.direction() == Sort.Direction.DESC) {
+      if (condition.getDirection() == Sort.Direction.DESC) {
         cursorCondition.and(userScore.score.lt(cursorScore)
             .or(userScore.score.eq(cursorScore).and(userScore.createdAt.lt(afterCreatedAt))));
       } else {
@@ -65,13 +67,13 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         .join(userScore.user, QUser.user).fetchJoin()
         .where(whereCondition);
 
-    if (condition.direction() == Sort.Direction.DESC) {
+    if (condition.getDirection() == Sort.Direction.DESC) {
       query.orderBy(userScore.score.desc(), userScore.createdAt.desc());
     } else {
       query.orderBy(userScore.score.asc(), userScore.createdAt.asc());
     }
 
-    return query.limit(condition.size() + 1).fetch();
+    return query.limit(condition.getSize() + SIZE_OFFSET).fetch();
   }
 
 
@@ -143,5 +145,18 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
       case MONTHLY -> baseDate.withDayOfMonth(1);
       case ALL_TIME -> LocalDate.of(2000, 1, 1); // 임의의 과거 시점
     };
+  }
+
+  @Override
+  public Long countByCondition(PowerUserSearchCondition condition) {
+
+    BooleanBuilder builder = new BooleanBuilder();
+    builder.and(userScore.period.eq(condition.getPeriod()));
+
+    return queryFactory
+        .select(userScore.count())
+        .from(userScore)
+        .where(builder)
+        .fetchOne();
   }
 }

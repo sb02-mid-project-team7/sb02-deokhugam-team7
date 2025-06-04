@@ -1,6 +1,5 @@
 package com.sprint.deokhugamteam7.domain.user.controller;
 
-import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.user.dto.PowerUserSearchCondition;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserLoginRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserRegisterRequest;
@@ -11,20 +10,17 @@ import com.sprint.deokhugamteam7.domain.user.service.PowerUserService;
 import com.sprint.deokhugamteam7.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -80,19 +76,8 @@ public class UserController {
 
   @GetMapping("/power")
   public ResponseEntity<CursorPageResponsePowerUserDto> getPowerUsers(
-      @RequestParam Period period,
-      @RequestParam(required = false) String cursor,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after,
-      @RequestParam(defaultValue = "10") int size,
-      @RequestParam(defaultValue = "DESC") Sort.Direction direction
+      @ModelAttribute PowerUserSearchCondition condition
   ) {
-    PowerUserSearchCondition condition = new PowerUserSearchCondition(
-        period,
-        cursor,
-        after,
-        size,
-        direction
-    );
     CursorPageResponsePowerUserDto response = powerUserService.getPowerUsers(condition);
     return ResponseEntity.ok(response);
   }
