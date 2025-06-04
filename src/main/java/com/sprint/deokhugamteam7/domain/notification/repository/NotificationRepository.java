@@ -13,12 +13,12 @@ import org.springframework.data.repository.query.Param;
 public interface NotificationRepository extends JpaRepository<Notification, UUID>,
     NotificationRepositoryCustom {
 
-  @Query("SELECT n FROM Notification n WHERE n.user.id = :userId AND n.isDelete = false ")
+  @Query("SELECT n FROM Notification n WHERE n.user.id = :user_id AND n.isDelete = false ")
   List<Notification> findByUserId(@Param("user_id") UUID userId);
 
   @Modifying
   @Query("UPDATE Notification n SET n.confirmed = true WHERE n.review.user.id = :user_id")
-  void bulkUpdateConfirmed(@Param("user_id") UUID user_id);
+  void bulkUpdateConfirmed(@Param("user_id") UUID userId);
 
   @Modifying
   @Query("UPDATE Notification n SET n.isDelete = true  WHERE n.isDelete = false AND n.created_at < :threshold")
