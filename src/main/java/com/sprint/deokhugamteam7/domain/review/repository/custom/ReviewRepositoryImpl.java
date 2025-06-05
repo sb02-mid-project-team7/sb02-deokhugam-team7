@@ -50,7 +50,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     BooleanBuilder where = new BooleanBuilder();
 
     where.and(review.user.isDeleted.eq(false))
-        .and(review.book.isDeleted.eq(false).and(review.isDeleted.eq(false)));
+        .and(review.book.isDeleted.eq(false)
+            .and(review.isDeleted.eq(false)));
 
     if (condition.getUserId() != null) {
       where.and(review.user.id.eq(condition.getUserId()));
@@ -104,9 +105,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     query.where(where)
         .limit(limit + 1);
 
-    if(secondOrder != null) {
+    if (secondOrder != null) {
       query.orderBy(primaryOrder, secondOrder);
-    }else {
+    } else {
       query.orderBy(primaryOrder);
     }
 
@@ -166,9 +167,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .groupBy(rl.review.id)
         .fetch();
 
-    //
-    // log.info("해당 기간의 총 좋아요 수: {}", likeCounts.size());
-
     return likeCounts.stream()
         .collect(Collectors.toMap(
             ReviewCountDto::reviewId, ReviewCountDto::count
@@ -197,8 +195,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         )
         .groupBy(c.review.id)
         .fetch();
-
-    // log.info("해당 기간의 총 댓글 수: {}", commentCounts.size());
 
     return commentCounts.stream()
         .collect(Collectors.toMap(

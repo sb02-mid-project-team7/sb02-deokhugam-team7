@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record ReviewUpdateRequest(
     @NotBlank String content,
-    @Min(1) @Max(5)
+    @Min(0) @Max(5)
     int rating
 ) {
 

@@ -59,24 +59,16 @@ public class BasicReviewService implements ReviewService {
         .orElseThrow(() -> new ReviewException(ErrorCode.USER_NOT_FOUND));
     Book book = bookRepository.findByIdAndIsDeletedFalse(bookId)
         .orElseThrow(() -> new ReviewException(ErrorCode.BOOK_NOT_FOUND));
-    //삭제하고 나서 생성할 때 오류
-    //논리삭제해서, DB상에 존재 => 동일한 사용자, 동일한 북
-    //isDeleted = True는 조회할 때 제외
+
     if (reviewRepository.existsByUserAndBookAndIsDeletedIsFalse(user, book)) {
       throw new ReviewException(ErrorCode.REVIEW_ALREADY_EXISTS);
     }
 
-    //도서 갱신 작업: 리뷰 수랑, 평점 수 갱신
     List<RankingBook> rankingBooks = book.getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(), false));
 
     Review review = Review.create(book, user, request.content(), request.rating());
     reviewRepository.save(review);
-
-    /*log.info("[BasicReviewService] create Review: id {}, "
-            + "userId {}, bookId {}, content {}, rating {}, isDeleted {},createdAt {}, updatedAt {}",
-        review.getId(), user.getId(), book.getId(), review.getContent(),
-        review.getRating(), review.getIsDeleted(), review.getCreatedAt(), review.getUpdatedAt());*/
 
     return ReviewDto.of(review, 0, 0, false);
   }
@@ -91,7 +83,7 @@ public class BasicReviewService implements ReviewService {
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND)
     );
 
-    if (review.getUser().isDeleted() || review.getBook().getIsDeleted() || review.getIsDeleted()) {
+    if (review.getUser().isDeleted() || review.getBook().getIsDeleted()) {
       throw new ReviewException(ErrorCode.INTERNAL_BAD_REQUEST);
     }
 
@@ -109,31 +101,23 @@ public class BasicReviewService implements ReviewService {
     int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);
     boolean likedByMe = reviewLikeRepository.existsByUserIdAndReviewId(userId, id);
 
-    /*log.info("[BasicReviewService] update Review: id {}, userId {}"
-            + "content {}, rating {}, isDeleted {}, "
-            + "updatedAt {}, likeCount {}, commentCount {} , likedByMe {}",
-        review.getId(), userId, review.getContent(), review.getRating(),
-        review.getIsDeleted(), review.getUpdatedAt(), likeCount, commentCount, likedByMe);*/
-
     return ReviewDto.of(review, likeCount, commentCount, likedByMe);
   }
 
   @Override
   @Transactional
   public void deleteSoft(UUID id, UUID userId) {
-    // 삭제 할때 soft delete 된 리뷰를 그걸 또 삭제
     Review review = reviewRepository.findByIdAndIsDeletedIsFalse(id)
         .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     review.validateUserAuthorization(userId);
 
     review.delete();
-    //도서에서 리뷰를 빼버리기
+
     Book book = review.getBook();
     book.getReviews().remove(review);
 
     reviewRepository.save(review);
-    //log.info("[BasicReviewService] deleteSoft Review: isDeleted {}", review.getIsDeleted());
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
@@ -148,8 +132,6 @@ public class BasicReviewService implements ReviewService {
     review.validateUserAuthorization(userId);
 
     reviewRepository.delete(review);
-    /*log.info("[BasicReviewService] deleteHard Review: isDeleted id {}, userId {}", review.getId(),
-        userId);*/
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
@@ -191,14 +173,10 @@ public class BasicReviewService implements ReviewService {
 
       ReviewLike reviewLike = ReviewLike.create(user, review);
       reviewLikeRepository.save(reviewLike);
-      /*log.info("[BasicReviewService] like Review: id {}, userId {}, like",
-          review.getId(), userId);
 
-      log.info("알림 생성 진행: userId: {}", review.getUser().getId());*/
       Notification notification = Notification.create(review.getUser(), review,
           NotificationType.LIKE.formatMessage(user, null));
       notificationRepository.save(notification);
-      // log.info("알림 생성 완료");
     }
 
     return new ReviewLikeDto(id, userId, liked);
@@ -281,9 +259,6 @@ public class BasicReviewService implements ReviewService {
       RankingReview last = currentPage.get(currentPage.size() - 1);
       nextAfter = last.getReviewCreatedAt();
     }
-    //log.info(
-    //    "[BasicReviewService] popular Review: period  {}, direction {}, nextCursor {}, size{}, hasNext {}",
-    //    request.getPeriod(), request.getDirection(), nextCursor, currentPage.size(), hasNext);
 
     return new CursorPageResponsePopularReviewDto(
         content,
