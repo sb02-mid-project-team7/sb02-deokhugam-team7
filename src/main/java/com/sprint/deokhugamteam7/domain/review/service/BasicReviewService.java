@@ -134,29 +134,6 @@ public class BasicReviewService implements ReviewService {
 
     reviewRepository.save(review);
     //log.info("[BasicReviewService] deleteSoft Review: isDeleted {}", review.getIsDeleted());
-    //문제
-    //1. 리뷰 삭제 후 재 생성 시 오류 발생
-    //why? isDeleted만 변경, 도서랑 유저는 동일함
-    //So, isDeleted가 False인 것만 검색
-    //2. 도서는 삭제된 리뷰를 계산해버림
-
-    //1번 : 리뷰 삭제는 반영됨
-    //why? 랭킹북에 있는 평점을 수정함(-값으로)
-    //2번: 리뷰 삭제 후 재 생성시, 이전 삭제된 리뷰가 반영됨(수정된 리뷰가 반영이 안되고 이전 삭제된 리뷰만)
-    //3번: 리뷰 수정 시, 새로운 리뷰가 추가됨(수정된 리뷰가 반영되기 시작함)
-
-    //해결: deleted 문 안에 집어넣어서 해결함
-
-    //3. 리뷰를 삭제하고, 생성하고 수정시 삭제된 리뷰가 반영됨
-    //리뷰 삭제하고 생성하는거 반복 해결
-    //추측: 랭킹 북에서 도서의 리뷰를 가져오고 나서 초기화하고, 값을 재계산을 하는데 삭제된거 까지 가져와서 발생한 문제로 추측
-    //해결: 랭킹북에서 리뷰 가져올 때, 삭제된거 제외하고 가져옴
-
-    //4.사용자 a, 사용자 b
-    //리뷰를 추가했다가 삭제했다가 다시 추가하고 수정하면
-    //가끔씩 삭제된 리뷰까지 조회됨
-
-    //해결: 랭킹북 서치 시스템에서 isDeleted 문제
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
