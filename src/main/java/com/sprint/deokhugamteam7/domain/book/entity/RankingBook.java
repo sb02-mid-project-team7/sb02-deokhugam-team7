@@ -69,10 +69,11 @@ public class RankingBook {
   }
 
   public void update(int rating, boolean isDeleted) {
-    totalRating += rating;
     if (!isDeleted) {
+      totalRating += rating;
       reviewCount++;
     } else {
+      totalRating -= rating;
       reviewCount--;
     }
     if (reviewCount > 0) {
@@ -97,7 +98,7 @@ public class RankingBook {
   }
 
   public void reCalculate() {
-    List<Review> reviews = this.book.getReviews();
+    List<Review> reviews = this.book.getReviewsWithIsDeletedIsFalse();
     reset();
     reviews.forEach(review -> update(review.getRating(), false));
   }

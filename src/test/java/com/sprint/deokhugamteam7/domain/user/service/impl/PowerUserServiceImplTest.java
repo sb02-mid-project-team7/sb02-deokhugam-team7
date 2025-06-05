@@ -14,6 +14,7 @@ import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
 import com.sprint.deokhugamteam7.domain.user.repository.UserQueryRepository;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.domain.user.repository.UserScoreRepository;
+import com.sprint.deokhugamteam7.domain.user.service.PowerUserServiceImpl;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;

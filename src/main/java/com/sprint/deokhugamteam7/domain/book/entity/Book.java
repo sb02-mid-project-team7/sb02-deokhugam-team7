@@ -142,4 +142,9 @@ public class Book {
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }
+
+
+  public List<Review> getReviewsWithIsDeletedIsFalse() {
+    return this.reviews.stream().filter(review -> !review.getIsDeleted()).toList();
+  }
 }

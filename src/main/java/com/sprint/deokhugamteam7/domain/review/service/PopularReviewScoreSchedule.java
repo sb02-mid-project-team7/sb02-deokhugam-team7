@@ -1,11 +1,11 @@
-package com.sprint.deokhugamteam7.domain.review.scheduler;
+package com.sprint.deokhugamteam7.domain.review.service;
 
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.repository.RankingReviewRepository;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
-import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepositoryCustom;
+import com.sprint.deokhugamteam7.domain.review.repository.custom.ReviewRepositoryCustom;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.review.ReviewException;
 import jakarta.annotation.Nullable;
@@ -41,7 +41,7 @@ public class PopularReviewScoreSchedule {
 
   public void calculateReviewScore
       (@Nullable LocalDateTime start, @Nullable LocalDateTime end, Period period) {
-    log.info("[PopularReviewScoreSchedule] 인기 유저 점수 계산 시작: period={}, start={}", period, start);
+    //log.info("[PopularReviewScoreSchedule] 인기 유저 점수 계산 시작: period={}, start={}", period, start);
 
     Map<UUID, Long> likeMap = reviewRepositoryCustom.findLikeCountsByPeriod(start, end);
     Map<UUID, Long> commentMap = reviewRepositoryCustom.findCommentCountsByPeriod(start, end);

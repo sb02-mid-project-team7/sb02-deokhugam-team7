@@ -12,6 +12,7 @@ import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition
 import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
+import com.sprint.deokhugamteam7.domain.review.repository.custom.ReviewRepositoryCustom;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;

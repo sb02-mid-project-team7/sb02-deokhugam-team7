@@ -38,7 +38,7 @@ public class S3ImageComponent implements ImageComponent {
     try (InputStream is = file.getInputStream()) {
       s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(is, file.getSize()));
     } catch (IOException e) {
-      log.warn("Failed to Upload Image");
+//      log.warn("Failed to Upload Image");
     }
     return s3Url;
   }

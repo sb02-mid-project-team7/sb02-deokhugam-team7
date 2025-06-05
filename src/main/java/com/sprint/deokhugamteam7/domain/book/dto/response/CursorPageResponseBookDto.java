@@ -24,7 +24,7 @@ public record CursorPageResponseBookDto(
         .content(content)
         .size(slice.getSize())
         .hasNext(slice.hasNext())
-        .nextCursor(keyword)
+        .nextCursor(keyword) //
         .nextAfter(nextAfter)
         .totalElements(slice.stream().count())
         .build();

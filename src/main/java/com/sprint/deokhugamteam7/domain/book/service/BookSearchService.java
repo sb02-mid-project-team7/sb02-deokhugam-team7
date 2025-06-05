@@ -37,19 +37,19 @@ public class BookSearchService {
   @Scheduled(cron = "0 0/1 * * * *")
 //  @Scheduled(cron = "0 0 09 * * *")
   public void updateRanking() {
-    log.info("[Book Search Service] Update Ranking Books");
+//    log.info("[Book Search Service] Update Ranking Books");
     LocalDateTime now = LocalDateTime.now();
     List<RankingBook> rankingBooks = rankingBookRepository.findAll();
     for (RankingBook rankingBook : rankingBooks) {
       rankingBook.reset();
       LocalDateTime afterDate = calculateDateTime(now, rankingBook.getPeriod());
-      List<Review> between = reviewRepository.findAllByBookAndCreatedAtBetween(
-          rankingBook.getBook(), afterDate,
+      List<Review> between = reviewRepository.findAllByBookAndCreatedAtBetweenAndIsDeletedIsFalse(
+              rankingBook.getBook(), afterDate,
           now);
       between.forEach(review -> rankingBook.update(review.getRating(), false));
     }
     rankingBookRepository.saveAll(rankingBooks);
-    log.info("[Book Search Service] Updated Successfully");
+//    log.info("[Book Search Service] Updated Successfully");
   }
 
   private LocalDateTime calculateDateTime(LocalDateTime now, Period period) {
@@ -84,14 +84,14 @@ public class BookSearchService {
     LocalDateTime cursor = Optional.ofNullable(condition.getCursor()).map(LocalDateTime::parse)
         .orElse(LocalDateTime.now());
 
-    log.info("[Book Search Service] findAll condition - keyword : {}, direction : {}",
-        condition.getKeyword(), direction);
+//    log.info("[Book Search Service] findAll condition - keyword : {}, direction : {}",
+//        condition.getKeyword(), direction);
 
     Slice<BookDto> bookSlice = rankingBookRepository.findAllByKeyword(condition.getKeyword(),
         cursor, pageable).map(findBookDto -> {
       BookDto bookDto = BookDto.from(findBookDto);
-      log.info("BookDto - title {}, reviewCount {}, rating {}", bookDto.title(),
-          bookDto.reviewCount(), bookDto.rating());
+//      log.info("BookDto - title {}, reviewCount {}, rating {}", bookDto.title(),
+//          bookDto.reviewCount(), bookDto.rating());
       return bookDto;
     });
 
@@ -107,9 +107,9 @@ public class BookSearchService {
     Sort sort = Sort.by(Sort.Direction.fromString(condition.getDirection()), "score");
     Pageable pageable = PageRequest.of(0, limit, sort);
 
-    log.info(
-        "[Book Search Service] findPopularBooks condition - period : {}, direction : {}, size : {}",
-        keyword, direction, limit);
+//    log.info(
+//        "[Book Search Service] findPopularBooks condition - period : {}, direction : {}, size : {}",
+//        keyword, direction, limit);
 
     Slice<FindPopularBookDto> popularBooks = rankingBookRepository.findPopularBooks(keyword,
         pageable);
@@ -120,9 +120,9 @@ public class BookSearchService {
     Slice<PopularBookDto> dtoSlice = popularBooks.map(book -> {
           PopularBookDto popularBookDto = PopularBookDto.from(book,
               cursor + popularBooks.getContent().indexOf(book) - 9);
-      log.info("popularBookDto - title {}, score {}, rank {}", popularBookDto.title(),
-          popularBookDto.score(), popularBookDto.rank());
-      return popularBookDto;
+//          log.info("popularBookDto - title {}, score {}, rank {}", popularBookDto.title(),
+//              popularBookDto.score(), popularBookDto.rank());
+          return popularBookDto;
         }
     );
 

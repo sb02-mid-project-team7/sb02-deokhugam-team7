@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.notification.repository.impl;
+package com.sprint.deokhugamteam7.domain.notification.repository.custom;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -7,7 +7,6 @@ import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorReque
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
 import com.sprint.deokhugamteam7.domain.notification.entity.QNotification;
-import com.sprint.deokhugamteam7.domain.notification.repository.custom.NotificationRepositoryCustom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

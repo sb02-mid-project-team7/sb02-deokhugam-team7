@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.notification.service.impl;
+package com.sprint.deokhugamteam7.domain.notification.service;
 
 import com.sprint.deokhugamteam7.domain.notification.dto.CursorPageResponseNotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorRequest;
@@ -6,7 +6,6 @@ import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationUpdateRequest;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
 import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
-import com.sprint.deokhugamteam7.domain.notification.service.NotificationService;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.notification.NotificationException;
@@ -14,7 +13,6 @@ import com.sprint.deokhugamteam7.exception.user.UserException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

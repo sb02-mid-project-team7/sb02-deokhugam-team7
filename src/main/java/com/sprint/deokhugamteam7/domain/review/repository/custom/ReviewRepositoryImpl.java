@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.review.repository;
+package com.sprint.deokhugamteam7.domain.review.repository.custom;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -68,29 +68,47 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
       );
     }
 
+    boolean isAsc = "ASC".equalsIgnoreCase(condition.getDirection());
     String orderBy = condition.getOrderBy();
     String cursor = condition.getCursor();
     LocalDateTime after = condition.getAfter();
 
+    OrderSpecifier<?> primaryOrder;
+    OrderSpecifier<?> secondOrder = null;
+
     if ("rating".equals(orderBy)) {
+      primaryOrder = isAsc ? review.rating.asc() : review.rating.desc();
+      secondOrder = isAsc ? review.createdAt.asc() : review.createdAt.desc();
+
       if (cursor != null && after != null) {
         int ratingCursor = (int) Double.parseDouble(cursor);
         where.and(
-            review.rating.lt(ratingCursor)
-                .or(review.rating.eq(ratingCursor))
-                .and(review.createdAt.lt(after))
+            isAsc
+                ? review.rating.gt(ratingCursor)
+                .or(review.rating.eq(ratingCursor).and(review.createdAt.gt(after)))
+                : review.rating.lt(ratingCursor)
+                    .or(review.rating.eq(ratingCursor).and(review.createdAt.lt(after)))
         );
       }
-      query.orderBy(review.rating.desc(), review.createdAt.desc());
-    } else {
+    } else { // createdAt
+      primaryOrder = isAsc ? review.createdAt.asc() : review.createdAt.desc();
+
       if (after != null) {
-        where.and(review.createdAt.lt(after));
+        where.and(
+            isAsc ? review.createdAt.gt(after)
+                : review.createdAt.lt(after)
+        );
       }
-      query.orderBy(review.createdAt.desc());
     }
 
     query.where(where)
         .limit(limit + 1);
+
+    if(secondOrder != null) {
+      query.orderBy(primaryOrder, secondOrder);
+    }else {
+      query.orderBy(primaryOrder);
+    }
 
     return query.fetch();
   }
@@ -148,7 +166,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .groupBy(rl.review.id)
         .fetch();
 
-    log.info("해당 기간의 총 좋아요 수: {}", likeCounts.size());
+    //
+    // log.info("해당 기간의 총 좋아요 수: {}", likeCounts.size());
 
     return likeCounts.stream()
         .collect(Collectors.toMap(
@@ -179,7 +198,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .groupBy(c.review.id)
         .fetch();
 
-    log.info("해당 기간의 총 댓글 수: {}", commentCounts.size());
+    // log.info("해당 기간의 총 댓글 수: {}", commentCounts.size());
 
     return commentCounts.stream()
         .collect(Collectors.toMap(
@@ -202,7 +221,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .join(rankingReview.review, review).fetchJoin()
         .join(review.user, user).fetchJoin()
         .join(review.book, book).fetchJoin()
-        .where(rankingReview.period.eq(request.getPeriod()))
+        .where(rankingReview.period.eq(request.getPeriod())
+            .and(review.book.isDeleted.eq(false))
+            .and(review.user.isDeleted.eq(false))
+            .and(review.isDeleted.eq(false)))
         .orderBy(
             rankingReview.score.desc(),
             createdAtOrder
@@ -216,7 +238,15 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     Long res = queryFactory
         .select(rankingReview.count())
         .from(rankingReview)
-        .where(rankingReview.period.eq(period))
+        .join(rankingReview.review, review)
+        .join(review.book, book)
+        .join(review.user, user)
+        .where(
+            rankingReview.period.eq(period),
+            review.isDeleted.eq(false),
+            book.isDeleted.eq(false),
+            user.isDeleted.eq(false)
+        )
         .fetchOne();
 
     return res != null ? res : 0;
