@@ -4,7 +4,6 @@ import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
-import org.springframework.data.domain.Slice;
 
 @Builder
 public record CursorPageResponseBookDto(
@@ -16,18 +15,39 @@ public record CursorPageResponseBookDto(
     boolean hasNext
 ) {
 
-  public static CursorPageResponseBookDto of(Slice<BookDto> slice, String keyword) {
-    List<BookDto> content = slice.getContent();
-    LocalDateTime nextAfter =
-        content.isEmpty() ? null : content.get(content.size() - 1).createdAt();
+  public static CursorPageResponseBookDto of(List<BookDto> content,String orderBy ,int limit) {
+    boolean hasNext = content.size() > limit;
+    List<BookDto> page = hasNext ? content.subList(0, limit) : content;
+    String nextCursor = null;
+    LocalDateTime nextAfter = null;
+    if (hasNext) {
+      BookDto last = page.get(page.size() - 1);
+
+      switch (orderBy) {
+        case "publishedDate":
+          nextCursor = last.publishedDate().toString();
+          break;
+        case "rating":
+          nextCursor = String.valueOf(last.rating());
+          break;
+        case "reviewCount":
+          nextCursor = String.valueOf(last.reviewCount());
+          break;
+        case "title":
+        default:
+          nextCursor = last.title();
+          break;
+      }
+      nextAfter = last.createdAt();
+    }
+
     return CursorPageResponseBookDto.builder()
-        .content(content)
-        .size(slice.getSize())
-        .hasNext(slice.hasNext())
-        .nextCursor(keyword)
+        .content(page)
+        .size(page.size())
+        .hasNext(hasNext)
+        .nextCursor(nextCursor)
         .nextAfter(nextAfter)
-        .totalElements(slice.stream().count())
+        .totalElements((long)content.size())
         .build();
   }
-
 }

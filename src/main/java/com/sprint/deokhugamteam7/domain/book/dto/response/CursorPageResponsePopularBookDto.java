@@ -4,7 +4,6 @@ import com.sprint.deokhugamteam7.domain.book.dto.PopularBookDto;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
-import org.springframework.data.domain.Slice;
 
 @Builder
 public record CursorPageResponsePopularBookDto(
@@ -16,18 +15,24 @@ public record CursorPageResponsePopularBookDto(
     boolean hasNext
 ) {
 
-  public static CursorPageResponsePopularBookDto from(Slice<PopularBookDto> slice,
-      String nextCursor) {
-    List<PopularBookDto> content = slice.getContent();
-    LocalDateTime nextAfter =
-        content.isEmpty() ? null : content.get(content.size() - 1).createdAt();
+  public static CursorPageResponsePopularBookDto of(List<PopularBookDto> content,int limit) {
+    boolean hasNext = content.size() > limit;
+    List<PopularBookDto> page = hasNext ? content.subList(0, limit) : content;
+    String nextCursor = null;
+    LocalDateTime nextAfter = null;
+    if (hasNext) {
+      PopularBookDto last = page.get(page.size() - 1);
+      nextCursor = String.valueOf(last.score());
+      nextAfter = last.createdAt();
+    }
+
     return CursorPageResponsePopularBookDto.builder()
-        .content(content)
-        .size(slice.getSize())
-        .hasNext(slice.hasNext())
+        .content(page)
+        .size(page.size())
+        .hasNext(hasNext)
         .nextCursor(nextCursor)
         .nextAfter(nextAfter)
-        .totalElements(slice.stream().count())
+        .totalElements((long)content.size())
         .build();
   }
 
