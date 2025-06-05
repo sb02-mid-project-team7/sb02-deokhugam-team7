@@ -73,7 +73,8 @@ public class BookSearchServiceUnitTest {
   void findPopularBooksTest() {
     // given
     PopularBookCondition cond = new PopularBookCondition();
-    when(bookSearchService.findPopularBooks(cond)).thenReturn(mock(CursorPageResponsePopularBookDto.class));
+    List<RankingBook> mockRankingBooks = List.of(mock(RankingBook.class));
+    when(rankingBookRepository.findPopularBooksByCondition(cond)).thenReturn(mockRankingBooks);
     // when
     CursorPageResponsePopularBookDto result = bookSearchService.findPopularBooks(cond);
     // then
