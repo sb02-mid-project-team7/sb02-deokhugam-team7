@@ -27,7 +27,7 @@ public class LoggerAspect {
     String methodName = signature.getName();
     Object[] args = joinPoint.getArgs();
 
-    log.info("call → [{}]:[{}]:[{}])", className, methodName, filterArgs(args));
+    log.info("call → [{}]:[{}]:[{}]", className, methodName, filterArgs(args));
 
     try {
       Object result = joinPoint.proceed();
