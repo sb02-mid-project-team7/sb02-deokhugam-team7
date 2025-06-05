@@ -11,6 +11,7 @@ import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationUpdateRequest;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
 import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
+import com.sprint.deokhugamteam7.domain.notification.service.NotificationServiceImpl;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;

@@ -67,8 +67,7 @@ create table if not exists reviews
     updated_at TIMESTAMP,
 
     CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_reviews_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE,
-    CONSTRAINT uk_reviews_user_book UNIQUE (user_id, book_id)
+    CONSTRAINT fk_reviews_book FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
 );
 
 create table if not exists review_likes
@@ -109,7 +108,7 @@ create table if not exists comments
     CONSTRAINT fk_comment_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_comments_for_infinite_scroll ON comments (review_id, is_deleted, created_at DESC, id DESC)
+CREATE INDEX IF NOT EXISTS idx_comments_for_infinite_scroll ON comments (review_id, is_deleted, created_at DESC, id DESC);
 
 create table if not exists notifications
 (

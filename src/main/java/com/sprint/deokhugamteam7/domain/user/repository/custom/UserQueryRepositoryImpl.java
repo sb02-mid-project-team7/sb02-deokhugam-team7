@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.user.repository.impl;
+package com.sprint.deokhugamteam7.domain.user.repository.custom;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;

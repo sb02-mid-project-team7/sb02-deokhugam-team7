@@ -30,10 +30,10 @@ public class localImageComponent implements ImageComponent {
   private void init() {
     if (Files.notExists(storagePath)) {
       try {
-        log.info("[LocalBinaryContentStorage] Directories created");
+//        log.info("[LocalBinaryContentStorage] Directories created");
         Files.createDirectories(storagePath);
       } catch (IOException e) {
-        log.warn("[LocalBinaryContentStorage] To create Directories is failed");
+//        log.warn("[LocalBinaryContentStorage] To create Directories is failed");
         throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
       }
     }
@@ -59,9 +59,9 @@ public class localImageComponent implements ImageComponent {
         UUID.randomUUID() + extension);
     try (OutputStream outputStream = Files.newOutputStream(destination)) {
       outputStream.write(file.getBytes());
-      log.error("[Local Image Service] Image Uploaded successfully");
+//      log.error("[Local Image Service] Image Uploaded successfully");
     } catch (IOException e) {
-      log.error("[Local Image Service] To upload Image is failed");
+//      log.error("[Local Image Service] To upload Image is failed");
     }
     return "/images/" + destination.getFileName();
   }

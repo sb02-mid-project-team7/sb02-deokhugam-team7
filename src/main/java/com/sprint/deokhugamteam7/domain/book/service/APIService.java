@@ -37,7 +37,7 @@ public class APIService {
   private static final String NAVER_BOOK_API_URL = "https://openapi.naver.com/v1/search/book.json";
 
   public NaverBookDto searchBooks(String query) {
-    log.info("API 호출: query {}", query);
+//    log.info("API 호출: query {}", query);
     try {
       UriComponents uri = UriComponentsBuilder.fromUriString(NAVER_BOOK_API_URL)
           .queryParam("query", query).build(true);
@@ -57,10 +57,10 @@ public class APIService {
           NaverBookResponse.class);
       NaverBookDto naverBookDto = NaverBookDto.from(response.items().get(0));
 
-      log.info("API 호출 완료 : title {}, isbn {}", naverBookDto.title(), naverBookDto.isbn());
+//      log.info("API 호출 완료 : title {}, isbn {}", naverBookDto.title(), naverBookDto.isbn());
       return naverBookDto;
     } catch (Exception e) {
-      log.error("네이버 책 검색 API 호출 실패", e);
+//      log.error("네이버 책 검색 API 호출 실패", e);
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }

@@ -13,5 +13,5 @@ public class BookCondition {
   LocalDateTime after;
   String orderBy = "title";
   String direction = "desc";
-  int limit = 50;
+  int limit = 10;
 }

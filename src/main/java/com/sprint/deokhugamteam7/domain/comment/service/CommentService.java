@@ -18,13 +18,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+//@Slf4j
 public class CommentService {
 
 	private final CommentRepository commentRepository;
@@ -34,13 +33,13 @@ public class CommentService {
 
 	@Transactional
 	public CommentDto create(CommentCreateRequest commentCreateRequest) {
-		log.info(
-			"[CommentService] create Comment request: reviewId={}, userId={}, contentSubstring={}",
-			commentCreateRequest.reviewId(),
-			commentCreateRequest.userId(),
-			commentCreateRequest.content() != null ? commentCreateRequest.content()
-				.substring(0, Math.min(commentCreateRequest.content().length(), 20)) : "null"
-		);
+//		log.info(
+//			"[CommentService] create Comment request: reviewId={}, userId={}, contentSubstring={}",
+//			commentCreateRequest.reviewId(),
+//			commentCreateRequest.userId(),
+//			commentCreateRequest.content() != null ? commentCreateRequest.content()
+//				.substring(0, Math.min(commentCreateRequest.content().length(), 20)) : "null"
+//		);
 
 		UUID userId = commentCreateRequest.userId();
 		UUID reviewId = commentCreateRequest.reviewId();
@@ -64,11 +63,11 @@ public class CommentService {
 		Comment newComment = Comment.create(user, review, content);
 		Comment savedComment = commentRepository.save(newComment);
 		// 댓글 생성 시 리뷰의 댓글 수를 증가 + 알림 생성 해야함.
-		log.info("알림 생성 진행: userId: {}", review.getUser());
+//		log.info("알림 생성 진행: userId: {}", review.getUser());
 		Notification notification = Notification.create(review.getUser(), review,
 			NotificationType.COMMENT.formatMessage(user, newComment));
 		notificationRepository.save(notification);
-		log.info("알림 생성 성공");
+//		log.info("알림 생성 성공");
 
 		return CommentDto.from(savedComment);
 	}
@@ -76,20 +75,20 @@ public class CommentService {
 	@Transactional
 	public CommentDto update(UUID commentId, UUID userId,
 		CommentUpdateRequest commentUpdateRequest) {
-		log.info(
-			"[CommentService] update Comment request: commentId={}, userId={}, newContentSubstring={}",
-			commentId,
-			userId,
-			commentUpdateRequest.content() != null ? commentUpdateRequest.content()
-				.substring(0, Math.min(commentUpdateRequest.content().length(), 20)) : "null"
-		);
+//		log.info(
+//			"[CommentService] update Comment request: commentId={}, userId={}, newContentSubstring={}",
+//			commentId,
+//			userId,
+//			commentUpdateRequest.content() != null ? commentUpdateRequest.content()
+//				.substring(0, Math.min(commentUpdateRequest.content().length(), 20)) : "null"
+//		);
 
 		Comment comment = commentRepository.findById(commentId).orElseThrow(
 			() -> new EntityNotFoundException("comment not found")
 		);
 
-		log.info("✅ comment.getUser().getId(): {}", comment.getUser().getId());
-		log.info("✅ userId: {}", userId);
+//		log.info("✅ comment.getUser().getId(): {}", comment.getUser().getId());
+//		log.info("✅ userId: {}", userId);
 		if (!comment.getUser().getId().equals(userId)) {
 			throw new IllegalArgumentException("해당 댓글을 수정할 권한이 없습니다.");
 		}
@@ -97,13 +96,17 @@ public class CommentService {
 		String content = commentUpdateRequest.content();
 		comment.update(content);
 
+    if (content == null || content.isBlank()) { // isBlank() 사용!
+      throw new IllegalArgumentException("댓글은 공백일 수 없습니다.");
+    }
+
 		return CommentDto.from(comment);
 	}
 
 	@Transactional
 	public void deleteHard(UUID commentId, UUID userId) {
-		log.info("[CommentService] deleteHard Comment request: commentId={}, userId={}", commentId,
-			userId);
+//		log.info("[CommentService] deleteHard Comment request: commentId={}, userId={}", commentId,
+//			userId);
 
 		Comment comment = commentRepository.findById(commentId).orElseThrow(
 			() -> new EntityNotFoundException("comment not found")
@@ -119,8 +122,8 @@ public class CommentService {
 
 	@Transactional
 	public void deleteSoft(UUID commentId, UUID userId) {
-		log.info("[CommentService] deleteSoft Comment request: commentId={}, userId={}", commentId,
-			userId);
+//		log.info("[CommentService] deleteSoft Comment request: commentId={}, userId={}", commentId,
+//			userId);
 
 		Comment comment = commentRepository.findById(commentId).orElseThrow(
 			() -> new EntityNotFoundException("comment not found")
@@ -137,9 +140,9 @@ public class CommentService {
 	@Transactional(readOnly = true)
 	public CursorPageResponseCommentDto getCommentList(UUID reviewId, String direction,
 		UUID cursorId, LocalDateTime createdAt, int limit) {
-		log.info(
-			"[CommentService] getCommentList request: reviewId={}, direction={}, cursorId={}, createdAt={}, limit={}",
-			reviewId, direction, cursorId, createdAt, limit);
+//		log.info(
+//			"[CommentService] getCommentList request: reviewId={}, direction={}, cursorId={}, createdAt={}, limit={}",
+//			reviewId, direction, cursorId, createdAt, limit);
 
 		int queryLimit = limit + 1; // has next를 위해 limit에 1을 더한 후 더 보여줄 페이지가 있는지 판단
 
@@ -170,8 +173,8 @@ public class CommentService {
 		// 리뷰 id를 사용해서 count 구하기 .
 		Long totalElements = commentRepository.countByReviewId(reviewId);
 
-		log.info("nextCursor: {}", nextCursor);
-		log.info("nextAfter: {}", nextAfter);
+//		log.info("nextCursor: {}", nextCursor);
+//		log.info("nextAfter: {}", nextAfter);
 
 		return new CursorPageResponseCommentDto(
 			commentsDtos, // 현재 페이지
@@ -185,7 +188,7 @@ public class CommentService {
 
 	@Transactional(readOnly = true)
 	public CommentDto getComment(UUID commentId) {
-		log.info("[CommentService] getComment request: commentId={}", commentId);
+//		log.info("[CommentService] getComment request: commentId={}", commentId);
 
 		Comment comment = commentRepository.findById(commentId).orElseThrow(
 			() -> new EntityNotFoundException("comment not found")

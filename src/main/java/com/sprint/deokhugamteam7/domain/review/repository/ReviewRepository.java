@@ -16,11 +16,17 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
   @Query("SELECT r FROM Review r "
       + "JOIN FETCH r.user "
       + "JOIN FETCH r.book"
-      + " WHERE r.id = :id")
+      + " WHERE r.id = :id AND r.isDeleted = false")
   Optional<Review> findByIdWithUserAndBook(@Param("id") UUID id);
 
   List<Review> findAllByBookAndCreatedAtBetween(Book book, LocalDateTime createdAtAfter,
       LocalDateTime createdAtBefore);
 
   boolean existsByUserAndBook(User user, Book book);
+
+  boolean existsByUserAndBookAndIsDeletedIsFalse(User user, Book book);
+
+  Optional<Review> findByIdAndIsDeletedIsFalse(UUID id);
+
+  List<Review> findAllByBookAndCreatedAtBetweenAndIsDeletedIsFalse(Book book, LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
 }

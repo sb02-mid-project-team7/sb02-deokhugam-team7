@@ -1,7 +1,6 @@
-package com.sprint.deokhugamteam7.domain.user.scheduler;
+package com.sprint.deokhugamteam7.domain.user.service;
 
 import com.sprint.deokhugamteam7.constant.Period;
-import com.sprint.deokhugamteam7.domain.user.service.PowerUserService;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +17,13 @@ public class PowerUserScoreSchedule {
 //  @Scheduled(cron = "0 0 09 * * *")
   public void calculatePowerUserScoresDaily() {
     LocalDate today = LocalDate.now();
-    log.info("파워 유저 점수 계산 시작: {}", today);
+//    log.info("파워 유저 점수 계산 시작: {}", today);
 
     for (Period period : Period.values()) {
-      log.info("기간: {}", period);
+//      log.info("기간: {}", period);
       powerUserService.calculateAndSaveUserScores(period, today);
       powerUserService.updateRanksForPeriodAndDate(period, today);
     }
-
-    log.info("파워 유저 점수 계산 완료");
+//    log.info("파워 유저 점수 계산 완료");
   }
 }

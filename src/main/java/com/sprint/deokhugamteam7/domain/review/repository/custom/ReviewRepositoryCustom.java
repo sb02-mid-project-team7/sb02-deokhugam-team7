@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.review.repository;
+package com.sprint.deokhugamteam7.domain.review.repository.custom;
 
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;

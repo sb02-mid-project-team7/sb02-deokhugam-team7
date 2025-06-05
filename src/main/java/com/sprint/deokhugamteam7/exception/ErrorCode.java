@@ -9,7 +9,16 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
   //공통 오류
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류"),
+
+
+  // 사용자 요청 오류
   INTERNAL_BAD_REQUEST(HttpStatus.BAD_REQUEST,"?","잘못된 요청입니다."),
+  METHOD_ARGUMENT_NOT_VALID(HttpStatus.BAD_REQUEST, "?", "@Valid 유효성 검사에 실패했습니다."), // 완료
+  METHOD_ARGUMENT_TYPE_MISMATCH(HttpStatus.BAD_REQUEST, "?", "요청 파라미터 타입이 잘못되었습니다."), // 완료
+  MISSING_PATH_VARIABLE(HttpStatus.BAD_REQUEST, "?", "PathVariable이 누락되었습니다."),
+  MISSING_REQUEST_PARAMETER(HttpStatus.BAD_REQUEST, "?", "Request parameter가 누락되었습니다."),
+  MISSING_REQUEST_HEADER(HttpStatus.BAD_REQUEST, "?", "Request header가 누락되었습니다."),
+  HTTP_MESSAGE_NOT_READABLE(HttpStatus.BAD_REQUEST, "?", "HttpMessage를 읽을 수 없습니다."),
 
   //알림 오류
   NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "?", "알림을 찾을 수 없습니다."),
