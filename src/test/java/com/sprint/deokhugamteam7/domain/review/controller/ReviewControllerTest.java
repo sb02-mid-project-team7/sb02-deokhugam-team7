@@ -250,7 +250,7 @@ public class ReviewControllerTest {
             .with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content.length()").value(2))
-        .andExpect(jsonPath("$.nextCursor").value("2="))
+        .andExpect(jsonPath("$.nextCursor").value("2"))
         .andExpect(jsonPath("$.size").value(2))
         .andExpect(jsonPath("$.totalElements").value(2))
         .andExpect(jsonPath("$.hasNext").value(false))
