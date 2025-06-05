@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BookCondition {
-
   String keyword;
   String cursor;
   LocalDateTime after;

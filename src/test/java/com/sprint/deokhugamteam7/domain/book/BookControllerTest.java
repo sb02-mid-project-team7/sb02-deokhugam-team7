@@ -60,7 +60,7 @@ public class BookControllerTest {
     // given
     BookCreateRequest request = mock(BookCreateRequest.class);
     LocalDate date = LocalDate.parse("19990101", yyyyMMdd);
-    BookDto bookDto = new BookDto(BOOK_ID, "제목", "저자", "설명", "출판사", date, "123", "이미지", 1, 2, null,
+    BookDto bookDto = new BookDto(BOOK_ID, "제목", "저자", "설명", "출판사", date, "123", "이미지", 1L, 2.0, null,
         null);
 
     MockMultipartFile jsonPart = new MockMultipartFile(
@@ -83,7 +83,7 @@ public class BookControllerTest {
     // given
     BookUpdateRequest updateRequest = mock(BookUpdateRequest.class);
     LocalDate date = LocalDate.parse("19990101", yyyyMMdd);
-    BookDto bookDto = new BookDto(BOOK_ID, "제목", "저자", "설명", "출판사", date, "123", "이미지", 1, 2, null,
+    BookDto bookDto = new BookDto(BOOK_ID, "제목", "저자", "설명", "출판사", date, "123", "이미지", 1L, 2.0, null,
         null);
 
     MockMultipartFile jsonPart = new MockMultipartFile(

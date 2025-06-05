@@ -20,8 +20,8 @@ public record BookDto(
     LocalDate publishedDate,
     String isbn,
     String thumbnailUrl,
-    int reviewCount,
-    double rating,
+    Long reviewCount,
+    Double rating,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -43,7 +43,7 @@ public record BookDto(
         .thumbnailUrl(book.getThumbnailUrl())
         .createdAt(book.getCreatedAt())
         .updatedAt(book.getUpdatedAt())
-        .reviewCount((int) rankingBook.getReviewCount())
+        .reviewCount(rankingBook.getReviewCount())
         .rating(rankingBook.getRating()).build();
   }
 
@@ -60,7 +60,7 @@ public record BookDto(
         .thumbnailUrl(book.getThumbnailUrl())
         .createdAt(book.getCreatedAt())
         .updatedAt(book.getUpdatedAt())
-        .reviewCount((int) rankingBook.getReviewCount())
+        .reviewCount(rankingBook.getReviewCount())
         .rating(rankingBook.getRating()).build();
   }
 
@@ -76,7 +76,7 @@ public record BookDto(
         .thumbnailUrl(book.thumbnailUrl())
         .createdAt(book.createdAt())
         .updatedAt(book.updatedAt())
-        .reviewCount((int) book.reviewCount())
+        .reviewCount(book.reviewCount())
         .rating(book.rating()).build();
   }
 }
