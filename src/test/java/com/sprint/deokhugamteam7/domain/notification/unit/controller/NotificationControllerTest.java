@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.notification.controller;
+package com.sprint.deokhugamteam7.domain.notification.unit.controller;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.deokhugamteam7.domain.notification.controller.NotificationController;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationUpdateRequest;
 import com.sprint.deokhugamteam7.domain.notification.service.NotificationService;
 import com.sprint.deokhugamteam7.domain.user.service.UserService;

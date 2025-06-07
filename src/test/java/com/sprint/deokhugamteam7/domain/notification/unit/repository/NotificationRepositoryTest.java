@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.notification.repository;
+package com.sprint.deokhugamteam7.domain.notification.unit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,6 +7,7 @@ import com.sprint.deokhugamteam7.domain.notification.config.TestConfig;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationCursorRequest;
 import com.sprint.deokhugamteam7.domain.notification.dto.NotificationDto;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
+import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
