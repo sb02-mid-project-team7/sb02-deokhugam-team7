@@ -1,5 +1,12 @@
 package com.sprint.deokhugamteam7.domain.book.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
@@ -7,7 +14,10 @@ import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.book.BookException;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +34,7 @@ public class BasicBookService implements BookService {
 
   @Override
   @Transactional
-  public BookDto create(BookCreateRequest request, MultipartFile file) {
+  public BookDto create(BookCreateRequest request, MultipartFile image) {
     if (!request.isbn().isBlank() && bookRepository.existsByIsbn(request.isbn().trim())) {
       throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
     }
@@ -34,8 +44,8 @@ public class BasicBookService implements BookService {
 //        request.publishedDate(), request.isbn());
 
     String thumbnailUrl = null;
-    if (file != null) {
-      thumbnailUrl = imageComponent.uploadImage(file);
+    if (image != null) {
+      thumbnailUrl = imageComponent.uploadImage(image);
     }
 
     Book book = Book.create(request.title(), request.author(), request.publisher(),
@@ -52,8 +62,31 @@ public class BasicBookService implements BookService {
   }
 
   @Override
+  public String extractIsbn(MultipartFile file) {
+    try {
+      BufferedImage image = ImageIO.read(file.getInputStream());
+      if (image == null) {
+        throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
+      }
+      BufferedImageLuminanceSource source = new BufferedImageLuminanceSource(
+          image);
+      BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+      Result result = new MultiFormatReader().decode(bitmap);
+      if (result.getBarcodeFormat() != BarcodeFormat.EAN_13) {
+        throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
+      }
+      return result.getText();
+
+    } catch (NotFoundException e) {
+      throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
+    } catch (IOException e) {
+      throw new BookException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Override
   @Transactional
-  public BookDto update(UUID id, BookUpdateRequest request, MultipartFile file) {
+  public BookDto update(UUID id, BookUpdateRequest request, MultipartFile image) {
 //    log.info(
 //        "[BasicBookService] update Request : id {}, title {}, author {}, description {}, publisher {}, publishedDate {} ",
 //        id, request.title(), request.author(), request.description(), request.publisher(),
@@ -63,8 +96,8 @@ public class BasicBookService implements BookService {
     );
 
     String thumbnailUrl = null;
-    if (file != null) {
-      thumbnailUrl = imageComponent.uploadImage(file);
+    if (image != null) {
+      thumbnailUrl = imageComponent.uploadImage(image);
     }
 
     book.update(request.title(), request.author(), request.description(), request.publisher(),
