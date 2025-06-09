@@ -12,14 +12,12 @@ import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class BookSearchService {
 
   private final ReviewRepository reviewRepository;
@@ -29,7 +27,6 @@ public class BookSearchService {
   @Scheduled(cron = "0 0/1 * * * *")
 //  @Scheduled(cron = "0 0 09 * * *")
   public void updateRanking() {
-//    log.info("[Book Search Service] Update Ranking Books");
     LocalDateTime now = LocalDateTime.now();
     List<RankingBook> rankingBooks = rankingBookRepository.findAll();
     for (RankingBook rankingBook : rankingBooks) {
@@ -41,7 +38,6 @@ public class BookSearchService {
       between.forEach(review -> rankingBook.update(review.getRating(), false));
     }
     rankingBookRepository.saveAll(rankingBooks);
-//    log.info("[Book Search Service] Updated Successfully");
   }
 
   private LocalDateTime calculateDateTime(LocalDateTime now, Period period) {

@@ -19,6 +19,6 @@ public class RankingBookRepositoryTest {
   @Autowired
   private RankingBookRepository rankingBookRepository;
 
-
+  //TODO 레포지토리 테스트 코드 작성해야함
 
 }

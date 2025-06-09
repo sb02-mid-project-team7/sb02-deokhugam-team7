@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 @ConditionalOnProperty(name = "deokhugam.storage.type", havingValue = "s3")
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class S3ImageComponent implements ImageComponent {
 
   @Value("${aws.s3.bucket}")

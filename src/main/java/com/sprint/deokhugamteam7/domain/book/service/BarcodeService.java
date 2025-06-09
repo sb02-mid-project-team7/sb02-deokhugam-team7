@@ -23,13 +23,16 @@ public class BarcodeService {
       if (image == null) {
         throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
       }
+
       BufferedImageLuminanceSource source = new BufferedImageLuminanceSource(
           image);
       BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
       Result result = new MultiFormatReader().decode(bitmap);
+
       if (result.getBarcodeFormat() != BarcodeFormat.EAN_13) {
         throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
       }
+
       return result.getText();
     } catch (NotFoundException e) {
       throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
