@@ -18,7 +18,6 @@ import com.sprint.deokhugamteam7.domain.book.service.BookSearchService;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -43,10 +42,15 @@ public class BookSearchServiceUnitTest {
   void updateRankingTest() {
     // given
     Book book = Book.create("a", "a", "a", LocalDate.now()).build();
-    LocalDateTime date = LocalDateTime.now();
-    RankingBook rankingBook = RankingBook.create(Period.DAILY);
-    rankingBook.setBook(book);
-    List<RankingBook> mockRankingBooks = List.of(rankingBook);
+    RankingBook daily = RankingBook.create(Period.DAILY);
+    RankingBook weekly = RankingBook.create(Period.WEEKLY);
+    RankingBook monthly = RankingBook.create(Period.MONTHLY);
+    RankingBook allTile = RankingBook.create(Period.ALL_TIME);
+    daily.setBook(book);
+    weekly.setBook(book);
+    monthly.setBook(book);
+    allTile.setBook(book);
+    List<RankingBook> mockRankingBooks = List.of(daily,weekly,monthly,allTile);
     when(rankingBookRepository.findAll()).thenReturn(mockRankingBooks);
     List<Review> mockReviews = new ArrayList<>();
     when(reviewRepository.findAllByBookAndCreatedAtBetweenAndIsDeletedIsFalse(eq(book), any(),
@@ -73,8 +77,8 @@ public class BookSearchServiceUnitTest {
   void findPopularBooksTest() {
     // given
     PopularBookCondition cond = new PopularBookCondition();
-    List<RankingBook> mockRankingBooks = List.of(mock(RankingBook.class));
-    when(rankingBookRepository.findPopularBooksByCondition(cond)).thenReturn(mockRankingBooks);
+    when(rankingBookRepository.findPopularBooks(cond)).thenReturn(mock(
+        CursorPageResponsePopularBookDto.class));
     // when
     CursorPageResponsePopularBookDto result = bookSearchService.findPopularBooks(cond);
     // then

@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,7 +20,10 @@ import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
+import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
+import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponsePopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.service.APIService;
+import com.sprint.deokhugamteam7.domain.book.service.BarcodeService;
 import com.sprint.deokhugamteam7.domain.book.service.BookSearchService;
 import com.sprint.deokhugamteam7.domain.book.service.BookService;
 import java.time.LocalDate;
@@ -48,6 +53,10 @@ public class BookControllerTest {
 
   @MockitoBean
   private APIService apiService;
+
+  @MockitoBean
+  private BarcodeService barcodeService;
+
 
   @MockitoBean
   private BookSearchService bookSearchService;
@@ -133,4 +142,55 @@ public class BookControllerTest {
         .andExpect(jsonPath("$.author").value("저자"))
         .andExpect(jsonPath("$.isbn").value("123"));
   }
+
+  @Test
+  void extractIsbn_Success() throws Exception{
+    // given
+    MockMultipartFile mockFile = new MockMultipartFile("image", "test.png", "image/png",
+        "dummy".getBytes());
+    when(barcodeService.extractIsbn(mockFile)).thenReturn("123456");
+    // when
+    mockMvc.perform(multipart("/api/books/isbn/ocr")
+            .file(mockFile)
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+        )
+        .andExpect(status().isOk())
+        .andExpect(content().string("123456"))
+        .andDo(print());
+  }
+
+  @Test
+  void findAll() throws Exception{
+    // given
+    CursorPageResponseBookDto dto = mock(CursorPageResponseBookDto.class);
+    when(bookSearchService.findAll(any())).thenReturn(dto);
+    // when & then
+    mockMvc.perform(get("/api/books")
+            .param("keyword","java")
+        ).andExpect(status().isOk())
+        .andDo(print());
+  }
+
+  @Test
+  void findPopularBooks() throws Exception{
+    // given
+    CursorPageResponsePopularBookDto dto = mock(CursorPageResponsePopularBookDto.class);
+    when(bookSearchService.findPopularBooks(any())).thenReturn(dto);
+    // when & then
+    mockMvc.perform(get("/api/books")).andExpect(status().isOk())
+        .andDo(print());
+  }
+
+  @Test
+  void findById() throws Exception{
+    // given
+    UUID id = UUID.randomUUID();
+    BookDto dto = mock(BookDto.class);
+    when(bookService.findById(id)).thenReturn(dto);
+    // when & then
+    mockMvc.perform(get("/api/books/{bookId}", id))
+        .andExpect(status().isOk())
+        .andDo(print());
+  }
+
 }
