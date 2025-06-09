@@ -16,6 +16,7 @@ import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.domain.user.repository.UserScoreRepository;
 import com.sprint.deokhugamteam7.domain.user.service.PowerUserServiceImpl;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -50,7 +51,7 @@ class PowerUserServiceImplTest {
     void user_score_success() {
       // given
       Period period = Period.DAILY;
-      LocalDate baseDate = LocalDate.of(2025, 6, 3);
+      LocalDate baseDate = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
       UUID userId = UUID.randomUUID();
       User mockUser = mock(User.class);
