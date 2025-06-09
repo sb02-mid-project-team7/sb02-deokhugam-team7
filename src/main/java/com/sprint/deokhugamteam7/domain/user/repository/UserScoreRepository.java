@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserScoreRepository extends JpaRepository<UserScore, UUID> {
   List<UserScore> findAllByPeriodAndDateOrderByScoreDesc(Period period, LocalDate date);
-  void deleteByPeriodAndDate(Period period, LocalDate date);
   List<UserScore> findAllByPeriodAndDate(Period period, LocalDate date);
 
 }

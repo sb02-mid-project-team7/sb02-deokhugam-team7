@@ -6,6 +6,10 @@ import jakarta.validation.constraints.Size;
 
 public record UserRegisterRequest(
     @Email String email,
+    @Pattern(
+        regexp = "^\\S+$",
+        message = "닉네임에는 공백을 포함할 수 없습니다."
+    )
     @Size(min = 2, max = 20) String nickname,
     @Pattern(
         regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",
