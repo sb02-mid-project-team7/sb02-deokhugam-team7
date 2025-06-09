@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.user.service.impl;
+package com.sprint.deokhugamteam7.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -13,7 +13,6 @@ import com.sprint.deokhugamteam7.domain.user.dto.request.UserUpdateRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.response.UserDto;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
-import com.sprint.deokhugamteam7.domain.user.service.UserServiceImpl;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.user.UserException;
@@ -28,7 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceImplTest {
+class UserServiceTest {
 
   @Mock
   private UserRepository userRepository;
