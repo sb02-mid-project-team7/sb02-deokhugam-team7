@@ -97,11 +97,11 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         ));
 
     Map<UUID, Long> likeCountMap = queryFactory
-        .select(review.user.id, reviewLike.count())
+        .select(reviewLike.user.id, reviewLike.count())
         .from(reviewLike)
         .join(reviewLike.review, review)
         .where(reviewLike.createdAt.between(start, end.minusNanos(1)))
-        .groupBy(review.user.id)
+        .groupBy(reviewLike.user.id)
         .fetch()
         .stream()
         .collect(Collectors.toMap(
@@ -110,11 +110,11 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         ));
 
     Map<UUID, Long> commentCountMap = queryFactory
-        .select(review.user.id, comment.count())
+        .select(comment.user.id, comment.count())
         .from(comment)
         .join(comment.review, review)
         .where(comment.createdAt.between(start, end.minusNanos(1)))
-        .groupBy(review.user.id)
+        .groupBy(comment.user.id)
         .fetch()
         .stream()
         .collect(Collectors.toMap(
