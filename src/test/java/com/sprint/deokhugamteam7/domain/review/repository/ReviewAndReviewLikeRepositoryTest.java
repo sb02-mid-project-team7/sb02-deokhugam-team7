@@ -35,15 +35,14 @@ public class ReviewAndReviewLikeRepositoryTest {
   private User user;
   private Book book;
   private Review review;
-  private final String content = "리뷰입니다.";
-  private final int rating = 3;
 
   @BeforeEach
   void setUp() {
     user = User.create("test@gmail.com", "test1", "test1234!");
     book = Book.create("test", "test", "test",
         LocalDate.of(2020, 1, 15)).build();
-    review = Review.create(book, user, content, rating);
+
+    review = Review.create(book, user, "리뷰입니다.", 3);
 
     em.persist(user);
     em.persist(book);
@@ -62,6 +61,7 @@ public class ReviewAndReviewLikeRepositoryTest {
     assertThat(res).isPresent();
     assertThat(res.get().getUser().getId()).isEqualTo(user.getId());
     assertThat(res.get().getBook().getId()).isEqualTo(book.getId());
+    assertThat(res.get().getIsDeleted()).isFalse();
   }
 
   // ReviewLikeRepository

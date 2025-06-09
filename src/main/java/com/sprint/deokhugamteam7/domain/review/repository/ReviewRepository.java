@@ -19,14 +19,10 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
       + " WHERE r.id = :id AND r.isDeleted = false")
   Optional<Review> findByIdWithUserAndBook(@Param("id") UUID id);
 
-  List<Review> findAllByBookAndCreatedAtBetween(Book book, LocalDateTime createdAtAfter,
-      LocalDateTime createdAtBefore);
-
-  boolean existsByUserAndBook(User user, Book book);
-
   boolean existsByUserAndBookAndIsDeletedIsFalse(User user, Book book);
 
   Optional<Review> findByIdAndIsDeletedIsFalse(UUID id);
 
-  List<Review> findAllByBookAndCreatedAtBetweenAndIsDeletedIsFalse(Book book, LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
+  List<Review> findAllByBookAndCreatedAtBetweenAndIsDeletedIsFalse(Book book,
+      LocalDateTime createdAtAfter, LocalDateTime createdAtBefore);
 }

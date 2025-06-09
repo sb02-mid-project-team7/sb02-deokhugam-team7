@@ -2,7 +2,6 @@ package com.sprint.deokhugamteam7.domain.review.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.comment.entity.Comment;
@@ -39,9 +38,6 @@ public class ReviewRepositoryImplTest {
 
   @Autowired
   private EntityManager em;
-
-  @Autowired
-  private JPAQueryFactory jpaQueryFactory;
 
   private User user;
   private User user2;
@@ -211,7 +207,7 @@ public class ReviewRepositoryImplTest {
 
   @Test
   @DisplayName("해당 기간의 랭킹리뷰 조회")
-  void findCommentCountsByPeriod_ShouldReturnRankingReviewWithinPeriod() {
+  void findRankingReviewsByPeriod_ShouldReturnRankingReviewWithinPeriod() {
     createOtherReviews();
 
     RankingReview ranking1 = RankingReview.create(review, 9.0, Period.DAILY);

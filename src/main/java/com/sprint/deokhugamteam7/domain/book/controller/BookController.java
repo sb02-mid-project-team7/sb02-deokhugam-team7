@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +44,12 @@ public class BookController implements BookApi {
     BookDto bookDto = bookService.create(request, file);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(bookDto);
+  }
+
+  @PostMapping(value = "/isbn/ocr",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> extractIsbn(@RequestParam("image")MultipartFile image) {
+    String barcode = bookService.extractIsbn(image);
+    return ResponseEntity.ok(barcode);
   }
 
   @PatchMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -41,7 +41,6 @@ public class PopularReviewScoreSchedule {
 
   public void calculateReviewScore
       (@Nullable LocalDateTime start, @Nullable LocalDateTime end, Period period) {
-    //log.info("[PopularReviewScoreSchedule] 인기 유저 점수 계산 시작: period={}, start={}", period, start);
 
     Map<UUID, Long> likeMap = reviewRepositoryCustom.findLikeCountsByPeriod(start, end);
     Map<UUID, Long> commentMap = reviewRepositoryCustom.findCommentCountsByPeriod(start, end);
@@ -57,7 +56,7 @@ public class PopularReviewScoreSchedule {
       double score = Math.round(((likes * 0.3) + (comments * 0.7)) * 1000.0) / 1000.0;
 
       Review review = reviewRepository.findById(id)
-          .orElseThrow(() -> new ReviewException(ErrorCode.INTERNAL_SERVER_ERROR));
+          .orElseThrow(() -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
       RankingReview ranking = rankingReviewRepository.findByReviewAndPeriod(review, period)
           .orElseGet(() -> RankingReview.create(review, score, period));
 

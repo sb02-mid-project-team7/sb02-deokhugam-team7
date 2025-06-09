@@ -1,6 +1,7 @@
 package com.sprint.deokhugamteam7.domain.review.service.basic;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
+import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
@@ -23,8 +25,10 @@ import com.sprint.deokhugamteam7.domain.review.repository.custom.ReviewRepositor
 import com.sprint.deokhugamteam7.domain.review.service.BasicReviewService;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
+import com.sprint.deokhugamteam7.exception.review.ReviewException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,6 +63,9 @@ public class BasicReviewServiceTest {
   @Mock
   private ReviewRepositoryCustom reviewRepositoryCustom;
 
+  @Mock
+  private NotificationRepository notificationRepository;
+
   @InjectMocks
   private BasicReviewService reviewService;
 
@@ -84,21 +91,34 @@ public class BasicReviewServiceTest {
   }
 
   @Test
-  @DisplayName("리뷰 생성")
-  void createReview() {
-    // given
+  @DisplayName("리뷰 생성 - 성공")
+  void createReview_Success() {
     when(userRepository.findByIdAndIsDeletedFalse(userId)).thenReturn(Optional.of(user));
     when(bookRepository.findByIdAndIsDeletedFalse(bookId)).thenReturn(Optional.of(book));
+    when(reviewRepository.existsByUserAndBookAndIsDeletedIsFalse(any(User.class),
+        any(Book.class))).thenReturn(false);
     ReviewCreateRequest request
         = new ReviewCreateRequest(bookId, userId, "책의 리뷰입니다.", 3);
 
-    // when
     ReviewDto result = reviewService.create(request);
 
-    // then
     assertThat(result).isNotNull();
     assertThat(result.content()).isEqualTo("책의 리뷰입니다.");
     assertThat(result.rating()).isEqualTo(3);
+  }
+
+  @Test
+  @DisplayName("리뷰 생성 - 실패")
+  void createReview_Fail() {
+    when(userRepository.findByIdAndIsDeletedFalse(userId)).thenReturn(Optional.of(user));
+    when(bookRepository.findByIdAndIsDeletedFalse(bookId)).thenReturn(Optional.of(book));
+    when(reviewRepository.existsByUserAndBookAndIsDeletedIsFalse(any(User.class),
+        any(Book.class))).thenReturn(true);
+
+    ReviewCreateRequest request
+        = new ReviewCreateRequest(bookId, userId, "책의 리뷰입니다.", 3);
+
+    assertThrows(ReviewException.class, () -> reviewService.create(request));
   }
 
   @Test
@@ -138,10 +158,11 @@ public class BasicReviewServiceTest {
     UUID reviewId = UUID.randomUUID();
     Review review = Review.create(book, user, "책의 리뷰입니다.", 3);
     ReflectionTestUtils.setField(review, "id", reviewId);
-
-    when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+    book.setReviews(new ArrayList<>(List.of(review)));
 
     // when
+    when(reviewRepository.findByIdAndIsDeletedIsFalse(reviewId)).thenReturn(Optional.of(review));
+
     reviewService.deleteSoft(reviewId, userId);
 
     // then
@@ -156,13 +177,13 @@ public class BasicReviewServiceTest {
     Review review = Review.create(book, user, "책의 리뷰입니다.", 3);
     ReflectionTestUtils.setField(review, "id", reviewId);
 
+    // when
     when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
 
-    // when
     reviewService.deleteHard(reviewId, userId);
 
     // then
-    assertThat(reviewRepository.existsById(reviewId)).isFalse();
+    verify(reviewRepository).delete(review);
   }
 
   @Test
