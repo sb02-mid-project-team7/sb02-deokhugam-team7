@@ -10,8 +10,6 @@ public interface BookService {
 
   BookDto create(BookCreateRequest request, MultipartFile image);
 
-  String extractIsbn(MultipartFile image);
-
   BookDto update(UUID id, BookUpdateRequest request, MultipartFile image);
 
   BookDto findById(UUID id);

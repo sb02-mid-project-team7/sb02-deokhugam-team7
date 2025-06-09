@@ -52,12 +52,12 @@ public class RankingBookEntityTest {
     rankingBook.update(1, false);
     rankingBook.update(1, false);
     // when
-    rankingBook.update(-1, true);
+    rankingBook.update(1, true);
     // then
     assertAll(
         () -> assertEquals(period, rankingBook.getPeriod()),
         () -> assertEquals(0, rankingBook.getRank()),
-        () -> assertEquals(1.0, rankingBook.getScore()),
+        () -> assertEquals(1, rankingBook.getScore()),
         () -> assertEquals(1, rankingBook.getTotalRating()),
         () -> assertEquals(1, rankingBook.getReviewCount()),
         () -> assertEquals(1.0, rankingBook.getRating())

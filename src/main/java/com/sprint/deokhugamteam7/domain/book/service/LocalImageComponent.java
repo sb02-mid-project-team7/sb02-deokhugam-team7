@@ -1,14 +1,13 @@
 package com.sprint.deokhugamteam7.domain.book.service;
 
-import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
+import com.sprint.deokhugamteam7.exception.book.BookException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -16,12 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 @ConditionalOnProperty(name = "deokhugam.storage.type", havingValue = "local")
 @Component
-@Slf4j
-public class localImageComponent implements ImageComponent {
+public class LocalImageComponent implements ImageComponent {
 
   private final Path storagePath;
 
-  public localImageComponent(
+  public LocalImageComponent(
       @Value("${deokhugam.storage.local.root-path}") String storagePath) {
     this.storagePath = Paths.get(storagePath);
     init();
@@ -30,11 +28,9 @@ public class localImageComponent implements ImageComponent {
   private void init() {
     if (Files.notExists(storagePath)) {
       try {
-//        log.info("[LocalBinaryContentStorage] Directories created");
         Files.createDirectories(storagePath);
       } catch (IOException e) {
-//        log.warn("[LocalBinaryContentStorage] To create Directories is failed");
-        throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+        throw new BookException(ErrorCode.INTERNAL_SERVER_ERROR);
       }
     }
   }
@@ -59,9 +55,8 @@ public class localImageComponent implements ImageComponent {
         UUID.randomUUID() + extension);
     try (OutputStream outputStream = Files.newOutputStream(destination)) {
       outputStream.write(file.getBytes());
-//      log.error("[Local Image Service] Image Uploaded successfully");
     } catch (IOException e) {
-//      log.error("[Local Image Service] To upload Image is failed");
+      throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
     }
     return "/images/" + destination.getFileName();
   }

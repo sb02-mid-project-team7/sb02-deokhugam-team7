@@ -15,6 +15,7 @@ import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.book.service.BasicBookService;
 import com.sprint.deokhugamteam7.domain.book.service.S3ImageComponent;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
+import com.sprint.deokhugamteam7.exception.book.BookException;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -110,6 +111,43 @@ public class BookServiceUnitTest {
     );
   }
 
+
+  @Test
+  void update_WithImage_Success() {
+    // given
+    LocalDate now = LocalDate.now();
+    UUID id = UUID.randomUUID();
+    LocalDate newDate = LocalDate.now().plusDays(1);
+    MockMultipartFile mockFile = new MockMultipartFile("image", "test.png", "image/png",
+        "dummy".getBytes());
+    Book book = Book.create("aaa", "bbb", "ccc", now).build();
+    BookUpdateRequest request = new BookUpdateRequest("test111", "test222", "test333",
+        "test444", newDate);
+    when(bookRepository.findByIdAndIsDeletedFalse(id)).thenReturn(Optional.of(book));
+    // when
+    BookDto bookDto = bookService.update(id, request, mockFile);
+    // then
+    assertAll(
+        ()->assertThat(bookDto.title()).isEqualTo("test111"),
+        ()-> assertThat(bookDto.author()).isEqualTo("test222"),
+        ()-> assertThat(bookDto.description()).isEqualTo("test333"),
+        ()-> assertThat(bookDto.publisher()).isEqualTo("test444"),
+        ()->assertThat(bookDto.publishedDate()).isEqualTo(newDate)
+    );
+  }
+
+  @Test
+  void update_WithOutBook_Fail() {
+    // given
+    UUID id = UUID.randomUUID();
+    LocalDate newDate = LocalDate.now().plusDays(1);
+    BookUpdateRequest request = new BookUpdateRequest("test111", "test222", "test333",
+        "test444", newDate);
+    when(bookRepository.findByIdAndIsDeletedFalse(id)).thenReturn(Optional.empty());
+    // when & then
+    assertThrows(BookException.class, () -> bookService.update(id,request,null));
+  }
+
   @Test
   void delete_Logically_Success() {
     // given
@@ -147,6 +185,44 @@ public class BookServiceUnitTest {
     // then
     verify(bookRepository).findById(id);
     verify(bookRepository).delete(book);
+  }
+
+  @Test
+  void delete_Physically_WithoutBook_ShouldThrowException() {
+    // given
+    UUID id = UUID.randomUUID();
+    when(bookRepository.findById(id)).thenReturn(Optional.empty());
+    // when & then
+    assertThrows(DeokhugamException.class,
+        () -> bookService.deletePhysically(id));
+  }
+
+  @Test
+  void findById_Success() {
+    // given
+    LocalDate now = LocalDate.now();
+    UUID id = UUID.randomUUID();
+    Book book = Book.create("aaa", "bbb", "ccc", now).build();
+    when(bookRepository.findByIdAndIsDeletedFalse(id)).thenReturn(Optional.of(book));
+    // when
+    BookDto bookDto = bookService.findById(id);
+    // then
+    assertAll(
+        ()->assertThat(bookDto.title()).isEqualTo("aaa"),
+        ()-> assertThat(bookDto.author()).isEqualTo("bbb"),
+        ()-> assertThat(bookDto.publisher()).isEqualTo("ccc"),
+        ()->assertThat(bookDto.publishedDate()).isEqualTo(now)
+    );
+  }
+
+  @Test
+  void findById_Fail() {
+    // given
+    UUID id = UUID.randomUUID();
+    when(bookRepository.findByIdAndIsDeletedFalse(id)).thenReturn(Optional.empty());
+    // when & then
+    assertThrows(BookException.class,
+        () -> bookService.findById(id));
   }
 
 }

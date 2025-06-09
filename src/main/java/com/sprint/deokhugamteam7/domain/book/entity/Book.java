@@ -98,14 +98,14 @@ public class Book {
   public static BookBuilder create(String title, String author, String publisher,
       LocalDate publishedDate) {
     return Book.of()
-        .title(title.trim())
-        .author(author.trim())
-        .publisher(publisher.trim())
+        .title(title)
+        .author(author)
+        .publisher(publisher)
         .publishedDate(publishedDate);
   }
 
   private String updateField(String original, String newField) {
-    return (newField != null && !newField.equals(original) ? newField : original);
+    return (newField != null && !newField.equals(original) ? newField.trim() : original);
   }
 
   private LocalDate updateField(LocalDate original, LocalDate newField) {
@@ -114,18 +114,14 @@ public class Book {
 
   public void update(String newTitle, String newAuthor, String newDescription, String newPublisher,
       LocalDate newPublisherDate, String newThumbnailUrl) {
-    title = updateField(title, newTitle.trim());
-    author = updateField(author, newAuthor.trim());
-    description = updateField(description, newDescription.trim());
-    publisher = updateField(publisher, newPublisher.trim());
+    title = updateField(title, newTitle);
+    author = updateField(author, newAuthor);
+    description = updateField(description, newDescription);
+    publisher = updateField(publisher, newPublisher);
     publishedDate = updateField(publishedDate, newPublisherDate);
     thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
   }
 
-  public void addReview(Review review) {
-    // this.reviews.add(review);
-    // review.setBook(this);
-  }
 
   private void addRankingBooks() {
     this.rankingBooks = Stream.of(Period.values()).map(

@@ -9,6 +9,7 @@ import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponseBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponsePopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.service.APIService;
+import com.sprint.deokhugamteam7.domain.book.service.BarcodeService;
 import com.sprint.deokhugamteam7.domain.book.service.BookSearchService;
 import com.sprint.deokhugamteam7.domain.book.service.BookService;
 import java.util.UUID;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/books")
 public class BookController implements BookApi {
 
+  private final BarcodeService barcodeService;
   private final APIService apiService;
   private final BookService bookService;
   private final BookSearchService bookSearchService;
@@ -48,7 +50,7 @@ public class BookController implements BookApi {
 
   @PostMapping(value = "/isbn/ocr",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> extractIsbn(@RequestParam("image")MultipartFile image) {
-    String barcode = bookService.extractIsbn(image);
+    String barcode = barcodeService.extractIsbn(image);
     return ResponseEntity.ok(barcode);
   }
 

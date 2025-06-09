@@ -2,21 +2,33 @@ package com.sprint.deokhugamteam7.domain.book;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
+import com.sprint.deokhugamteam7.domain.review.entity.Review;
+import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import java.time.LocalDate;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class BookEntityTest {
 
+  private LocalDate now;
+  private Book book;
+
+  @BeforeEach
+  void setUp() {
+    now = LocalDate.now();
+    book = Book.create("aaa", "bbb", "ccc", now).build();
+  }
+
   @Test
   void createBookWithNecessaryElement() {
-    // given
-    LocalDate now = LocalDate.now();
-    // when
-    Book book = Book.create("aaa", "bbb", "ccc", now).build();
     // then
     assertAll(
         () -> assertEquals("aaa", book.getTitle()),
@@ -28,10 +40,8 @@ public class BookEntityTest {
 
   @Test
   void createBookWithAllElement() {
-    // given
-    LocalDate now = LocalDate.now();
     // when
-    Book book = Book.create("aaa", "bbb", "ccc", now).isbn("123").description("ddd")
+    book = Book.create("aaa", "bbb", "ccc", now).isbn("123").description("ddd")
         .thumbnailUrl("eee").build();
     // then
     assertAll(
@@ -45,17 +55,35 @@ public class BookEntityTest {
   }
 
   @Test
-  void createBookWithNoElement_ShouldThrowException() {
+  void createBookWithNoTitle_ShouldThrowException() {
     assertThrows(DeokhugamException.class, () ->
-        Book.create("", "", "", null).build()
+        Book.create(null, "a", "b", now).build()
+    );
+  }
+
+  @Test
+  void createBookWithNoAuthor_ShouldThrowException() {
+    assertThrows(DeokhugamException.class, () ->
+        Book.create("a", null, "b", now).build()
+    );
+  }
+
+  @Test
+  void createBookWithNoPublisher_ShouldThrowException() {
+    assertThrows(DeokhugamException.class, () ->
+        Book.create("a", "b", null, now).build()
+    );
+  }
+
+  @Test
+  void createBookWithNoPublishedDate_ShouldThrowException() {
+    assertThrows(DeokhugamException.class, () ->
+        Book.create("a", "b", "c", null).build()
     );
   }
 
   @Test
   void updateBook() {
-    // given
-    LocalDate now = LocalDate.now();
-    Book book = Book.create("aaa", "bbb", "ccc", now).build();
     // when
     LocalDate newDay = now.plusDays(1L);
     book.update("a", "b", "c", "d", newDay, "e");
@@ -67,6 +95,53 @@ public class BookEntityTest {
         () -> assertEquals("d", book.getPublisher()),
         () -> assertEquals(newDay, book.getPublishedDate()),
         () -> assertEquals("e", book.getThumbnailUrl())
+    );
+  }
+
+  @Test
+  void updateBook_WithNullUpdate() {
+    // when
+    book.update(null, null, null, null, null, null);
+    // then
+    assertAll(
+        () -> assertEquals("aaa", book.getTitle()),
+        () -> assertEquals("bbb", book.getAuthor()),
+        () -> assertNull(book.getDescription()),
+        () -> assertEquals("ccc", book.getPublisher()),
+        () -> assertEquals(now, book.getPublishedDate()),
+        () -> assertNull(book.getThumbnailUrl())
+    );
+  }
+
+  @Test
+  void getReviewTest() {
+    // given
+    User user = mock(User.class);
+    Review review = Review.create(book, user, "test", 3);
+    book.setReviews(List.of(review));
+    // when
+    List<Review> reviews = book.getReviewsWithIsDeletedIsFalse();
+    // then
+    assertAll(
+        () -> assertNotNull(reviews),
+        () -> assertEquals(1, reviews.size()),
+        () -> assertEquals("test", reviews.get(0).getContent())
+    );
+  }
+
+  @Test
+  void getReviewTest_WithIsDeleted() {
+    // given
+    User user = mock(User.class);
+    Review review = Review.create(book, user, "test", 3);
+    review.delete();
+    book.setReviews(List.of(review));
+    // when
+    List<Review> reviews = book.getReviewsWithIsDeletedIsFalse();
+    // then
+    assertAll(
+        () -> assertNotNull(reviews),
+        () -> assertEquals(0, reviews.size())
     );
   }
 
