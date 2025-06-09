@@ -1,5 +1,7 @@
 package com.sprint.deokhugamteam7.domain.review.controller;
 
+import com.sprint.deokhugamteam7.domain.review.controller.response.InternalServerErrorResponse;
+import com.sprint.deokhugamteam7.domain.review.controller.response.ReviewNotFoundResponse;
 import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
@@ -88,27 +90,9 @@ public interface ReviewApi {
                       """
               )
           )
-      ),
-      @ApiResponse(
-          responseCode = "500",
-          description = "서버 내부 오류",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "message": "서버 내부 오류",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 500
-                      }
-                      """
-              )
-          )
       )
   })
+  @InternalServerErrorResponse
   ResponseEntity<ReviewDto> create(
       @Parameter(
           description = "리뷰 정보",
@@ -174,46 +158,10 @@ public interface ReviewApi {
                       """
               )
           )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "리뷰 정보 없음",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "REVIEW_NOT_FOUND",
-                        "message": "리뷰를 찾을 수 없습니다.",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 404
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "500",
-          description = "서버 내부 오류",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "message": "서버 내부 오류",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 500
-                      }
-                      """
-              )
-          )
       )
   })
+  @ReviewNotFoundResponse
+  @InternalServerErrorResponse
   ResponseEntity<ReviewDto> update(
       @Parameter(
           description = "리뷰 ID",
@@ -322,46 +270,10 @@ public interface ReviewApi {
                       """
               )
           )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "리뷰 정보 없음",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "REVIEW_NOT_FOUND",
-                        "message": "리뷰를 찾을 수 없습니다.",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 404
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "500",
-          description = "서버 내부 오류",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "message": "서버 내부 오류",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 500
-                      }
-                      """
-              )
-          )
       )
   })
+  @ReviewNotFoundResponse
+  @InternalServerErrorResponse
   ResponseEntity<ReviewDto> findById(
       @Parameter(
           description = "리뷰 ID",
@@ -403,46 +315,10 @@ public interface ReviewApi {
                       """
               )
           )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "리뷰 정보 없음",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "REVIEW_NOT_FOUND",
-                        "message": "리뷰를 찾을 수 없습니다.",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 404
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "500",
-          description = "서버 내부 오류",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "message": "서버 내부 오류",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 500
-                      }
-                      """
-              )
-          )
       )
   })
+  @ReviewNotFoundResponse
+  @InternalServerErrorResponse
   ResponseEntity<ReviewLikeDto> like(
       @Parameter(
           description = "리뷰 ID",
@@ -484,27 +360,9 @@ public interface ReviewApi {
                       """
               )
           )
-      ),
-      @ApiResponse(
-          responseCode = "500",
-          description = "서버 내부 오류",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "message": "서버 내부 오류",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 500
-                      }
-                      """
-              )
-          )
       )
   })
+  @InternalServerErrorResponse
   ResponseEntity<CursorPageResponseReviewDto> findAll(
       @ParameterObject ReviewSearchCondition condition,
       @Parameter(
@@ -541,27 +399,9 @@ public interface ReviewApi {
                       """
               )
           )
-      ),
-      @ApiResponse(
-          responseCode = "500",
-          description = "서버 내부 오류",
-          content = @Content(
-              schema = @Schema(implementation = ErrorResponse.class),
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "timestamp": "2025-06-09T15:22:24.5323466",
-                        "code": "INTERNAL_SERVER_ERROR",
-                        "message": "서버 내부 오류",
-                        "details": {},
-                        "exceptionType": "ReviewException",
-                        "status": 500
-                      }
-                      """
-              )
-          )
       )
   })
+  @InternalServerErrorResponse
   ResponseEntity<CursorPageResponsePopularReviewDto> popular(
       @ParameterObject RankingReviewRequest request);
 }
