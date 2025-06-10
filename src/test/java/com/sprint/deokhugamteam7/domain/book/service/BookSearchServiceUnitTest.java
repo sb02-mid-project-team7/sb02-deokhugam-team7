@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.book;
+package com.sprint.deokhugamteam7.domain.book.service;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,7 +14,6 @@ import com.sprint.deokhugamteam7.domain.book.dto.response.CursorPageResponsePopu
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.book.repository.RankingBookRepository;
-import com.sprint.deokhugamteam7.domain.book.service.BookSearchService;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewRepository;
 import java.time.LocalDate;
