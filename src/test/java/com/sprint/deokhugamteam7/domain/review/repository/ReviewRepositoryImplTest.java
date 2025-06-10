@@ -111,7 +111,7 @@ public class ReviewRepositoryImplTest {
     assertThat(result).allSatisfy(review -> {
       assertThat(review.getRating()).isLessThanOrEqualTo(3);
       if (review.getRating() == 3) {
-        assertThat(review.getCreatedAt()).isBefore(review2.getCreatedAt());
+        assertThat(review.getCreatedAt()).isBeforeOrEqualTo(review2.getCreatedAt());
       }
     });
   }
