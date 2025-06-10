@@ -21,7 +21,7 @@ public class RankingReviewRequest {
 
   @Schema(
       description = "정렬 방향",
-      example = "DESC",
+      example = "ASC",
       defaultValue = "ASC",
       allowableValues = {"DESC", "ASC"}
   )
