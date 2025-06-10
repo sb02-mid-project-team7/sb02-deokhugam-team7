@@ -46,37 +46,4 @@ public record BookDto(
         .reviewCount(rankingBook.getReviewCount())
         .rating(rankingBook.getRating()).build();
   }
-
-  public static BookDto from(RankingBook rankingBook) {
-    Book book = rankingBook.getBook();
-    return BookDto.builder()
-        .id(book.getId())
-        .title(book.getTitle())
-        .author(book.getAuthor())
-        .description(book.getDescription())
-        .publisher(book.getPublisher())
-        .publishedDate(book.getPublishedDate())
-        .isbn(book.getIsbn())
-        .thumbnailUrl(book.getThumbnailUrl())
-        .createdAt(book.getCreatedAt())
-        .updatedAt(book.getUpdatedAt())
-        .reviewCount(rankingBook.getReviewCount())
-        .rating(rankingBook.getRating()).build();
-  }
-
-  public static BookDto from(FindBookDto book) {
-    return BookDto.builder()
-        .id(book.id())
-        .title(book.title())
-        .author(book.author())
-        .description(book.description())
-        .publisher(book.publisher())
-        .publishedDate(book.publishedDate())
-        .isbn(book.isbn())
-        .thumbnailUrl(book.thumbnailUrl())
-        .createdAt(book.createdAt())
-        .updatedAt(book.updatedAt())
-        .reviewCount(book.reviewCount())
-        .rating(book.rating()).build();
-  }
 }
