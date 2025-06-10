@@ -24,7 +24,7 @@ public class BookCondition {
       description = "정렬 기준 (title | publishedDate | rating | reviewCount)",
       example = "title",
       defaultValue = "title",
-      allowableValues = {"title", "rating", "rating", "reviewCount"}
+      allowableValues = {"title", "rating", "reviewCount"}
   )
   String orderBy = "title";
 
