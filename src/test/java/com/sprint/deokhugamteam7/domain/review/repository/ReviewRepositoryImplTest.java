@@ -92,6 +92,31 @@ public class ReviewRepositoryImplTest {
   }
 
   @Test
+  @DisplayName("커서 기반 rating 정렬 리뷰 조회 (DESC)")
+  void findAll_withCursorAndRatingOrder_ShouldReturnPagedList() {
+    // given
+    createOtherReviews();
+
+    ReviewSearchCondition condition = new ReviewSearchCondition();
+    condition.setOrderBy("rating");
+    condition.setDirection("DESC");
+    condition.setLimit(2);
+    condition.setCursor("3");
+    condition.setAfter(review2.getCreatedAt());
+
+    // when
+    List<Review> result = reviewRepositoryCustom.findAll(condition, condition.getLimit());
+
+    // then
+    assertThat(result).allSatisfy(review -> {
+      assertThat(review.getRating()).isLessThanOrEqualTo(3);
+      if (review.getRating() == 3) {
+        assertThat(review.getCreatedAt()).isBefore(review2.getCreatedAt());
+      }
+    });
+  }
+
+  @Test
   @DisplayName("검색 조건과 정렬 조건, 제한에 맞는 모든 리뷰의 수 반환")
   void countByCondition_ShouldReturnReviewCount() {
     ReviewSearchCondition condition = createSearchCondition();
@@ -258,6 +283,58 @@ public class ReviewRepositoryImplTest {
     long res = reviewRepositoryCustom.countRakingReviewByPeriod(Period.DAILY);
 
     assertThat(res).isEqualTo(3);
+  }
+
+  @Test
+  @DisplayName("여러 reviewId에 대해 각각의 좋아요 수를 Map으로 반환")
+  void countLikesByReviewIds_ShouldReturnCounts() {
+    createOtherReviews();
+
+    ReviewLike like1 = ReviewLike.create(user, review);
+    ReviewLike like2 = ReviewLike.create(user2, review2);
+    ReviewLike like3 = ReviewLike.create(user3, review2);
+    ReviewLike like4 = ReviewLike.create(user4, review3);
+    em.persist(like1);
+    em.persist(like2);
+    em.persist(like3);
+    em.persist(like4);
+    em.flush();
+    em.clear();
+
+    List<UUID> reviewIds = List.of(review.getId(), review2.getId(), review3.getId());
+    Map<UUID, Integer> result = reviewRepositoryCustom.countLikesByReviewIds(reviewIds);
+
+    assertThat(result).hasSize(3);
+    assertThat(result.get(review.getId())).isEqualTo(1);
+    assertThat(result.get(review2.getId())).isEqualTo(2);
+    assertThat(result.get(review3.getId())).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("여러 reviewId에 대해 각각의 삭제되지 않은 댓글 수를 Map으로 반환")
+  void countCommentsByReviewIds_ShouldReturnCounts() {
+    createOtherReviews();
+
+    Comment comment1 = Comment.create(user, review, "리뷰1의 댓글");
+    Comment comment2 = Comment.create(user2, review2, "리뷰2의 댓글1");
+    Comment comment3 = Comment.create(user3, review2, "리뷰2의 댓글2");
+    comment3.delete();
+    Comment comment4 = Comment.create(user4, review3, "리뷰3의 댓글");
+
+    em.persist(comment1);
+    em.persist(comment2);
+    em.persist(comment3);
+    em.persist(comment4);
+    em.flush();
+    em.clear();
+
+    List<UUID> reviewIds = List.of(review.getId(), review2.getId(), review3.getId());
+    Map<UUID, Integer> result = reviewRepositoryCustom.countCommentsByReviewIds(reviewIds);
+
+    assertThat(result).hasSize(3);
+    assertThat(result.get(review.getId())).isEqualTo(1);
+    assertThat(result.get(review2.getId())).isEqualTo(1);
+    assertThat(result.get(review3.getId())).isEqualTo(1);
   }
 
   void createOtherReviews() {

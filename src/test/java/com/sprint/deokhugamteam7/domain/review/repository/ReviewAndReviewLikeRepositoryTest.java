@@ -9,7 +9,10 @@ import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
 import com.sprint.deokhugamteam7.domain.user.entity.User;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -93,5 +96,31 @@ public class ReviewAndReviewLikeRepositoryTest {
     boolean res = reviewLikeRepository.existsByUserIdAndReviewId(user.getId(), review.getId());
 
     assertThat(res).isTrue();
+  }
+
+  @Test
+  @DisplayName("주어진 reviewIds 중 유저가 좋아요를 누른 ReviewId들을 Set으로 반환")
+  void findReviewIdsLikedByUser_shouldReturnOnlyLikedReviewIds() {
+    User user2 = User.create("test2@gmail.com", "test2", "test1234!");
+    em.persist(user2);
+
+    Review review2 = Review.create(book, user, "두 번째 리뷰입니다.", 4);
+    em.persist(review2);
+
+    ReviewLike like1 = ReviewLike.create(user, review);
+    ReviewLike like2 = ReviewLike.create(user, review2);
+    ReviewLike like3 = ReviewLike.create(user2, review2);
+    em.persist(like1);
+    em.persist(like2);
+    em.persist(like3);
+    em.flush();
+    em.clear();
+
+    List<UUID> reviewIds = List.of(review.getId(), review2.getId());
+    Set<UUID> likedByUser = reviewLikeRepository.findReviewIdsLikedByUser(user.getId(), reviewIds);
+
+    assertThat(likedByUser)
+        .hasSize(2)
+        .containsExactlyInAnyOrder(review.getId(), review2.getId());
   }
 }
