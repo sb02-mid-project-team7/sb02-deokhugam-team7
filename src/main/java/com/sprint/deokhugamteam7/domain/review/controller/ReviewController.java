@@ -27,10 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reviews")
-public class ReviewController {
+public class ReviewController implements ReviewApi {
 
   private final ReviewService reviewService;
 
+  @Override
   @PostMapping
   public ResponseEntity<ReviewDto> create(@RequestBody @Valid ReviewCreateRequest request) {
     ReviewDto reviewDto = reviewService.create(request);
@@ -39,6 +40,7 @@ public class ReviewController {
         .body(reviewDto);
   }
 
+  @Override
   @PatchMapping(path = "/{reviewId}")
   public ResponseEntity<ReviewDto> update(
       @PathVariable() UUID reviewId,
@@ -48,6 +50,7 @@ public class ReviewController {
     return ResponseEntity.ok(reviewDto);
   }
 
+  @Override
   @DeleteMapping(path = "/{reviewId}")
   public ResponseEntity<Void> deleteSoft(
       @PathVariable UUID reviewId,
@@ -56,6 +59,7 @@ public class ReviewController {
     return ResponseEntity.noContent().build();
   }
 
+  @Override
   @DeleteMapping(path = "/{reviewId}/hard")
   public ResponseEntity<Void> deleteHard(
       @PathVariable UUID reviewId,
@@ -64,6 +68,7 @@ public class ReviewController {
     return ResponseEntity.noContent().build();
   }
 
+  @Override
   @GetMapping(path = "/{reviewId}")
   public ResponseEntity<ReviewDto> findById(
       @PathVariable UUID reviewId,
@@ -72,6 +77,7 @@ public class ReviewController {
     return ResponseEntity.ok(reviewDto);
   }
 
+  @Override
   @PostMapping(path = "/{reviewId}/like")
   public ResponseEntity<ReviewLikeDto> like(
       @PathVariable UUID reviewId,
@@ -82,6 +88,7 @@ public class ReviewController {
         .body(reviewLikeDto);
   }
 
+  @Override
   @GetMapping
   public ResponseEntity<CursorPageResponseReviewDto> findAll(
       ReviewSearchCondition condition,
