@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class CommentController {
+public class CommentController implements CommentApi {
 
 	private final CommentService commentService;
 
@@ -47,7 +47,7 @@ public class CommentController {
 	}
 
 	@DeleteMapping("/api/comments/{commentId}/hard")
-	public ResponseEntity<?> deleteHard(
+	public ResponseEntity<Void> deleteHard(
 		@PathVariable UUID commentId,
 		@RequestHeader(value = "Deokhugam-Request-User-ID") UUID userId
 	) {
@@ -56,7 +56,7 @@ public class CommentController {
 	}
 
 	@DeleteMapping("/api/comments/{commentId}")
-	public ResponseEntity<?> deleteSoft(
+	public ResponseEntity<Void> deleteSoft(
 		@PathVariable UUID commentId,
 		@RequestHeader(value = "Deokhugam-Request-User-ID") UUID userId
 	) {
@@ -72,8 +72,6 @@ public class CommentController {
 		@RequestParam(required = false) LocalDateTime after, // 이전 페이지의 마지막 요소 생성 시간.
 		@RequestParam(defaultValue = "30") int limit
 	) {
-		// 시간순 정렬해놔야함 .
-		// 마지막 요소의 ID + 마지막 요소의 생성시간 전달 .
 		log.info("cursorID: {}, nextAfter: {}", cursor, after);
 		CursorPageResponseCommentDto response = commentService.getCommentList(reviewId,
 			direction, cursor, after, limit);
