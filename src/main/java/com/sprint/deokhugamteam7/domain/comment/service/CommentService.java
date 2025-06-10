@@ -96,9 +96,9 @@ public class CommentService {
 		String content = commentUpdateRequest.content();
 		comment.update(content);
 
-    if (content == null || content.isBlank()) { // isBlank() 사용!
-      throw new IllegalArgumentException("댓글은 공백일 수 없습니다.");
-    }
+		if (content == null || content.isBlank()) { // isBlank() 사용!
+			throw new IllegalArgumentException("댓글은 공백일 수 없습니다.");
+		}
 
 		return CommentDto.from(comment);
 	}
@@ -189,16 +189,10 @@ public class CommentService {
 	@Transactional(readOnly = true)
 	public CommentDto getComment(UUID commentId) {
 //		log.info("[CommentService] getComment request: commentId={}", commentId);
-
 		Comment comment = commentRepository.findById(commentId).orElseThrow(
 			() -> new EntityNotFoundException("comment not found")
 		);
 
 		return CommentDto.from(comment);
-	}
-
-	public Long count(Long reviewId) {
-		// TODO: review_comment_count 이런 테이블 하나 만들어서 댓글 수 반환하기
-		return 0L;
 	}
 }
