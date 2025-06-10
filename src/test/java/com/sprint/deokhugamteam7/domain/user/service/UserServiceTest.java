@@ -62,6 +62,7 @@ class UserServiceTest {
       // then
       assertThat(result.email()).isEqualTo(request.email());
       assertThat(result.nickname()).isEqualTo(request.nickname());
+      verify(passwordEncoder).encode(request.password());
     }
 
     @Test
