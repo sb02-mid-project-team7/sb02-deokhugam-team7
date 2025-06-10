@@ -3,6 +3,12 @@ spring:
     name: deokhugam
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      schema: batch
+      initialize-schema: never  # 자동 생성/삭제 방지
 
 deokhugam:
   storage:
