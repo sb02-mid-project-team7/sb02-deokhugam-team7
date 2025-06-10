@@ -146,7 +146,6 @@ public class CommentService {
 
 		int queryLimit = limit + 1; // has next를 위해 limit에 1을 더한 후 더 보여줄 페이지가 있는지 판단
 
-		// 1. 첫번째 페이지인 경우는 nextCursor nextAfter 가 없음 .
 		List<Comment> comments = cursorId == null || createdAt == null ?
 			commentRepository.findFirstPage(reviewId, direction, queryLimit) :
 			commentRepository
