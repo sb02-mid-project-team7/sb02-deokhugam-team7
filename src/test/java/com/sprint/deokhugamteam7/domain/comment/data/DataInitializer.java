@@ -78,7 +78,7 @@ public class DataInitializer {
 			executorService.submit(() -> {
 				insert();
 				latch.countDown();
-				log.info("latch.getCount(): " + latch.getCount());
+				log.info("latch.getCount(): {}", latch.getCount());
 			});
 		}
 		latch.await();
