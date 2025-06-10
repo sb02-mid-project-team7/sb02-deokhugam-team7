@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.review.controller.response;
+package com.sprint.deokhugamteam7.swagger;
 
 import com.sprint.deokhugamteam7.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.media.Content;

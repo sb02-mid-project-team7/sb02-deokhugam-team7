@@ -1,7 +1,5 @@
 package com.sprint.deokhugamteam7.domain.review.controller;
 
-import com.sprint.deokhugamteam7.domain.review.controller.response.InternalServerErrorResponse;
-import com.sprint.deokhugamteam7.domain.review.controller.response.ReviewNotFoundResponse;
 import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
@@ -11,6 +9,8 @@ import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponseRe
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
 import com.sprint.deokhugamteam7.exception.ErrorResponse;
+import com.sprint.deokhugamteam7.swagger.InternalServerErrorResponse;
+import com.sprint.deokhugamteam7.swagger.ReviewNotFoundResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
