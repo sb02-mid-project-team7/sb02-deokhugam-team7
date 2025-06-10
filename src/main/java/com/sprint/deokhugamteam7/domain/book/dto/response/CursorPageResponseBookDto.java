@@ -1,17 +1,25 @@
 package com.sprint.deokhugamteam7.domain.book.dto.response;
 
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 
 @Builder
+@Schema(description = "도서 커서 기반 페이지네이션 응답")
 public record CursorPageResponseBookDto(
+    @Schema(description = "도서 목록")
     List<BookDto> content,
+    @Schema(description = "다음 페이지네이션 커서")
     String nextCursor,
+    @Schema(description = "보조 커서(createdAt)", example = "2025-06-10T13:00:00", type = "string", format = "date-time")
     LocalDateTime nextAfter,
+    @Schema(description = "페이지 크기", example = "10")
     int size,
+    @Schema(description = "총 요소 수", example = "10")
     Long totalElements,
+    @Schema(description = "다음 페이지 여부", example = "true")
     boolean hasNext
 ) {
 
