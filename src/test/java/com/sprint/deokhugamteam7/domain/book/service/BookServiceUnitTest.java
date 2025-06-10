@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.book;
+package com.sprint.deokhugamteam7.domain.book.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -12,8 +12,6 @@ import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
-import com.sprint.deokhugamteam7.domain.book.service.BasicBookService;
-import com.sprint.deokhugamteam7.domain.book.service.S3ImageComponent;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.book.BookException;
 import java.time.LocalDate;

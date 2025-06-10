@@ -1,10 +1,9 @@
-package com.sprint.deokhugamteam7.domain.book;
+package com.sprint.deokhugamteam7.domain.book.entity;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.sprint.deokhugamteam7.constant.Period;
-import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import org.junit.jupiter.api.Test;
 
 public class RankingBookEntityTest {
