@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.book;
+package com.sprint.deokhugamteam7.domain.book.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.sprint.deokhugamteam7.domain.book.service.S3ImageComponent;
 import com.sprint.deokhugamteam7.exception.book.BookException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

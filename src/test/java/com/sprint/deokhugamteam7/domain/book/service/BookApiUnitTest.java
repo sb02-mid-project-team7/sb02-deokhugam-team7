@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.book;
+package com.sprint.deokhugamteam7.domain.book.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.deokhugamteam7.domain.book.dto.NaverBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.response.Item;
 import com.sprint.deokhugamteam7.domain.book.dto.response.NaverBookResponse;
-import com.sprint.deokhugamteam7.domain.book.service.APIService;
 import java.net.URI;
 import java.util.List;
 import org.junit.jupiter.api.Test;
