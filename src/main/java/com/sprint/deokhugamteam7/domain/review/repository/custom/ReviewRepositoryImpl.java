@@ -65,7 +65,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
           review.content.lower().like(keyword)
               .or(user.nickname.lower().like(keyword))
               .or(book.title.lower().like(keyword))
-              .or(review.content.lower().like(keyword))
       );
     }
 
@@ -246,6 +245,36 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .fetchOne();
 
     return res != null ? res : 0;
+  }
+
+  public Map<UUID, Integer> countLikesByReviewIds(List<UUID> reviewIds) {
+    List<ReviewCountDto> likeCounts = queryFactory
+        .select(Projections.constructor(ReviewCountDto.class, rl.review.id, rl.count()))
+        .from(rl)
+        .where(rl.review.id.in(reviewIds))
+        .groupBy(rl.review.id)
+        .fetch();
+
+    return likeCounts.stream()
+        .collect(Collectors.toMap(
+            ReviewCountDto::reviewId,
+            dto -> dto.count().intValue()
+        ));
+  }
+
+  public Map<UUID, Integer> countCommentsByReviewIds(List<UUID> reviewIds) {
+    List<ReviewCountDto> commentCounts = queryFactory
+        .select(Projections.constructor(ReviewCountDto.class, c.review.id, c.count()))
+        .from(c)
+        .where(c.isDeleted.eq(false).and(c.review.id.in(reviewIds)))
+        .groupBy(c.review.id)
+        .fetch();
+
+    return commentCounts.stream()
+        .collect(Collectors.toMap(
+            ReviewCountDto::reviewId,
+            dto -> dto.count().intValue()
+        ));
   }
 }
 
