@@ -25,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -34,6 +35,9 @@ class UserServiceTest {
 
   @InjectMocks
   private UserServiceImpl userService;
+
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
   @Nested
   @DisplayName("회원가입")
@@ -47,8 +51,9 @@ class UserServiceTest {
           "Password123!");
 
       when(userRepository.existsByEmail(request.email())).thenReturn(false);
+      when(passwordEncoder.encode(any())).thenReturn("encoded-pw");
       when(userRepository.save(any(User.class))).thenReturn(
-          User.create(request.email(), request.nickname(), request.password())
+          User.create(request.email(), request.nickname(), "encoded-pw")
       );
 
       // when
@@ -70,7 +75,7 @@ class UserServiceTest {
 
       assertThat(thrown)
           .isInstanceOf(UserException.class)
-          .hasMessage("Internal Server Error");
+          .hasMessageContaining(ErrorCode.DUPLICATE_EMAIL.getMessage());
     }
   }
 
@@ -81,10 +86,11 @@ class UserServiceTest {
     @Test
     @DisplayName("성공")
     void login_success() {
-      UserLoginRequest request = new UserLoginRequest("test@example.com", "Password123!");
       User user = User.create("test@example.com", "tester", "Password123!");
+      UserLoginRequest request = new UserLoginRequest("test@example.com", "Password123!");
 
-      when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
+      when(userRepository.findByEmailIsDeletedFalse(request.email())).thenReturn(Optional.of(user));
+      when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(true);
 
       UserDto result = userService.login(request);
 
@@ -97,13 +103,13 @@ class UserServiceTest {
     @DisplayName("존재하지 않는 유저 예외")
     void login_userNotFound() {
       UserLoginRequest request = new UserLoginRequest("noone@example.com", "pw");
-      when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
+      when(userRepository.findByEmailIsDeletedFalse(request.email())).thenReturn(Optional.empty());
 
       Throwable thrown = catchThrowable(() -> userService.login(request));
 
       assertThat(thrown)
           .isInstanceOf(UserException.class)
-          .hasMessage("Internal Server Error");
+          .hasMessageContaining(ErrorCode.USER_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -112,13 +118,13 @@ class UserServiceTest {
       UserLoginRequest request = new UserLoginRequest("test@example.com", "wrongpassword");
       User user = User.create("test@example.com", "tester", "Password123!");
 
-      when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
+      when(userRepository.findByEmailIsDeletedFalse(request.email())).thenReturn(Optional.of(user));
 
       Throwable thrown = catchThrowable(() -> userService.login(request));
 
       assertThat(thrown)
           .isInstanceOf(UserException.class)
-          .hasMessage("Internal Server Error");
+          .hasMessageContaining(ErrorCode.INTERNAL_BAD_REQUEST.getMessage());
     }
   }
 
@@ -130,7 +136,7 @@ class UserServiceTest {
     @DisplayName("조회 성공")
     void findById_success() {
       User user = User.create("test@example.com", "tester", "Password123!");
-      when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+      when(userRepository.findByIdAndIsDeletedFalse(user.getId())).thenReturn(Optional.of(user));
 
       UserDto result = userService.findById(user.getId());
       assertThat(result).isNotNull();
@@ -143,12 +149,12 @@ class UserServiceTest {
     void findById_userNotFound() {
       UUID userId = UUID.randomUUID();
       // given
-      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+      when(userRepository.findByIdAndIsDeletedFalse(userId)).thenReturn(Optional.empty());
 
       // when & then
       assertThatThrownBy(() -> userService.findById(userId))
           .isInstanceOf(UserException.class)
-          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+          .hasMessageContaining(ErrorCode.USER_NOT_FOUND.getMessage());
     }
   }
 
@@ -162,7 +168,7 @@ class UserServiceTest {
       // given
       UUID userId = UUID.randomUUID();
       User user = User.create("test@example.com", "oldNick", "password123!");
-      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+      when(userRepository.findByIdAndIsDeletedFalse(userId)).thenReturn(Optional.of(user));
 
       UserUpdateRequest request = new UserUpdateRequest("newNick");
 
@@ -172,7 +178,7 @@ class UserServiceTest {
       // then
       assertThat(updatedUser.nickname()).isEqualTo("newNick");
       assertThat(updatedUser.email()).isEqualTo("test@example.com");
-      verify(userRepository).findById(userId);
+      verify(userRepository).findByIdAndIsDeletedFalse(userId);
     }
 
     @Test
@@ -180,16 +186,16 @@ class UserServiceTest {
     void update_userNotFound() {
       // given
       UUID userId = UUID.randomUUID();
-      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+      when(userRepository.findByIdAndIsDeletedFalse(userId)).thenReturn(Optional.empty());
 
       UserUpdateRequest request = new UserUpdateRequest("anyNick");
 
       // when & then
       assertThatThrownBy(() -> userService.update(userId, request))
           .isInstanceOf(UserException.class)
-          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+          .hasMessageContaining(ErrorCode.USER_NOT_FOUND.getMessage());
 
-      verify(userRepository).findById(userId);
+      verify(userRepository).findByIdAndIsDeletedFalse(userId);
     }
   }
 
@@ -222,7 +228,7 @@ class UserServiceTest {
       // when & then
       assertThatThrownBy(() -> userService.softDeleteById(userId))
           .isInstanceOf(DeokhugamException.class)
-          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+          .hasMessageContaining(ErrorCode.USER_NOT_FOUND.getMessage());
 
       verify(userRepository).findById(userId);
     }
@@ -255,7 +261,7 @@ class UserServiceTest {
       // when & then
       assertThatThrownBy(() -> userService.hardDeleteById(userId))
           .isInstanceOf(DeokhugamException.class)
-          .hasMessageContaining(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+          .hasMessageContaining(ErrorCode.USER_NOT_FOUND.getMessage());
 
       verify(userRepository).existsById(userId);
     }
