@@ -1,10 +1,9 @@
-package com.sprint.deokhugamteam7.domain.book;
+package com.sprint.deokhugamteam7.domain.book.service;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.sprint.deokhugamteam7.domain.book.service.BarcodeService;
 import com.sprint.deokhugamteam7.exception.book.BookException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
