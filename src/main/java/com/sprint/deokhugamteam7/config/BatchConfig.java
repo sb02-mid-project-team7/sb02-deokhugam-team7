@@ -12,6 +12,7 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -22,14 +23,14 @@ public class BatchConfig {
 
   @Bean
   public Job userScoreJob(
-      JobRepository jobRepository,
-      Step collectAndSaveUserScoresStep,
-      Step updateUserRankingStep
+    JobRepository jobRepository,
+    @Qualifier("collectAndSaveUserScoresStep") Step collectAndSaveUserScoresStep,
+    @Qualifier("updateUserRankingStep") Step updateUserRankingStep
   ) {
     return new JobBuilder("userScoreJob", jobRepository)
-        .start(collectAndSaveUserScoresStep)
-        .next(updateUserRankingStep)
-        .build();
+      .start(collectAndSaveUserScoresStep)
+      .next(updateUserRankingStep)
+      .build();
   }
 
   @Bean

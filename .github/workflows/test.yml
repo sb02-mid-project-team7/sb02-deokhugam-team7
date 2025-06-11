@@ -1,10 +1,8 @@
 name: test.yml
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - develop
+  pull_request:
+    branches: [ develop ]
 jobs:
   pr-workflows:
     runs-on: ubuntu-latest

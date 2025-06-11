@@ -3,6 +3,7 @@ package com.sprint.deokhugamteam7.domain.comment.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -16,6 +17,7 @@ import com.sprint.deokhugamteam7.domain.comment.dto.CommentDto;
 import com.sprint.deokhugamteam7.domain.comment.dto.request.CommentCreateRequest;
 import com.sprint.deokhugamteam7.domain.comment.dto.request.CommentUpdateRequest;
 import com.sprint.deokhugamteam7.domain.comment.dto.response.CursorPageResponseCommentDto;
+import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.comment.service.CommentService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -143,6 +145,45 @@ class CommentControllerTest {
 			.andExpect(jsonPath("$.content.length()").value(2))
 			.andExpect(jsonPath("$.content[0].content").value("content1"))
 			.andExpect(jsonPath("$.hasNext").value(true))
+			.andDo(print());
+	}
+
+	@Test
+	void deleteHardApiTest() throws Exception {
+		// given
+		UUID commentId = UUID.randomUUID();
+		UUID userId = UUID.randomUUID();
+
+		// when
+		mockMvc.perform(delete("/api/comments/{commentId}/hard", commentId)
+				.header("Deokhugam-Request-User-ID", userId.toString()))
+			.andExpect(status().isNoContent()); // HTTP 204 응답을 기대
+
+		// then
+		verify(commentService).deleteHard(eq(commentId), eq(userId));
+	}
+
+	@Test
+	void getCommentSuccess() throws Exception {
+		// given
+		UUID commentId = UUID.randomUUID();
+		UUID reviewId = UUID.randomUUID();
+		UUID userId = UUID.randomUUID();
+		CommentDto responseDto = new CommentDto(commentId, reviewId, userId, "test-user",
+			"test-content", LocalDateTime.now(), LocalDateTime.now());
+
+		given(commentService.getComment(commentId)).willReturn(responseDto);
+
+		// when
+		ResultActions actions = mockMvc.perform(get("/api/comments/{commentId}", commentId)
+			.accept(MediaType.APPLICATION_JSON));
+
+		// then
+		actions
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.id").value(commentId.toString()))
+			.andExpect(jsonPath("$.content").value("test-content"))
+			.andExpect(jsonPath("$.userNickname").value("test-user"))
 			.andDo(print());
 	}
 }
