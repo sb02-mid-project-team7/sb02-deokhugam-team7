@@ -44,9 +44,6 @@ class CommentControllerTest {
 	@Mock
 	private CommentService commentService;
 
-	@Mock
-	private CommentRepository commentRepository;
-
 	@InjectMocks
 	private CommentController commentController;
 
