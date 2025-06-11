@@ -93,7 +93,7 @@ class NotificationRepositoryTest {
     }
 
     @Test
-    void 커서_기반_목록_조회_desc() {
+    void 커서_기반_목록_조회_정렬_desc() {
         NotificationCursorRequest request = new NotificationCursorRequest(
             user.getId(),
             "DESC",
@@ -107,6 +107,95 @@ class NotificationRepositoryTest {
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.hasNext()).isTrue();
         assertThat(result.getContent().get(0).content()).startsWith("알림 내용");
+    }
+
+    @Test
+    void 커서_기반_목록_조회_정렬_asc() {
+        NotificationCursorRequest request = new NotificationCursorRequest(
+          user.getId(),
+          "ASC",
+          null,
+          null,
+          2
+        );
+
+        Slice<NotificationDto> result = notificationRepository.findAllByCursor(request);
+
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.hasNext()).isTrue();
+        assertThat(result.getContent().get(0).content()).startsWith("알림 내용");
+    }
+
+    @Test
+    void 커서_기반_목록_조회_with_cursor_정렬_DESC() {
+        LocalDateTime after = LocalDateTime.now();
+        String cursor = LocalDateTime.now().toString();
+
+        NotificationCursorRequest request = new NotificationCursorRequest(
+          user.getId(),
+          "DESC",
+          cursor,
+          after,
+          3
+        );
+
+        Slice<NotificationDto> result = notificationRepository.findAllByCursor(request);
+        assertThat(result.getContent()).hasSize(3);
+        assertThat(result.hasNext()).isFalse();
+    }
+
+    @Test
+    void 커서_기반_목록_조회_with_cursor_정렬_ASC() {
+        LocalDateTime after = LocalDateTime.now();
+        String cursor = LocalDateTime.now().toString();
+
+        NotificationCursorRequest request = new NotificationCursorRequest(
+          user.getId(),
+          "ASC",
+          cursor,
+          after,
+          3
+        );
+
+        Slice<NotificationDto> result = notificationRepository.findAllByCursor(request);
+        assertThat(result.getContent()).hasSize(0);
+        assertThat(result.hasNext()).isFalse();
+    }
+
+    @Test
+    void 커서_기반_목록_조회_cursor_존재_after_null_커서_동작_x() {
+        String cursor = LocalDateTime.now().plusWeeks(2).toString();
+        LocalDateTime after = null;
+
+        NotificationCursorRequest request = new NotificationCursorRequest(
+          user.getId(),
+          "DESC",
+          cursor,
+          after,
+          3
+        );
+
+        Slice<NotificationDto> result = notificationRepository.findAllByCursor(request);
+        assertThat(result.getContent()).hasSize(3);
+        assertThat(result.hasNext()).isFalse();
+    }
+
+    @Test
+    void 커서_기반_목록_조회_cursor_empty_after_존재_커서_동작_x() {
+        String cursor = "";
+        LocalDateTime after = LocalDateTime.now().plusWeeks(2);
+
+        NotificationCursorRequest request = new NotificationCursorRequest(
+          user.getId(),
+          "DESC",
+          cursor,
+          after,
+          3
+        );
+
+        Slice<NotificationDto> result = notificationRepository.findAllByCursor(request);
+        assertThat(result.getContent()).hasSize(3);
+        assertThat(result.hasNext()).isFalse();
     }
 
 }

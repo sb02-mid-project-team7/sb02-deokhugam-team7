@@ -182,10 +182,10 @@ public class UserIntegrationTest {
             .param("size", "5")
             .param("direction", "DESC"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content.length()").value(2))
+        .andExpect(jsonPath("$.content.length()").value(3))
         .andExpect(jsonPath("$.content[0].userId").exists())
         .andExpect(jsonPath("$.content[0].score").exists())
-        .andExpect(jsonPath("$.size").value(2))
+        .andExpect(jsonPath("$.size").value(3))
         .andExpect(jsonPath("$.hasNext").value(false));
   }
 }

@@ -7,16 +7,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.notification.repository.NotificationRepository;
+import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewCreateRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewUpdateRequest;
+import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponsePopularReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.CursorPageResponseReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewDto;
 import com.sprint.deokhugamteam7.domain.review.dto.response.ReviewLikeDto;
+import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.review.entity.ReviewLike;
 import com.sprint.deokhugamteam7.domain.review.repository.ReviewLikeRepository;
@@ -30,7 +34,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -128,6 +134,7 @@ public class BasicReviewServiceTest {
     UUID reviewId = UUID.randomUUID();
     Review review = Review.create(book, user, "책의 리뷰입니다.", 3);
     ReflectionTestUtils.setField(review, "id", reviewId);
+    book.setReviews(new ArrayList<>());
     ReviewUpdateRequest request
         = new ReviewUpdateRequest("리뷰 변경합니다.", 5);
 
@@ -306,11 +313,23 @@ public class BasicReviewServiceTest {
 
     List<Review> reviews = List.of(review1, review2, review3);
 
+    Map<UUID, Integer> likeMap = Map.of(
+        id1, 3,
+        id2, 4
+    );
+    Map<UUID, Integer> commentMap = Map.of(
+        id1, 2,
+        id2, 1
+    );
+    Set<UUID> likedReviewIds = Set.of(id1, id2);
+
     Mockito.when(reviewRepositoryCustom.findAll(condition, 2)).thenReturn(reviews);
-    Mockito.when(reviewLikeRepository.countByReviewId(Mockito.any())).thenReturn(3);
-    Mockito.when(commentRepository.countByReviewIdAndIsDeletedFalse(Mockito.any())).thenReturn(2);
-    Mockito.when(reviewLikeRepository.existsByUserIdAndReviewId(Mockito.any(), Mockito.any()))
-        .thenReturn(true);
+    Mockito.when(reviewRepositoryCustom.countLikesByReviewIds(List.of(id1, id2)))
+        .thenReturn(likeMap);
+    Mockito.when(reviewRepositoryCustom.countCommentsByReviewIds(List.of(id1, id2)))
+        .thenReturn(commentMap);
+    Mockito.when(reviewLikeRepository.findReviewIdsLikedByUser(userId, List.of(id1, id2)))
+        .thenReturn(likedReviewIds);
     Mockito.when(reviewRepositoryCustom.countByCondition(condition)).thenReturn(3L);
 
     // when
@@ -318,12 +337,9 @@ public class BasicReviewServiceTest {
 
     // then
     verify(reviewRepositoryCustom).findAll(condition, 2);
-    verify(reviewLikeRepository).countByReviewId(id1);
-    verify(reviewLikeRepository).countByReviewId(id2);
-    verify(commentRepository).countByReviewIdAndIsDeletedFalse(id1);
-    verify(commentRepository).countByReviewIdAndIsDeletedFalse(id2);
-    verify(reviewLikeRepository).existsByUserIdAndReviewId(userId, id1);
-    verify(reviewLikeRepository).existsByUserIdAndReviewId(userId, id2);
+    verify(reviewRepositoryCustom).countLikesByReviewIds(List.of(id1, id2));
+    verify(reviewRepositoryCustom).countCommentsByReviewIds(List.of(id1, id2));
+    verify(reviewLikeRepository).findReviewIdsLikedByUser(userId, List.of(id1, id2));
     verify(reviewRepositoryCustom).countByCondition(condition);
 
     assertThat(result.content()).hasSize(2);
@@ -338,4 +354,49 @@ public class BasicReviewServiceTest {
     assertThat(result.content().get(0).commentCount()).isEqualTo(2);
     assertThat(result.content().get(0).likedByMe()).isTrue();
   }
+
+  @Test
+  @DisplayName("인기 리뷰 조회")
+  void popular_shouldReturnPagedPopularReviews() {
+    // given
+    RankingReviewRequest request = new RankingReviewRequest();
+    request.setPeriod(Period.DAILY);
+    request.setLimit(2);
+
+    UUID r1Id = UUID.randomUUID();
+    UUID r2Id = UUID.randomUUID();
+
+    Review review1 = Review.create(book, user, "리뷰1", 5);
+    Review review2 = Review.create(book, user, "리뷰2", 4);
+    ReflectionTestUtils.setField(review1, "id", r1Id);
+    ReflectionTestUtils.setField(review2, "id", r2Id);
+
+    RankingReview ranking1 = RankingReview.create(review1, 9.5, Period.DAILY);
+    RankingReview ranking2 = RankingReview.create(review2, 8.0, Period.DAILY);
+    RankingReview ranking3 = RankingReview.create(review1, 7.0, Period.DAILY);
+
+    List<RankingReview> rankingReviews = List.of(ranking1, ranking2, ranking3);
+
+    Map<UUID, Integer> likeMap = Map.of(r1Id, 10, r2Id, 7);
+    Map<UUID, Integer> commentMap = Map.of(r1Id, 4, r2Id, 2);
+
+    when(reviewRepositoryCustom.findRankingReviewsByPeriod(request, 2))
+        .thenReturn(rankingReviews);
+    when(reviewRepositoryCustom.countLikesByReviewIds(List.of(r1Id, r2Id)))
+        .thenReturn(likeMap);
+    when(reviewRepositoryCustom.countCommentsByReviewIds(List.of(r1Id, r2Id)))
+        .thenReturn(commentMap);
+    when(reviewRepositoryCustom.countRakingReviewByPeriod(Period.DAILY)).thenReturn(3L);
+
+    // when
+    CursorPageResponsePopularReviewDto result = reviewService.popular(request);
+
+    // then
+    assertThat(result.content()).hasSize(2);
+    assertThat(result.hasNext()).isTrue();
+    assertThat(result.totalElements()).isEqualTo(3);
+    assertThat(result.content().get(0).likeCount()).isEqualTo(10);
+    assertThat(result.content().get(0).commentCount()).isEqualTo(4);
+  }
+
 }

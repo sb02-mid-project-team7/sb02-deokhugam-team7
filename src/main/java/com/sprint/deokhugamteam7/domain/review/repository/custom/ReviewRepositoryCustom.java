@@ -23,4 +23,8 @@ public interface ReviewRepositoryCustom {
   List<RankingReview> findRankingReviewsByPeriod(RankingReviewRequest request, int limit);
 
   long countRakingReviewByPeriod(Period period);
+
+  Map<UUID, Integer> countLikesByReviewIds(List<UUID> reviewIds);
+
+  Map<UUID, Integer> countCommentsByReviewIds(List<UUID> reviewIds);
 }

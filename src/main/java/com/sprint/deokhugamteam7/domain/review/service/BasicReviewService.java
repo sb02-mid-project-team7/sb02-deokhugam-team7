@@ -27,8 +27,12 @@ import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.review.ReviewException;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -191,12 +195,24 @@ public class BasicReviewService implements ReviewService {
     boolean hasNext = res.size() > limit;
     List<Review> currentPage = hasNext ? res.subList(0, limit) : res;
 
+    List<UUID> reviewIds = currentPage.stream()
+        .map(Review::getId).toList();
+    Set<UUID> likedReviewIds = reviewIds.isEmpty()
+        ? Collections.emptySet()
+        : new HashSet<>(reviewLikeRepository.findReviewIdsLikedByUser(headerUserId, reviewIds));
+
+    Map<UUID, Integer> countLikes = reviewIds.isEmpty()
+        ? Collections.emptyMap()
+        : reviewRepositoryCustom.countLikesByReviewIds(reviewIds);
+    Map<UUID, Integer> countComments = reviewIds.isEmpty()
+        ? Collections.emptyMap()
+        : reviewRepositoryCustom.countCommentsByReviewIds(reviewIds);
+
     List<ReviewDto> reviewDtoList = currentPage.stream()
         .map(review -> {
-          int likeCount = reviewLikeRepository.countByReviewId(review.getId());
-          int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(review.getId());
-          boolean likedByMe = reviewLikeRepository
-              .existsByUserIdAndReviewId(headerUserId, review.getId());
+          int likeCount = countLikes.getOrDefault(review.getId(), 0);
+          int commentCount = countComments.getOrDefault(review.getId(), 0);
+          boolean likedByMe = likedReviewIds.contains(review.getId());
           return ReviewDto.of(review, likeCount, commentCount, likedByMe);
         })
         .toList();
@@ -238,15 +254,24 @@ public class BasicReviewService implements ReviewService {
     List<RankingReview> currentPage =
         hasNext ? rankingReviews.subList(0, request.getLimit()) : rankingReviews;
 
+    List<UUID> reviewIds = currentPage.stream()
+        .map(rankingReview -> rankingReview.getReview().getId()).toList();
+
+    Map<UUID, Integer> countLikes = reviewIds.isEmpty()
+        ? Collections.emptyMap()
+        : reviewRepositoryCustom.countLikesByReviewIds(reviewIds);
+    Map<UUID, Integer> countComments = reviewIds.isEmpty()
+        ? Collections.emptyMap()
+        : reviewRepositoryCustom.countCommentsByReviewIds(reviewIds);
+
     long start = (request.getCursor() != null ?
         Long.parseLong(request.getCursor()) : 0) + 1;
 
     List<PopularReviewDto> content = IntStream.range(0, currentPage.size())
         .mapToObj(i -> {
           RankingReview ranking = currentPage.get(i);
-          int likeCount = reviewLikeRepository.countByReviewId(ranking.getReview().getId());
-          int commentCount
-              = commentRepository.countByReviewIdAndIsDeletedFalse(ranking.getReview().getId());
+          int likeCount = countLikes.getOrDefault(ranking.getReview().getId(), 0);
+          int commentCount = countComments.getOrDefault(ranking.getReview().getId(), 0);
 
           return PopularReviewDto.of(ranking, ranking.getReview(), start + i, likeCount,
               commentCount);
