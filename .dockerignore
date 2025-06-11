@@ -1,3 +1,7 @@
 *.env
 /logs
-/docker-compose.yaml
+/storage
+docker-compose.yaml
+application-dev.yaml
+application-prod.yaml
+*.md
