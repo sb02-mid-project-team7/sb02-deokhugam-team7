@@ -22,6 +22,9 @@ bin/
 !**/src/test/**/bin/
 src/main/generated
 
+docker-compose.yaml
+application-dev.yaml
+application-prod.yaml
 
 ### IntelliJ IDEA ###
 .idea
