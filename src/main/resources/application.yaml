@@ -3,6 +3,15 @@ spring:
     name: deokhugam
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: jdbc:postgresql://${RDS_ENDPOINT:localhost}:${DB_PORT:5432}/${DB_NAME:discodeit}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 60000
   batch:
     job:
       enabled: false
@@ -43,3 +52,6 @@ aws:
 naver:
   client-id: ${NAVER_CLIENT_ID:naver-client-id}
   client-secret: ${NAVER_CLIENT_SECRET:naver-client-secret}
+
+server:
+  port: 80
