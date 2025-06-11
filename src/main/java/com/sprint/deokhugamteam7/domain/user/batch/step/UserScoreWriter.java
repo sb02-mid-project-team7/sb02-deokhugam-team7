@@ -23,6 +23,7 @@ public class UserScoreWriter implements ItemWriter<UserScore> {
 
       if (id == null) {
         id = UUID.randomUUID();
+        score.updateId(id); // JPA의 save가 아니라 네이티브 쿼리(upsertUserScore)를 사용할 경우 @GeneratedValue가 적용되지 않아서 수동으로 설정함
       }
 
       userScoreRepository.upsertUserScore(
