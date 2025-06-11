@@ -8,7 +8,7 @@ build/
 ### 커스터마이징
 *.env
 /logs
-
+/storage
 ### STS ###
 .apt_generated
 .classpath
@@ -20,6 +20,8 @@ build/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+src/main/generated
+
 
 ### IntelliJ IDEA ###
 .idea

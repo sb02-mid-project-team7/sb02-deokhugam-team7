@@ -1,8 +1,20 @@
 package com.sprint.deokhugamteam7.domain.user.dto.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 public record UserRegisterRequest(
-    String email,
-    String nickname,
+    @Email String email,
+    @Pattern(
+        regexp = "^\\S+$",
+        message = "닉네임에는 공백을 포함할 수 없습니다."
+    )
+    @Size(min = 2, max = 20) String nickname,
+    @Pattern(
+        regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",
+        message = "비밀번호는 영문, 숫자, 특수문자를 포함한 8~20자리여야 합니다."
+    )
     String password
 ) {
 

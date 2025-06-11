@@ -1,6 +1,10 @@
 package com.sprint.deokhugamteam7.domain.book.entity;
 
+import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
+import com.sprint.deokhugamteam7.exception.DeokhugamException;
+import com.sprint.deokhugamteam7.exception.ErrorCode;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -11,14 +15,16 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -42,8 +48,9 @@ public class Book {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
+  @Setter
   @Column(name = "is_deleted", nullable = false)
-  private Boolean isDeleted;
+  private Boolean isDeleted = false;
 
   @Column(name = "title", nullable = false)
   private String title;
@@ -55,7 +62,7 @@ public class Book {
   private String publisher;
 
   @Column(name = "published_date", nullable = false)
-  private LocalDate publisherDate;
+  private LocalDate publishedDate;
 
   @Column(name = "description")
   private String description;
@@ -66,27 +73,74 @@ public class Book {
   @Column(name = "thumbnail_url")
   private String thumbnailUrl;
 
+  @Setter
+  @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<RankingBook> rankingBooks = new ArrayList<>();
+
+  @Setter
   @OneToMany(mappedBy = "book")
   private List<Review> reviews;
 
   @Builder(builderMethodName = "of")
   private Book(String title, String author, String description, String publisher,
-      LocalDate publisherDate, String isbn, String thumbnailUrl) {
+      LocalDate publishedDate, String isbn, String thumbnailUrl) {
+    validate(title, author, publisher, publishedDate);
     this.title = title;
     this.author = author;
     this.description = description;
     this.publisher = publisher;
-    this.publisherDate = publisherDate;
+    this.publishedDate = publishedDate;
     this.isbn = isbn;
     this.thumbnailUrl = thumbnailUrl;
+    this.addRankingBooks();
   }
 
   public static BookBuilder create(String title, String author, String publisher,
-      LocalDate publisherDate) {
+      LocalDate publishedDate) {
     return Book.of()
         .title(title)
         .author(author)
         .publisher(publisher)
-        .publisherDate(publisherDate);
+        .publishedDate(publishedDate);
+  }
+
+  private String updateField(String original, String newField) {
+    return (newField != null && !newField.equals(original) ? newField.trim() : original);
+  }
+
+  private LocalDate updateField(LocalDate original, LocalDate newField) {
+    return (newField != null && !newField.equals(original) ? newField : original);
+  }
+
+  public void update(String newTitle, String newAuthor, String newDescription, String newPublisher,
+      LocalDate newPublisherDate, String newThumbnailUrl) {
+    title = updateField(title, newTitle);
+    author = updateField(author, newAuthor);
+    description = updateField(description, newDescription);
+    publisher = updateField(publisher, newPublisher);
+    publishedDate = updateField(publishedDate, newPublisherDate);
+    thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
+  }
+
+
+  private void addRankingBooks() {
+    this.rankingBooks = Stream.of(Period.values()).map(
+        period -> {
+          RankingBook rankingBook = RankingBook.create(period);
+          rankingBook.setBook(this);
+          return rankingBook;
+        }
+    ).collect(Collectors.toList());
+  }
+
+  private void validate(String title, String author, String publisher, LocalDate publishedDate) {
+    if (title == null | author == null | publisher == null | publishedDate == null) {
+      throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  public List<Review> getReviewsWithIsDeletedIsFalse() {
+    return this.reviews.stream().filter(review -> !review.getIsDeleted()).toList();
   }
 }

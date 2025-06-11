@@ -15,14 +15,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "ranking_reviews")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class RankingReview {
 
@@ -32,24 +35,30 @@ public class RankingReview {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "review_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Review review;
 
   @Column(nullable = false)
-  private Double score;
+  private double score;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private Period period;
 
-  @Column(updatable = false, nullable = false)
-  private LocalDateTime createdAt;
+  @Column(name="review_created_at",nullable = false)
+  private LocalDateTime reviewCreatedAt;
 
   public static RankingReview create(Review review, Double score, Period period) {
     RankingReview ranking = new RankingReview();
     ranking.review = review;
     ranking.score = score;
     ranking.period = period;
+    ranking.reviewCreatedAt = review.getCreatedAt();
 
     return ranking;
+  }
+
+  public void update(Double score) {
+    this.score = score;
   }
 }

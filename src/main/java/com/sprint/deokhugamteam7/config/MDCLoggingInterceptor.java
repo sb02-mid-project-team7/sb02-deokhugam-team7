@@ -19,20 +19,19 @@ public class MDCLoggingInterceptor extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
     try {
-      // UUID
-      String requestId = request.getHeader("X-Request-ID");
-      if (requestId == null) {
-        requestId = UUID.randomUUID().toString();
-      }
-
+      // 사용자 ID 설정
+      Object userId = request.getSession().getAttribute("userId");
+      String requestId = userId != null ? userId.toString() : "non-member";
       MDC.put("requestId", requestId);
-
-      String requestIp = request.getRequestURI();
-
-      //품질 관리 합시다.
-      MDC.put("ip", requestIp);
-
       response.setHeader(HEADER, requestId);
+
+      // 클라이언트 IP 설정
+      String requestIp = request.getHeader("X-Forwarded-For");
+      if (requestIp == null || requestIp.isBlank()) {
+        requestIp = request.getRemoteAddr();
+      }
+      MDC.put("requestIp", requestIp);
+
       filterChain.doFilter(request, response);
     } finally {
       MDC.clear();
