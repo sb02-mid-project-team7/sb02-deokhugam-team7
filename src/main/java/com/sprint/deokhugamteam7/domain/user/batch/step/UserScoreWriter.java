@@ -19,8 +19,15 @@ public class UserScoreWriter implements ItemWriter<UserScore> {
   @Override
   public void write(Chunk<? extends UserScore> chunk) throws Exception {
     for (UserScore score : chunk) {
+      UUID id = score.getId();
+
+      if (id == null) {
+        id = UUID.randomUUID();
+        score.setId(id);
+      }
+
       userScoreRepository.upsertUserScore(
-          UUID.randomUUID(),
+          id,
           score.getUser().getId(),
           score.getPeriod().name(),
           score.getScore(),
