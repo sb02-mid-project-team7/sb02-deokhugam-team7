@@ -32,7 +32,7 @@ public class BasicBookService implements BookService {
     }
     Book book = Book.create(request.title().trim(), request.author().trim(), request.publisher().trim(),
             request.publishedDate())
-        .description(request.description().trim())
+        .description(request.description())
         .isbn(request.isbn().trim())
         .thumbnailUrl(thumbnailUrl).build();
     bookRepository.save(book);

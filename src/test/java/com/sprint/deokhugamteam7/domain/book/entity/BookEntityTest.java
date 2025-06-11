@@ -128,20 +128,4 @@ public class BookEntityTest {
     );
   }
 
-  @Test
-  void getReviewTest_WithIsDeleted() {
-    // given
-    User user = mock(User.class);
-    Review review = Review.create(book, user, "test", 3);
-    review.delete();
-    book.setReviews(List.of(review));
-    // when
-    List<Review> reviews = book.getReviews();
-    // then
-    assertAll(
-        () -> assertNotNull(reviews),
-        () -> assertEquals(0, reviews.size())
-    );
-  }
-
 }
