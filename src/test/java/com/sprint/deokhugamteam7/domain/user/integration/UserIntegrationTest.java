@@ -37,6 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -77,6 +78,15 @@ public class UserIntegrationTest {
 
   private User user;
 
+  private RequestPostProcessor authenticated(User user) {
+    return request -> {
+      request.getSession(true).setAttribute("userId", user.getId());
+      request.addHeader("Deokhugam-Request-User-ID", user.getId().toString());
+      return request;
+    };
+  }
+
+
   @BeforeEach
   void setUp() {
     String encryptedPassword = passwordEncoder.encode("Password1!");
@@ -112,7 +122,8 @@ public class UserIntegrationTest {
   @Test
   @DisplayName("유저 상세 조회")
   void getUser() throws Exception {
-    mockMvc.perform(get("/api/users/{id}", user.getId()))
+    mockMvc.perform(get("/api/users/{id}", user.getId())
+            .with(authenticated(user)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.nickname").value("tester"));
   }
@@ -123,6 +134,7 @@ public class UserIntegrationTest {
     UserUpdateRequest request = new UserUpdateRequest("updatedNickname");
 
     mockMvc.perform(patch("/api/users/{id}", user.getId())
+            .with(authenticated(user))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
@@ -132,14 +144,16 @@ public class UserIntegrationTest {
   @Test
   @DisplayName("유저 삭제 - 소프트")
   void softDeleteUser() throws Exception {
-    mockMvc.perform(delete("/api/users/{id}", user.getId()))
+    mockMvc.perform(delete("/api/users/{id}", user.getId())
+            .with(authenticated(user)))
         .andExpect(status().isNoContent());
   }
 
   @Test
   @DisplayName("유저 삭제 - 하드")
   void hardDeleteUser() throws Exception {
-    mockMvc.perform(delete("/api/users/{id}/hard", user.getId()))
+    mockMvc.perform(delete("/api/users/{id}/hard", user.getId())
+            .with(authenticated(user)))
         .andExpect(status().isNoContent());
   }
 

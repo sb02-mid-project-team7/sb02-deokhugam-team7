@@ -15,12 +15,11 @@ import com.sprint.deokhugamteam7.domain.user.dto.request.UserRegisterRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserUpdateRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.response.CursorPageResponsePowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.dto.response.UserDto;
-import com.sprint.deokhugamteam7.domain.user.entity.User;
+import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import com.sprint.deokhugamteam7.domain.user.service.PowerUserService;
 import com.sprint.deokhugamteam7.domain.user.service.UserService;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.user.UserException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -48,6 +47,9 @@ public class UserControllerTest {
 
   @MockitoBean
   private UserService userService;
+
+  @MockitoBean
+  private UserRepository userRepository;
 
   @MockitoBean
   private PowerUserService powerUserService;
@@ -125,9 +127,12 @@ public class UserControllerTest {
   void findByIdTest() throws Exception {
     UserDto response = new UserDto(userId, "test@example.com", "tester", null);
 
+    Mockito.when(userRepository.existsById(userId)).thenReturn(true);
     Mockito.when(userService.findById(userId)).thenReturn(response);
 
-    mockMvc.perform(get("/api/users/" + userId))
+    mockMvc.perform(get("/api/users/" + userId)
+            .sessionAttr("userId", userId)
+            .header("Deokhugam-Request-User-ID", userId.toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(userId.toString()));
   }
@@ -137,10 +142,13 @@ public class UserControllerTest {
   void findByIdNotFoundTest() throws Exception {
     UUID unknownId = UUID.randomUUID();
 
+    Mockito.when(userRepository.existsById(userId)).thenReturn(true);
     Mockito.when(userService.findById(unknownId))
         .thenThrow(new UserException(ErrorCode.USER_NOT_FOUND));
 
-    mockMvc.perform(get("/api/users/" + unknownId))
+    mockMvc.perform(get("/api/users/" + unknownId)
+            .sessionAttr("userId", userId)
+            .header("Deokhugam-Request-User-ID", userId.toString()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value(ErrorCode.USER_NOT_FOUND.name()));
   }
@@ -151,11 +159,14 @@ public class UserControllerTest {
     UserUpdateRequest request = new UserUpdateRequest("updatedNick");
     UserDto response = new UserDto(userId, "test@example.com", "updatedNick", null);
 
+    Mockito.when(userRepository.existsById(userId)).thenReturn(true);
     Mockito.when(userService.update(Mockito.eq(userId), Mockito.any())).thenReturn(response);
 
     mockMvc.perform(patch("/api/users/" + userId)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(objectMapper.writeValueAsString(request))
+            .sessionAttr("userId", userId)
+            .header("Deokhugam-Request-User-ID", userId.toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.nickname").value("updatedNick"));
   }
@@ -163,7 +174,11 @@ public class UserControllerTest {
   @Test
   @DisplayName("유저 논리 삭제")
   void softDeleteUserTest() throws Exception {
-    mockMvc.perform(delete("/api/users/" + userId))
+    Mockito.when(userRepository.existsById(userId)).thenReturn(true);
+
+    mockMvc.perform(delete("/api/users/" + userId)
+            .sessionAttr("userId", userId)
+            .header("Deokhugam-Request-User-ID", userId.toString()))
         .andExpect(status().isNoContent());
 
     Mockito.verify(userService).softDeleteById(userId);
@@ -172,7 +187,11 @@ public class UserControllerTest {
   @Test
   @DisplayName("유저 하드 삭제")
   void hardDeleteUserTest() throws Exception {
-    mockMvc.perform(delete("/api/users/" + userId + "/hard"))
+    Mockito.when(userRepository.existsById(userId)).thenReturn(true);
+
+    mockMvc.perform(delete("/api/users/" + userId + "/hard")
+            .sessionAttr("userId", userId)
+            .header("Deokhugam-Request-User-ID", userId.toString()))
         .andExpect(status().isNoContent());
 
     Mockito.verify(userService).hardDeleteById(userId);
