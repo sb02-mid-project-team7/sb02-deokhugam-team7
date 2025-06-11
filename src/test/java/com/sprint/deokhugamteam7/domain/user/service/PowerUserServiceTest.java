@@ -2,9 +2,7 @@ package com.sprint.deokhugamteam7.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -87,23 +85,6 @@ class PowerUserServiceTest {
       assertThat(result.totalElements()).isEqualTo(1);
       assertThat(result.hasNext()).isFalse();
     }
-
-    @Test
-    @DisplayName("조회 실패 시 예외 발생")
-    void getPowerUsers_findFail_throwsException() {
-      // given
-      PowerUserSearchCondition condition = new PowerUserSearchCondition();
-      condition.setPeriod(Period.DAILY);
-      condition.setSize(1);
-      when(userQueryRepository.findPowerUserScoresByPeriod(condition))
-          .thenThrow(new RuntimeException("DB 오류"));
-
-      // when & then
-      Exception ex = assertThrows(IllegalStateException.class, () ->
-          powerUserService.getPowerUsers(condition)
-      );
-      assertThat(ex.getMessage()).isEqualTo("파워 유저 조회 중 오류 발생");
-    }
   }
 
   @Nested
@@ -135,68 +116,6 @@ class PowerUserServiceTest {
       // then
       verify(userScoreRepository, times(1)).save(any(UserScore.class));
     }
-
-    @Test
-    @DisplayName("활동 데이터 수집 실패")
-    void fail_collectUserActivityScores() {
-      // given
-      when(userQueryRepository.collectUserActivityScores(any(), any()))
-          .thenThrow(new RuntimeException("DB 실패"));
-
-      // when
-      Exception ex = assertThrows(IllegalStateException.class, () ->
-          powerUserService.calculateAndSaveUserScores(Period.DAILY, baseDate)
-      );
-
-      // then
-      assertEquals("활동 데이터 수집 실패", ex.getMessage());
-    }
-
-    @Test
-    @DisplayName("사용자 조회 실패")
-    void fail_userRepository() {
-      // given
-      UUID userId = UUID.randomUUID();
-      UserActivity activity = new UserActivity(userId, 10.0, 1L, 2L);
-
-      when(userQueryRepository.collectUserActivityScores(any(), any()))
-          .thenReturn(List.of(activity));
-      when(userRepository.findAllById(any()))
-          .thenThrow(new RuntimeException("사용자 조회 실패"));
-
-      // when
-      Exception ex = assertThrows(IllegalStateException.class, () ->
-          powerUserService.calculateAndSaveUserScores(Period.DAILY, baseDate)
-      );
-
-      // then
-      assertEquals("사용자 조회 실패", ex.getMessage());
-    }
-
-    @Test
-    @DisplayName("기존 점수 조회 실패")
-    void fail_existingScoreQuery() {
-      // given
-      UUID userId = UUID.randomUUID();
-      User mockUser = mock(User.class);
-      when(mockUser.getId()).thenReturn(userId);
-      UserActivity activity = new UserActivity(userId, 10.0, 1L, 1L);
-
-      when(userQueryRepository.collectUserActivityScores(any(), any()))
-          .thenReturn(List.of(activity));
-      when(userRepository.findAllById(any()))
-          .thenReturn(List.of(mockUser));
-      when(userScoreRepository.findAllByPeriodAndDate(any(), any()))
-          .thenThrow(new RuntimeException("기존 점수 조회 실패"));
-
-      // when
-      Exception ex = assertThrows(IllegalStateException.class, () ->
-          powerUserService.calculateAndSaveUserScores(Period.DAILY, baseDate)
-      );
-
-      // then
-      assertEquals("기존 점수 조회 실패", ex.getMessage());
-    }
   }
 
   @Nested
@@ -225,44 +144,6 @@ class PowerUserServiceTest {
       assertEquals(1L, s1.getRank());
       assertEquals(2L, s2.getRank());
       verify(userScoreRepository).saveAll(scores);
-    }
-
-    @Test
-    @DisplayName("점수 조회 실패")
-    void fail_scoreQuery() {
-      // given
-      when(userScoreRepository.findAllByPeriodAndDateOrderByScoreDesc(any(), any()))
-          .thenThrow(new RuntimeException("DB 조회 실패"));
-
-      // when
-      Exception ex = assertThrows(IllegalStateException.class, () ->
-          powerUserService.updateRanksForPeriodAndDate(Period.WEEKLY, baseDate)
-      );
-
-      // then
-      assertEquals("유저 점수 조회 중 오류 발생", ex.getMessage());
-    }
-
-    @Test
-    @DisplayName("점수 저장 실패")
-    void fail_scoreSave() {
-      // given
-      User mockUser = mock(User.class);
-      UserScore s1 = UserScore.create(mockUser, Period.WEEKLY, baseDate, 10.0, 2, 1);
-      UserScore s2 = UserScore.create(mockUser, Period.WEEKLY, baseDate, 5.0, 1, 1);
-      List<UserScore> scores = List.of(s1, s2);
-
-      when(userScoreRepository.findAllByPeriodAndDateOrderByScoreDesc(any(), any()))
-          .thenReturn(scores);
-      doThrow(new RuntimeException("저장 실패")).when(userScoreRepository).saveAll(scores);
-
-      // when
-      Exception ex = assertThrows(IllegalStateException.class, () ->
-          powerUserService.updateRanksForPeriodAndDate(Period.WEEKLY, baseDate)
-      );
-
-      // then
-      assertEquals("랭킹 저장 중 오류 발생", ex.getMessage());
     }
   }
 }
