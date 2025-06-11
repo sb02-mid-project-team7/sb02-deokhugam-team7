@@ -9,12 +9,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 @RequiredArgsConstructor
+@Profile("!test")
 public class UserAccessFilter extends OncePerRequestFilter {
 
   private static final String HEADER_NAME = "Deokhugam-Request-User-ID";
