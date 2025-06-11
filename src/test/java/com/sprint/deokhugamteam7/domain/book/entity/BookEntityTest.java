@@ -119,7 +119,7 @@ public class BookEntityTest {
     Review review = Review.create(book, user, "test", 3);
     book.setReviews(List.of(review));
     // when
-    List<Review> reviews = book.getReviewsWithIsDeletedIsFalse();
+    List<Review> reviews = book.getReviews();
     // then
     assertAll(
         () -> assertNotNull(reviews),
@@ -136,7 +136,7 @@ public class BookEntityTest {
     review.delete();
     book.setReviews(List.of(review));
     // when
-    List<Review> reviews = book.getReviewsWithIsDeletedIsFalse();
+    List<Review> reviews = book.getReviews();
     // then
     assertAll(
         () -> assertNotNull(reviews),
