@@ -23,7 +23,6 @@ public class UserScoreWriter implements ItemWriter<UserScore> {
 
       if (id == null) {
         id = UUID.randomUUID();
-        score.setId(id);
       }
 
       userScoreRepository.upsertUserScore(
