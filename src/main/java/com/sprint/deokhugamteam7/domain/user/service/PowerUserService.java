@@ -11,6 +11,6 @@ public interface PowerUserService {
 
   void calculateAndSaveUserScores(Period period, LocalDate baseDate);
 
-  void updateRanksForPeriodAndDate(Period period, LocalDate date);
+  void updateRanksForPeriod(Period period);
 
 }

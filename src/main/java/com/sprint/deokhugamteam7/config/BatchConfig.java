@@ -23,6 +23,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 @RequiredArgsConstructor
 public class BatchConfig {
+
   @Bean
   public Job userScoreJob(
       JobRepository jobRepository,
@@ -37,12 +38,17 @@ public class BatchConfig {
 
   @Bean
   public Step collectAndSaveUserScoresStep(
-      JobRepository jobRepository,
-      PlatformTransactionManager transactionManager,
-      Tasklet userScoreTasklet
+      JobRepository jobRepository, // Job과 Step의 메타데이터 저장 및 관리
+      PlatformTransactionManager transactionManager, // Chunk 단위 트랜잭션을 관리
+      ItemReader<UserActivity> reader, // 사용자 활동 데이터를 조회
+      ItemProcessor<UserActivity, UserScore> processor, // 읽은 데이터를 UserScore 엔티티로 변환
+      ItemWriter<UserScore> writer // UserScore 데이터를 DB에 저장
   ) {
     return new StepBuilder("collectAndSaveUserScoresStep", jobRepository)
-        .tasklet(userScoreTasklet, transactionManager)
+        .<UserActivity, UserScore>chunk(100, transactionManager)
+        .reader(reader)
+        .processor(processor)
+        .writer(writer)
         .build();
   }
 

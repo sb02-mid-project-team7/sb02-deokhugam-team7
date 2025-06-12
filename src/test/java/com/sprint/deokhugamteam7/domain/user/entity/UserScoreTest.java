@@ -17,12 +17,11 @@ public class UserScoreTest {
     LocalDate date = LocalDate.of(2024, 6, 9);
 
     // when
-    UserScore score = UserScore.create(user, Period.DAILY, date, 10.0, 5, 2);
+    UserScore score = UserScore.create(user, Period.DAILY, 10.0, 5, 2);
 
     // then
     assertThat(score.getUser()).isEqualTo(user);
     assertThat(score.getPeriod()).isEqualTo(Period.DAILY);
-    assertThat(score.getDate()).isEqualTo(date);
     assertThat(score.getReviewScoreSum()).isEqualTo(10.0);
     assertThat(score.getLikeCount()).isEqualTo(5);
     assertThat(score.getCommentCount()).isEqualTo(2);
@@ -33,7 +32,7 @@ public class UserScoreTest {
   @DisplayName("UserScore 업데이트 테스트")
   void updateScoreTest() {
     User user = User.create("test@example.com", "nick", "pw");
-    UserScore score = UserScore.create(user, Period.WEEKLY, LocalDate.now(), 5.0, 2, 1);
+    UserScore score = UserScore.create(user, Period.WEEKLY, 5.0, 2, 1);
 
     score.updateScores(20.0, 10, 5);
 
@@ -47,7 +46,7 @@ public class UserScoreTest {
   @DisplayName("isSameScores가 true를 반환해야 하는 경우")
   void isSameScores_true() {
     User user = User.create("a@a.com", "nick", "pw");
-    UserScore score = UserScore.create(user, Period.MONTHLY, LocalDate.now(), 10.0, 3, 1);
+    UserScore score = UserScore.create(user, Period.MONTHLY, 10.0, 3, 1);
 
     assertThat(score.isSameScores(10.0, 3, 1)).isTrue();
   }
@@ -56,7 +55,7 @@ public class UserScoreTest {
   @DisplayName("isSameScores가 false를 반환해야 하는 경우")
   void isSameScores_false() {
     User user = User.create("a@a.com", "nick", "pw");
-    UserScore score = UserScore.create(user, Period.MONTHLY, LocalDate.now(), 10.0, 3, 1);
+    UserScore score = UserScore.create(user, Period.MONTHLY, 10.0, 3, 1);
 
     assertThat(score.isSameScores(20.0, 3, 1)).isFalse();
   }
@@ -65,7 +64,7 @@ public class UserScoreTest {
   @DisplayName("랭킹 업데이트 테스트")
   void updateRank() {
     User user = User.create("a@a.com", "nick", "pw");
-    UserScore score = UserScore.create(user, Period.DAILY, LocalDate.now(), 5.0, 1, 1);
+    UserScore score = UserScore.create(user, Period.DAILY, 5.0, 1, 1);
 
     score.updateRank(7L);
 

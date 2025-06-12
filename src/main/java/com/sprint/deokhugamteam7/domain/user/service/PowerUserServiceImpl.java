@@ -79,7 +79,7 @@ public class PowerUserServiceImpl implements PowerUserService {
     Map<UUID, User> userMap = userRepository.findAllById(userIds).stream()
         .collect(Collectors.toMap(User::getId, Function.identity()));
 
-    List<UserScore> savedScores = userScoreRepository.findAllByPeriodAndDate(period, baseDate);
+    List<UserScore> savedScores = userScoreRepository.findAllByPeriod(period);
     Map<UUID, UserScore> userScoreMap = savedScores.stream()
         .collect(Collectors.toMap(score -> score.getUser().getId(), Function.identity()));
 
@@ -98,7 +98,7 @@ public class PowerUserServiceImpl implements PowerUserService {
           userScoreRepository.save(existing);
         }
       } else {
-        UserScore newScore = UserScore.create(user, period, baseDate, reviewScoreSum, likeCount, commentCount);
+        UserScore newScore = UserScore.create(user, period, reviewScoreSum, likeCount, commentCount);
         userScoreRepository.save(newScore);
       }
     }
@@ -106,8 +106,8 @@ public class PowerUserServiceImpl implements PowerUserService {
 
 
   @Override
-  public void updateRanksForPeriodAndDate(Period period, LocalDate date) {
-    List<UserScore> scores = userScoreRepository.findAllByPeriodAndDateOrderByScoreDesc(period, date);
+  public void updateRanksForPeriod(Period period) {
+    List<UserScore> scores = userScoreRepository.findAllByPeriodOrderByScoreDesc(period);
     if (scores.isEmpty()) return;
 
     long rank = 1;

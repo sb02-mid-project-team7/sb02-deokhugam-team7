@@ -20,10 +20,9 @@ create table if not exists user_score
     review_score_sum DOUBLE PRECISION,
     like_count       BIGINT,
     comment_count    BIGINT,
-    date             DATE             NOT NULL,
     rank             BIGINT,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT uq_user_period_date UNIQUE (user_id, period, date)
+    CONSTRAINT uq_user_period_date UNIQUE (user_id, period)
 );
 
 create table if not exists books
