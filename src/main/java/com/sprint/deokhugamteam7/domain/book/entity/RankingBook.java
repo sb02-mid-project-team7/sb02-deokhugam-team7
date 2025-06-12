@@ -35,9 +35,6 @@ public class RankingBook {
   @JoinColumn(name = "book_id", nullable = false)
   private Book book;
 
-  @Setter
-  @Column(name = "rank")
-  private long rank;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -57,7 +54,6 @@ public class RankingBook {
 
   private RankingBook(Period period) {
     this.period = period;
-    this.rank = 0;
     this.score = 0.0;
     this.totalRating = 0;
     this.reviewCount = 0;
@@ -90,7 +86,6 @@ public class RankingBook {
   }
 
   public void reset() {
-    this.rank = 0;
     this.score = 0.0;
     this.totalRating = 0;
     this.reviewCount = 0;
@@ -98,9 +93,11 @@ public class RankingBook {
   }
 
   public void reCalculate() {
-    List<Review> reviews = this.book.getReviewsWithIsDeletedIsFalse();
+    List<Review> reviews = this.book.getReviews();
     reset();
-    reviews.forEach(review -> update(review.getRating(), false));
+    reviews.stream()
+        .filter(review -> !review.getIsDeleted())
+        .forEach(review -> update(review.getRating(), false));
   }
 
 }

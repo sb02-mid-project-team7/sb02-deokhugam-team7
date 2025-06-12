@@ -45,7 +45,6 @@ create table if not exists ranking_books
 (
     id           UUID PRIMARY KEY,
     book_id      UUID,
-    rank         BIGINT,
     period       VARCHAR(255) NOT NULL,
     score        DOUBLE PRECISION,
     total_rating INTEGER,
