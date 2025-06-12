@@ -19,7 +19,6 @@ import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.QUser;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -151,72 +150,30 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
   @Override
   public List<ReviewActivity> findReviewActivitySummary(LocalDateTime start, LocalDateTime end) {
-    // reviewLike count
-    BooleanBuilder likeBuilder = new BooleanBuilder();
-    if (start != null && end != null) {
-      likeBuilder.and(rl.createdAt.between(start, end));
-    }
-
-    List<ReviewCountDto> likeCounts = queryFactory
-        .select(Projections.constructor(ReviewCountDto.class, rl.review.id, rl.count()))
-        .from(rl)
-        .join(rl.review, review)
-        .join(rl.user, user)
-        .where(likeBuilder
-            .and(review.user.isDeleted.eq(false))
-            .and(review.book.isDeleted.eq(false))
-            .and(review.isDeleted.eq(false))
-            .and(user.isDeleted.eq(false))
-        )
-        .groupBy(rl.review.id)
-        .fetch();
-
-    Map<UUID, Long> likeMap = likeCounts.stream()
-        .collect(Collectors.toMap(ReviewCountDto::reviewId, ReviewCountDto::count));
-
-    // comment count
-    BooleanBuilder commentBuilder = new BooleanBuilder();
-    if (start != null && end != null) {
-      commentBuilder.and(c.createdAt.between(start, end));
-    }
-
-    List<ReviewCountDto> commentCounts = queryFactory
-        .select(Projections.constructor(ReviewCountDto.class, c.review.id, c.count()))
-        .from(c)
-        .join(c.review, review)
-        .join(review.user, user)
-        .join(review.book, book)
-        .where(commentBuilder
-            .and(review.isDeleted.eq(false))
-            .and(c.isDeleted.eq(false))
-            .and(review.user.isDeleted.eq(false))
-            .and(review.book.isDeleted.eq(false))
-            .and(c.user.isDeleted.eq(false))
-        )
-        .groupBy(c.review.id)
-        .fetch();
-
-    Map<UUID, Long> commentMap = commentCounts.stream()
-        .collect(Collectors.toMap(ReviewCountDto::reviewId, ReviewCountDto::count));
-
-    List<UUID> allReviewIds = queryFactory
-        .select(review.id)
+    return queryFactory
+        .select(Projections.constructor(
+            ReviewActivity.class,
+            review.id,
+            rl.countDistinct(),
+            c.countDistinct()
+        ))
         .from(review)
-        .where(
-            review.isDeleted.eq(false),
-            review.user.isDeleted.eq(false),
-            review.book.isDeleted.eq(false)
+        .leftJoin(c).on(
+            c.review.id.eq(review.id)
+                .and(c.isDeleted.eq(false))
+                .and(c.user.isDeleted.eq(false))
+                .and(start != null && end != null ? c.updatedAt.between(start, end) : null)
         )
+        .leftJoin(rl).on(
+            rl.review.id.eq(review.id)
+                .and(rl.user.isDeleted.eq(false))
+                .and(start != null && end != null ? rl.createdAt.between(start, end) : null)
+        )
+        .join(review.user, user).on(user.isDeleted.eq(false))
+        .join(review.book, book).on(book.isDeleted.eq(false))
+        .where(review.isDeleted.eq(false))
+        .groupBy(review.id)
         .fetch();
-
-    List<ReviewActivity> res = new ArrayList<>();
-    for (UUID reviewId : allReviewIds) {
-      long likeCount = likeMap.getOrDefault(reviewId, 0L);
-      long commentCount = commentMap.getOrDefault(reviewId, 0L);
-      res.add(new ReviewActivity(reviewId, likeCount, commentCount));
-    }
-
-    return res;
   }
 
   public Map<UUID, RankingReview> findAllByReviewIdInAndPeriod(Set<UUID> reviewIds, Period period) {
