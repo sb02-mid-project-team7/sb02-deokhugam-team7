@@ -1,5 +1,5 @@
 package com.sprint.deokhugamteam7.config;
-
+/*
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -71,3 +71,4 @@ public class UserAccessFilter extends OncePerRequestFilter {
     }
   }
 }
+*/
