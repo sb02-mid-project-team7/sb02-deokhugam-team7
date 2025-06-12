@@ -1,5 +1,7 @@
 package com.sprint.deokhugamteam7.config;
 
+import com.sprint.deokhugamteam7.domain.review.dto.ReviewActivity;
+import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
@@ -10,6 +12,9 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,14 +25,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class BatchConfig {
   @Bean
   public Job userScoreJob(
-    JobRepository jobRepository,
-    @Qualifier("collectAndSaveUserScoresStep") Step collectAndSaveUserScoresStep,
-    @Qualifier("updateUserRankingStep") Step updateUserRankingStep
+      JobRepository jobRepository,
+      @Qualifier("collectAndSaveUserScoresStep") Step collectAndSaveUserScoresStep,
+      @Qualifier("updateUserRankingStep") Step updateUserRankingStep
   ) {
     return new JobBuilder("userScoreJob", jobRepository)
-      .start(collectAndSaveUserScoresStep)
-      .next(updateUserRankingStep)
-      .build();
+        .start(collectAndSaveUserScoresStep)
+        .next(updateUserRankingStep)
+        .build();
   }
 
   @Bean
@@ -53,6 +58,16 @@ public class BatchConfig {
   }
 
   @Bean
+  public Job reviewRankingJob(
+      JobRepository jobRepository,
+      @Qualifier("updateRankingReviewStep") Step updateRankingReviewStep
+  ) {
+    return new JobBuilder("reviewRankingJob", jobRepository)
+        .start(updateRankingReviewStep)        
+        .build();
+  }
+  
+  @Bean
   public Job rankingBookJob(
       JobRepository jobRepository,
       @Qualifier("updateRankingBooksStep") Step updateRankingBooksStep
@@ -62,6 +77,22 @@ public class BatchConfig {
         .build();
   }
 
+  @Bean
+  public Step updateRankingReviewStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      ItemReader<ReviewActivity> reader,
+      ItemProcessor<ReviewActivity, RankingReview> processor,
+      ItemWriter<RankingReview> writer
+  ) {
+    return new StepBuilder("updateRankingReviewStep", jobRepository)
+        .<ReviewActivity, RankingReview>chunk(100, transactionManager)
+        .reader(reader)
+        .processor(processor)
+        .writer(writer)
+        .build();
+  }
+  
   @Bean
   public Step updateRankingBooksStep(
       JobRepository jobRepository,
