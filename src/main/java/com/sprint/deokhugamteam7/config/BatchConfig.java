@@ -1,5 +1,8 @@
 package com.sprint.deokhugamteam7.config;
 
+import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
+import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
+import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -15,7 +18,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 @RequiredArgsConstructor
 public class BatchConfig {
-
   @Bean
   public Job userScoreJob(
     JobRepository jobRepository,
@@ -47,6 +49,32 @@ public class BatchConfig {
   ) {
     return new StepBuilder("updateUserRankingStep", jobRepository)
         .tasklet(rankUpdateTasklet, transactionManager)
+        .build();
+  }
+
+  @Bean
+  public Job rankingBookJob(
+      JobRepository jobRepository,
+      @Qualifier("updateRankingBooksStep") Step updateRankingBooksStep
+  ) {
+    return new JobBuilder("rankingBookJob", jobRepository)
+        .start(updateRankingBooksStep)
+        .build();
+  }
+
+  @Bean
+  public Step updateRankingBooksStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      ItemReader<RankingBook> reader,
+      ItemProcessor<RankingBook, RankingBook> processor,
+      ItemWriter<RankingBook> writer
+  ) {
+    return new StepBuilder("updateRankingBooksStep", jobRepository)
+        .<RankingBook, RankingBook>chunk(10, transactionManager)
+        .reader(reader)
+        .processor(processor)
+        .writer(writer)
         .build();
   }
 }
