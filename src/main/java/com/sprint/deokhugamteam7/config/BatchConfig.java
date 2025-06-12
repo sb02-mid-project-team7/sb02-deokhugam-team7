@@ -1,5 +1,7 @@
 package com.sprint.deokhugamteam7.config;
 
+import com.sprint.deokhugamteam7.domain.review.dto.ReviewActivity;
+import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
@@ -62,6 +64,16 @@ public class BatchConfig {
   }
 
   @Bean
+  public Job reviewRankingJob(
+      JobRepository jobRepository,
+      @Qualifier("updateRankingReviewStep") Step updateRankingReviewStep
+  ) {
+    return new JobBuilder("reviewRankingJob", jobRepository)
+        .start(updateRankingReviewStep)        
+        .build();
+  }
+  
+  @Bean
   public Job rankingBookJob(
       JobRepository jobRepository,
       @Qualifier("updateRankingBooksStep") Step updateRankingBooksStep
@@ -71,6 +83,22 @@ public class BatchConfig {
         .build();
   }
 
+  @Bean
+  public Step updateRankingReviewStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      ItemReader<ReviewActivity> reader,
+      ItemProcessor<ReviewActivity, RankingReview> processor,
+      ItemWriter<RankingReview> writer
+  ) {
+    return new StepBuilder("updateRankingReviewStep", jobRepository)
+        .<ReviewActivity, RankingReview>chunk(100, transactionManager)
+        .reader(reader)
+        .processor(processor)
+        .writer(writer)
+        .build();
+  }
+  
   @Bean
   public Step updateRankingBooksStep(
       JobRepository jobRepository,
