@@ -174,12 +174,12 @@ public class ReviewRepositoryImplTest {
     updateReviewLikeCreatedAt(allTime, like5.getId());
     updateReviewLikeCreatedAt(allTime, like6.getId());
 
-    updateCommentCreatedAt(day, c1.getId());
-    updateCommentCreatedAt(week, c2.getId());
-    updateCommentCreatedAt(week, c3.getId());
-    updateCommentCreatedAt(month, c4.getId());
-    updateCommentCreatedAt(allTime, c5.getId());
-    updateCommentCreatedAt(allTime, c6.getId());
+    updateCommentUpdatedAt(day, c1.getId());
+    updateCommentUpdatedAt(week, c2.getId());
+    updateCommentUpdatedAt(week, c3.getId());
+    updateCommentUpdatedAt(month, c4.getId());
+    updateCommentUpdatedAt(allTime, c5.getId());
+    updateCommentUpdatedAt(allTime, c6.getId());
 
     em.flush();
     em.clear();
@@ -371,9 +371,9 @@ public class ReviewRepositoryImplTest {
         .executeUpdate();
   }
 
-  void updateCommentCreatedAt(LocalDateTime updatedAt, UUID commentId) {
-    em.createQuery("UPDATE Comment c SET c.createdAt = :createdAt WHERE c.id = :id")
-        .setParameter("createdAt", updatedAt)
+  void updateCommentUpdatedAt(LocalDateTime updatedAt, UUID commentId) {
+    em.createQuery("UPDATE Comment c SET c.updatedAt = :updatedAt WHERE c.id = :id")
+        .setParameter("updatedAt", updatedAt)
         .setParameter("id", commentId)
         .executeUpdate();
   }
