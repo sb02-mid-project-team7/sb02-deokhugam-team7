@@ -1,8 +1,6 @@
-package com.sprint.deokhugamteam7.domain.log;
+package com.sprint.deokhugamteam7.domain.log.service;
 
 import com.sprint.deokhugamteam7.constant.LogType;
-import com.sprint.deokhugamteam7.exception.DeokhugamException;
-import com.sprint.deokhugamteam7.exception.ErrorCode;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,29 +31,25 @@ public class LogService {
   @Scheduled(cron = "0 10 0 * * *")
   public void logUploadToS3() {
 
-    LocalDate yesterday = LocalDate.now().minusDays(1);
-    String dateStr = yesterday.format(FORMATTER);
+    String todayStr = LocalDate.now().format(FORMATTER);
+    String yesterdayStr = LocalDate.now().minusDays(1).format(FORMATTER);
 
-    File myappLog = new File(LogType.MYAPP.getLogDir() + dateStr + LOG_EXTENSION);
-    File errorLog =  new File(LogType.ERROR.getLogDir() + dateStr + TXT_EXTENSION);
+    File myappLog = new File(LogType.MYAPP.getLogDir() + yesterdayStr + LOG_EXTENSION);
+    File errorLog =  new File(LogType.ERROR.getLogDir() + todayStr + TXT_EXTENSION);
 
     uploadIfFileExists(myappLog, myappLog.getName());
     uploadIfFileExists(errorLog, errorLog.getName());
   }
 
   private void uploadIfFileExists(File file, String s3Key) {
-    String s3Url = BASE_DIR + s3Key;
+    String s3path = BASE_DIR + s3Key;
     if (file.exists()) {
-      try {
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-          .bucket(bucketName)
-          .key(s3Url)
-          .build();
+      PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+        .bucket(bucketName)
+        .key(s3path)
+        .build();
 
-        s3Client.putObject(putObjectRequest, RequestBody.fromFile(file));
-      } catch (Exception e) {
-         throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
-      }
+      s3Client.putObject(putObjectRequest, RequestBody.fromFile(file));
     }
   }
 }

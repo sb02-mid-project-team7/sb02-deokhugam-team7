@@ -20,9 +20,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Commit;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class DataInitializer {
 
 	private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);

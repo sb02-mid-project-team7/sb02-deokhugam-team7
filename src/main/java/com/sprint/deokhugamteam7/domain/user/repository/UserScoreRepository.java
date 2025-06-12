@@ -14,16 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface UserScoreRepository extends JpaRepository<UserScore, UUID> {
-  List<UserScore> findAllByPeriodAndDateOrderByScoreDesc(Period period, LocalDate date);
-  List<UserScore> findAllByPeriodAndDate(Period period, LocalDate date);
+  List<UserScore> findAllByPeriodOrderByScoreDesc(Period period);
+  List<UserScore> findAllByPeriod(Period period);
 
   @Modifying
   @Transactional
   @Query(
       value = """
-            INSERT INTO user_score (id, user_id, period, created_at, updated_at, score, review_score_sum, like_count, comment_count, date, rank)
-            VALUES (:id, :userId, :period, NOW(), NOW(), :score, :reviewScoreSum, :likeCount, :commentCount, :date, NULL)
-            ON CONFLICT (user_id, period, date)
+            INSERT INTO user_score (id, user_id, period, created_at, updated_at, score, review_score_sum, like_count, comment_count, rank)
+            VALUES (:id, :userId, :period, NOW(), NOW(), :score, :reviewScoreSum, :likeCount, :commentCount, NULL)
+            ON CONFLICT (user_id, period)
             DO UPDATE SET
               score = EXCLUDED.score,
               review_score_sum = EXCLUDED.review_score_sum,
@@ -40,7 +40,6 @@ public interface UserScoreRepository extends JpaRepository<UserScore, UUID> {
       @Param("score") double score,
       @Param("reviewScoreSum") double reviewScoreSum,
       @Param("likeCount") long likeCount,
-      @Param("commentCount") long commentCount,
-      @Param("date") LocalDate date
+      @Param("commentCount") long commentCount
   );
 }

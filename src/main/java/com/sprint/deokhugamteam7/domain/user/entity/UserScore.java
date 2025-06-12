@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -26,7 +25,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "user_score", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "period", "date"})})
+    @UniqueConstraint(columnNames = {"user_id", "period"})})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
@@ -64,9 +63,6 @@ public class UserScore {
   @Column(name = "comment_count")
   private long commentCount;
 
-  @Column(name = "date", nullable = false)
-  private LocalDate date;
-
   @Column(name = "rank")
   private Long rank;
 
@@ -74,13 +70,12 @@ public class UserScore {
     return reviewScoreSum * 0.5 + likeCount * 0.2 + commentCount * 0.3;
   }
 
-  public static UserScore create(User user, Period period, LocalDate date, double reviewScoreSum,
+  public static UserScore create(User user, Period period, double reviewScoreSum,
       long likeCount, long commentCount) {
 
     UserScore userScore = new UserScore();
     userScore.user = user;
     userScore.period = period;
-    userScore.date = date;
     userScore.score = calculateScore(reviewScoreSum, likeCount, commentCount);
     userScore.reviewScoreSum = reviewScoreSum;
     userScore.likeCount = likeCount;
@@ -106,6 +101,10 @@ public class UserScore {
 
   public void updateRank(long rank) {
     this.rank = rank;
+  }
+
+  public void updateId(UUID id) {
+    this.id = id;
   }
 
 }

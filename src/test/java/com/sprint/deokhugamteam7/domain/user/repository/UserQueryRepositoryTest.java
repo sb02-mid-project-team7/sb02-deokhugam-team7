@@ -96,7 +96,7 @@ public class UserQueryRepositoryTest {
   @DisplayName("조건에 맞는 파워 유저 점수 조회")
   void findPowerUserScoresByPeriodTest() {
     // given
-    UserScore score = UserScore.create(user, Period.DAILY, baseDate, 10.0, 5, 3);
+    UserScore score = UserScore.create(user, Period.DAILY, 10.0, 5, 3);
     userScoreRepository.save(score);
     em.flush();
     em.clear();
@@ -118,7 +118,7 @@ public class UserQueryRepositoryTest {
   @DisplayName("조건에 맞는 파워 유저 개수 조회")
   void countByConditionTest() {
     // given
-    UserScore score = UserScore.create(user, Period.DAILY, baseDate, 10.0, 5, 3);
+    UserScore score = UserScore.create(user, Period.DAILY, 10.0, 5, 3);
     userScoreRepository.save(score);
     em.flush();
     em.clear();

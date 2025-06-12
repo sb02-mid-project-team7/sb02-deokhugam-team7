@@ -69,7 +69,7 @@ class PowerUserServiceTest {
       condition.setAfter(null);
 
       User user = User.create("user@example.com", "nickname", "pw123!");
-      UserScore userScore = UserScore.create(user, Period.DAILY, baseDate, 30.0, 5, 3);
+      UserScore userScore = UserScore.create(user, Period.DAILY, 30.0, 5, 3);
 
       when(userQueryRepository.findPowerUserScoresByPeriod(condition))
           .thenReturn(List.of(userScore));
@@ -107,7 +107,7 @@ class PowerUserServiceTest {
           .thenReturn(List.of(activity));
       when(userRepository.findAllById(List.of(userId)))
           .thenReturn(List.of(mockUser));
-      when(userScoreRepository.findAllByPeriodAndDate(period, baseDate))
+      when(userScoreRepository.findAllByPeriod(period))
           .thenReturn(List.of());
 
       // when
@@ -130,15 +130,15 @@ class PowerUserServiceTest {
 
       User mockUser = mock(User.class);
 
-      UserScore s1 = UserScore.create(mockUser, period, baseDate, 20.0, 5, 5);
-      UserScore s2 = UserScore.create(mockUser, period, baseDate, 15.0, 3, 2);
+      UserScore s1 = UserScore.create(mockUser, period, 20.0, 5, 5);
+      UserScore s2 = UserScore.create(mockUser, period, 15.0, 3, 2);
       List<UserScore> scores = List.of(s1, s2);
 
-      when(userScoreRepository.findAllByPeriodAndDateOrderByScoreDesc(period, baseDate))
+      when(userScoreRepository.findAllByPeriodOrderByScoreDesc(period))
           .thenReturn(scores);
 
       // when
-      powerUserService.updateRanksForPeriodAndDate(period, baseDate);
+      powerUserService.updateRanksForPeriod(period);
 
       // then
       assertEquals(1L, s1.getRank());

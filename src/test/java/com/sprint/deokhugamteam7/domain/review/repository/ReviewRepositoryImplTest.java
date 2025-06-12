@@ -6,6 +6,7 @@ import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.comment.entity.Comment;
 import com.sprint.deokhugamteam7.domain.notification.config.TestConfig;
+import com.sprint.deokhugamteam7.domain.review.dto.ReviewActivity;
 import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
 import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -128,17 +130,20 @@ public class ReviewRepositoryImplTest {
   }
 
   @Test
-  @DisplayName("리뷰별 좋아요 수를 기간별로 집계")
-  void findLikeCountsByPeriod_ShouldReturnCountMapWithinPeriod() {
-    createOtherReviews();
+  @DisplayName("기간 내 리뷰별 좋아요 및 댓글 수를 함께 집계")
+  void findReviewActivitySummary_ShouldReturnLikeAndCommentCountsTogether() {
+    // given
+    createOtherReviews(); // review, review2, review3, review4 생성
     ReflectionTestUtils.setField(review4, "isDeleted", false);
 
-    ReviewLike like1 = ReviewLike.create(user, review);
-    ReviewLike like2 = ReviewLike.create(user, review2);
-    ReviewLike like3 = ReviewLike.create(user2, review2);
-    ReviewLike like4 = ReviewLike.create(user, review3);
-    ReviewLike like5 = ReviewLike.create(user, review4);
-    ReviewLike like6 = ReviewLike.create(user2, review4);
+    // 좋아요 생성 및 ID 저장
+    ReviewLike like1 = ReviewLike.create(user, review);    // day
+    ReviewLike like2 = ReviewLike.create(user, review2);   // week
+    ReviewLike like3 = ReviewLike.create(user2, review2);  // week
+    ReviewLike like4 = ReviewLike.create(user, review3);   // month
+    ReviewLike like5 = ReviewLike.create(user, review4);   // allTime
+    ReviewLike like6 = ReviewLike.create(user2, review4);  // allTime
+
     em.persist(like1);
     em.persist(like2);
     em.persist(like3);
@@ -146,56 +151,14 @@ public class ReviewRepositoryImplTest {
     em.persist(like5);
     em.persist(like6);
 
-    updateReviewLikeCreatedAt(day, like1.getId());
-    updateReviewLikeCreatedAt(week, like2.getId());
-    updateReviewLikeCreatedAt(week, like3.getId());
-    updateReviewLikeCreatedAt(month, like4.getId());
-    updateReviewLikeCreatedAt(allTime, like5.getId());
-    updateReviewLikeCreatedAt(allTime, like6.getId());
-    em.flush();
-    em.clear();
+    // 댓글 생성 및 ID 저장
+    Comment c1 = Comment.create(user, review, "<UNK>1");   // day
+    Comment c2 = Comment.create(user, review2, "<UNK>2");  // week
+    Comment c3 = Comment.create(user2, review2, "<UNK>3"); // week
+    Comment c4 = Comment.create(user, review3, "<UNK>4");  // month
+    Comment c5 = Comment.create(user, review4, "<UNK>5");  // allTime
+    Comment c6 = Comment.create(user2, review4, "<UNK>6"); // allTime
 
-    Map<UUID, Long> dayRes = reviewRepositoryCustom.findLikeCountsByPeriod(end.minusDays(1), end);
-    Map<UUID, Long> weekRes = reviewRepositoryCustom.findLikeCountsByPeriod(end.minusWeeks(1), end);
-    Map<UUID, Long> monthRes = reviewRepositoryCustom.findLikeCountsByPeriod(end.minusMonths(1),
-        end);
-    Map<UUID, Long> allRes = reviewRepositoryCustom.findLikeCountsByPeriod(null, null);
-
-    assertThat(dayRes).hasSize(1);
-    assertThat(dayRes.get(review.getId())).isEqualTo(1L);
-    assertThat(weekRes).hasSize(2);
-    assertThat(weekRes.get(review2.getId())).isEqualTo(2L);
-    assertThat(monthRes).hasSize(3);
-    assertThat(monthRes.get(review3.getId())).isEqualTo(1L);
-    assertThat(allRes).hasSize(4);
-    assertThat(allRes.get(review4.getId())).isEqualTo(2L);
-  }
-
-  ReviewSearchCondition createSearchCondition() {
-    ReviewSearchCondition condition = new ReviewSearchCondition();
-    condition.setUserId(null);
-    condition.setBookId(null);
-    condition.setKeyword("테스트");
-    condition.setOrderBy("createdAt");
-    condition.setDirection("DESC");
-    condition.setLimit(1);
-    condition.setRequestUserId(user.getId());
-
-    return condition;
-  }
-
-  @Test
-  @DisplayName("리뷰별 댓글 수를 기간별로 집계")
-  void findCommentCountsByPeriod_ShouldReturnCountMapWithinPeriod() {
-    createOtherReviews();
-    ReflectionTestUtils.setField(review4, "isDeleted", false);
-
-    Comment c1 = Comment.create(user, review, "<UNK>1");
-    Comment c2 = Comment.create(user, review2, "<UNK>2");
-    Comment c3 = Comment.create(user2, review2, "<UNK>3");
-    Comment c4 = Comment.create(user, review3, "<UNK>4");
-    Comment c5 = Comment.create(user, review4, "<UNK>5");
-    Comment c6 = Comment.create(user2, review4, "<UNK>6");
     em.persist(c1);
     em.persist(c2);
     em.persist(c3);
@@ -203,31 +166,61 @@ public class ReviewRepositoryImplTest {
     em.persist(c5);
     em.persist(c6);
 
-    updateCommentCreatedAt(day, c1.getId());
-    updateCommentCreatedAt(week, c2.getId());
-    updateCommentCreatedAt(week, c3.getId());
-    updateCommentCreatedAt(month, c4.getId());
-    updateCommentCreatedAt(allTime, c5.getId());
-    updateCommentCreatedAt(allTime, c6.getId());
+    // createdAt 업데이트
+    updateReviewLikeCreatedAt(day, like1.getId());
+    updateReviewLikeCreatedAt(week, like2.getId());
+    updateReviewLikeCreatedAt(week, like3.getId());
+    updateReviewLikeCreatedAt(month, like4.getId());
+    updateReviewLikeCreatedAt(allTime, like5.getId());
+    updateReviewLikeCreatedAt(allTime, like6.getId());
+
+    updateCommentUpdatedAt(day, c1.getId());
+    updateCommentUpdatedAt(week, c2.getId());
+    updateCommentUpdatedAt(week, c3.getId());
+    updateCommentUpdatedAt(month, c4.getId());
+    updateCommentUpdatedAt(allTime, c5.getId());
+    updateCommentUpdatedAt(allTime, c6.getId());
+
     em.flush();
     em.clear();
 
-    Map<UUID, Long> dayRes = reviewRepositoryCustom.findCommentCountsByPeriod(end.minusDays(1),
+    // when
+    List<ReviewActivity> dayRes = reviewRepositoryCustom.findReviewActivitySummary(end.minusDays(1),
         end);
-    Map<UUID, Long> weekRes = reviewRepositoryCustom.findCommentCountsByPeriod(end.minusWeeks(1),
-        end);
-    Map<UUID, Long> monthRes = reviewRepositoryCustom.findCommentCountsByPeriod(end.minusMonths(1),
-        end);
-    Map<UUID, Long> allRes = reviewRepositoryCustom.findCommentCountsByPeriod(null, null);
+    List<ReviewActivity> weekRes = reviewRepositoryCustom.findReviewActivitySummary(
+        end.minusWeeks(1), end);
+    List<ReviewActivity> monthRes = reviewRepositoryCustom.findReviewActivitySummary(
+        end.minusMonths(1), end);
+    List<ReviewActivity> allRes = reviewRepositoryCustom.findReviewActivitySummary(null, null);
 
-    assertThat(dayRes).hasSize(1);
-    assertThat(dayRes.get(review.getId())).isEqualTo(1L);
-    assertThat(weekRes).hasSize(2);
-    assertThat(weekRes.get(review2.getId())).isEqualTo(2L);
-    assertThat(monthRes).hasSize(3);
-    assertThat(monthRes.get(review3.getId())).isEqualTo(1L);
-    assertThat(allRes).hasSize(4);
-    assertThat(allRes.get(review4.getId())).isEqualTo(2L);
+    // then
+    // Day
+    List<ReviewActivity> actualDay = filterNonZero(dayRes);
+    assertThat(actualDay).hasSize(1);
+    assertThat(actualDay.get(0).reviewId()).isEqualTo(review.getId());
+    assertThat(actualDay.get(0).likeCount()).isEqualTo(1L);
+    assertThat(actualDay.get(0).commentCount()).isEqualTo(1L);
+
+    // Week
+    List<ReviewActivity> actualWeek = filterNonZero(weekRes);
+    assertThat(actualWeek).hasSize(2);
+    Map<UUID, ReviewActivity> weekMap = toMap(actualWeek);
+    assertThat(weekMap.get(review2.getId()).likeCount()).isEqualTo(2L);
+    assertThat(weekMap.get(review2.getId()).commentCount()).isEqualTo(2L);
+
+    // Month
+    List<ReviewActivity> actualMonth = filterNonZero(monthRes);
+    assertThat(actualMonth).hasSize(3);
+    Map<UUID, ReviewActivity> monthMap = toMap(actualMonth);
+    assertThat(monthMap.get(review3.getId()).likeCount()).isEqualTo(1L);
+    assertThat(monthMap.get(review3.getId()).commentCount()).isEqualTo(1L);
+
+    // All Time
+    List<ReviewActivity> actualAll = filterNonZero(allRes);
+    assertThat(actualAll).hasSize(4);
+    Map<UUID, ReviewActivity> allMap = toMap(actualAll);
+    assertThat(allMap.get(review4.getId()).likeCount()).isEqualTo(2L);
+    assertThat(allMap.get(review4.getId()).commentCount()).isEqualTo(2L);
   }
 
   @Test
@@ -337,6 +330,19 @@ public class ReviewRepositoryImplTest {
     assertThat(result.get(review3.getId())).isEqualTo(1);
   }
 
+  ReviewSearchCondition createSearchCondition() {
+    ReviewSearchCondition condition = new ReviewSearchCondition();
+    condition.setUserId(null);
+    condition.setBookId(null);
+    condition.setKeyword("테스트");
+    condition.setOrderBy("createdAt");
+    condition.setDirection("DESC");
+    condition.setLimit(1);
+    condition.setRequestUserId(user.getId());
+
+    return condition;
+  }
+
   void createOtherReviews() {
     user2 = User.create("test2@gmail.com", "test2", "test1234!");
     user3 = User.create("test3@gmail.com", "test3", "test1234!");
@@ -365,10 +371,20 @@ public class ReviewRepositoryImplTest {
         .executeUpdate();
   }
 
-  void updateCommentCreatedAt(LocalDateTime updatedAt, UUID commentId) {
-    em.createQuery("UPDATE Comment c SET c.createdAt = :createdAt WHERE c.id = :id")
-        .setParameter("createdAt", updatedAt)
+  void updateCommentUpdatedAt(LocalDateTime updatedAt, UUID commentId) {
+    em.createQuery("UPDATE Comment c SET c.updatedAt = :updatedAt WHERE c.id = :id")
+        .setParameter("updatedAt", updatedAt)
         .setParameter("id", commentId)
         .executeUpdate();
+  }
+
+  private List<ReviewActivity> filterNonZero(List<ReviewActivity> input) {
+    return input.stream()
+        .filter(r -> r.likeCount() > 0 || r.commentCount() > 0)
+        .toList();
+  }
+
+  private Map<UUID, ReviewActivity> toMap(List<ReviewActivity> list) {
+    return list.stream().collect(Collectors.toMap(ReviewActivity::reviewId, it -> it));
   }
 }

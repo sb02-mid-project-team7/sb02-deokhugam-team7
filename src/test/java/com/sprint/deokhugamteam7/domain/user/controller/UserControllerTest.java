@@ -15,12 +15,10 @@ import com.sprint.deokhugamteam7.domain.user.dto.request.UserRegisterRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.request.UserUpdateRequest;
 import com.sprint.deokhugamteam7.domain.user.dto.response.CursorPageResponsePowerUserDto;
 import com.sprint.deokhugamteam7.domain.user.dto.response.UserDto;
-import com.sprint.deokhugamteam7.domain.user.entity.User;
 import com.sprint.deokhugamteam7.domain.user.service.PowerUserService;
 import com.sprint.deokhugamteam7.domain.user.service.UserService;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.user.UserException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -33,11 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
 @Import(TestSecurityConfig.class)
+@ActiveProfiles("test")
 public class UserControllerTest {
 
   @Autowired
