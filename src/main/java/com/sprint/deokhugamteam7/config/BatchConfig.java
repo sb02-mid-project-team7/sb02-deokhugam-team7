@@ -1,5 +1,7 @@
 package com.sprint.deokhugamteam7.config;
 
+import com.sprint.deokhugamteam7.domain.review.dto.ReviewActivity;
+import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +25,14 @@ public class BatchConfig {
 
   @Bean
   public Job userScoreJob(
-    JobRepository jobRepository,
-    @Qualifier("collectAndSaveUserScoresStep") Step collectAndSaveUserScoresStep,
-    @Qualifier("updateUserRankingStep") Step updateUserRankingStep
+      JobRepository jobRepository,
+      @Qualifier("collectAndSaveUserScoresStep") Step collectAndSaveUserScoresStep,
+      @Qualifier("updateUserRankingStep") Step updateUserRankingStep
   ) {
     return new JobBuilder("userScoreJob", jobRepository)
-      .start(collectAndSaveUserScoresStep)
-      .next(updateUserRankingStep)
-      .build();
+        .start(collectAndSaveUserScoresStep)
+        .next(updateUserRankingStep)
+        .build();
   }
 
   @Bean
@@ -57,6 +59,32 @@ public class BatchConfig {
   ) {
     return new StepBuilder("updateUserRankingStep", jobRepository)
         .tasklet(rankUpdateTasklet, transactionManager)
+        .build();
+  }
+
+  @Bean
+  public Job reviewRankingJob(
+      JobRepository jobRepository,
+      @Qualifier("updateRankingReviewStep") Step updateRankingReviewStep
+  ) {
+    return new JobBuilder("reviewRankingJob", jobRepository)
+        .start(updateRankingReviewStep)
+        .build();
+  }
+
+  @Bean
+  public Step updateRankingReviewStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      ItemReader<ReviewActivity> reader,
+      ItemProcessor<ReviewActivity, RankingReview> processor,
+      ItemWriter<RankingReview> writer
+  ) {
+    return new StepBuilder("updateRankingReviewStep", jobRepository)
+        .<ReviewActivity, RankingReview>chunk(100, transactionManager)
+        .reader(reader)
+        .processor(processor)
+        .writer(writer)
         .build();
   }
 }
