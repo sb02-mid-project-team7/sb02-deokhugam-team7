@@ -8,6 +8,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.entity.QBook;
 import com.sprint.deokhugamteam7.domain.comment.entity.QComment;
+import com.sprint.deokhugamteam7.domain.review.dto.ReviewActivity;
 import com.sprint.deokhugamteam7.domain.review.dto.ReviewCountDto;
 import com.sprint.deokhugamteam7.domain.review.dto.request.RankingReviewRequest;
 import com.sprint.deokhugamteam7.domain.review.dto.request.ReviewSearchCondition;
@@ -18,8 +19,11 @@ import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.domain.user.entity.QUser;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -146,10 +150,11 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   }
 
   @Override
-  public Map<UUID, Long> findLikeCountsByPeriod(LocalDateTime start, LocalDateTime end) {
-    BooleanBuilder builder = new BooleanBuilder();
+  public List<ReviewActivity> findReviewActivitySummary(LocalDateTime start, LocalDateTime end) {
+    // reviewLike count
+    BooleanBuilder likeBuilder = new BooleanBuilder();
     if (start != null && end != null) {
-      builder.and(rl.createdAt.between(start, end));
+      likeBuilder.and(rl.createdAt.between(start, end));
     }
 
     List<ReviewCountDto> likeCounts = queryFactory
@@ -157,7 +162,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .from(rl)
         .join(rl.review, review)
         .join(rl.user, user)
-        .where(builder
+        .where(likeBuilder
             .and(review.user.isDeleted.eq(false))
             .and(review.book.isDeleted.eq(false))
             .and(review.isDeleted.eq(false))
@@ -166,17 +171,13 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .groupBy(rl.review.id)
         .fetch();
 
-    return likeCounts.stream()
-        .collect(Collectors.toMap(
-            ReviewCountDto::reviewId, ReviewCountDto::count
-        ));
-  }
+    Map<UUID, Long> likeMap = likeCounts.stream()
+        .collect(Collectors.toMap(ReviewCountDto::reviewId, ReviewCountDto::count));
 
-  @Override
-  public Map<UUID, Long> findCommentCountsByPeriod(LocalDateTime start, LocalDateTime end) {
-    BooleanBuilder builder = new BooleanBuilder();
+    // comment count
+    BooleanBuilder commentBuilder = new BooleanBuilder();
     if (start != null && end != null) {
-      builder.and(c.createdAt.between(start, end));
+      commentBuilder.and(c.createdAt.between(start, end));
     }
 
     List<ReviewCountDto> commentCounts = queryFactory
@@ -185,20 +186,56 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .join(c.review, review)
         .join(review.user, user)
         .join(review.book, book)
-        .where(
-            builder.and(review.isDeleted.eq(false))
-                .and(c.isDeleted.eq(false))
-                .and(review.user.isDeleted.eq(false))
-                .and(review.book.isDeleted.eq(false))
-                .and(c.user.isDeleted.eq(false))
+        .where(commentBuilder
+            .and(review.isDeleted.eq(false))
+            .and(c.isDeleted.eq(false))
+            .and(review.user.isDeleted.eq(false))
+            .and(review.book.isDeleted.eq(false))
+            .and(c.user.isDeleted.eq(false))
         )
         .groupBy(c.review.id)
         .fetch();
 
-    return commentCounts.stream()
-        .collect(Collectors.toMap(
-            ReviewCountDto::reviewId, ReviewCountDto::count
-        ));
+    Map<UUID, Long> commentMap = commentCounts.stream()
+        .collect(Collectors.toMap(ReviewCountDto::reviewId, ReviewCountDto::count));
+
+    List<UUID> allReviewIds = queryFactory
+        .select(review.id)
+        .from(review)
+        .where(
+            review.isDeleted.eq(false),
+            review.user.isDeleted.eq(false),
+            review.book.isDeleted.eq(false)
+        )
+        .fetch();
+
+    List<ReviewActivity> res = new ArrayList<>();
+    for (UUID reviewId : allReviewIds) {
+      long likeCount = likeMap.getOrDefault(reviewId, 0L);
+      long commentCount = commentMap.getOrDefault(reviewId, 0L);
+      res.add(new ReviewActivity(reviewId, likeCount, commentCount));
+    }
+
+    return res;
+  }
+
+  public Map<UUID, RankingReview> findAllByReviewIdInAndPeriod(Set<UUID> reviewIds, Period period) {
+    if (reviewIds == null || reviewIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
+
+    List<RankingReview> res = queryFactory
+        .selectFrom(rankingReview)
+        .where(
+            rankingReview.review.id.in(reviewIds),
+            rankingReview.period.eq(period)
+        )
+        .fetch();
+
+    return res.stream().collect(Collectors.toMap(
+        ranking -> ranking.getReview().getId(),
+        ranking -> ranking
+    ));
   }
 
   public List<RankingReview> findRankingReviewsByPeriod(RankingReviewRequest request, int limit) {
@@ -217,6 +254,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .join(review.user, user).fetchJoin()
         .join(review.book, book).fetchJoin()
         .where(rankingReview.period.eq(request.getPeriod())
+            .and(rankingReview.score.gt(0))
             .and(review.book.isDeleted.eq(false))
             .and(review.user.isDeleted.eq(false))
             .and(review.isDeleted.eq(false)))
