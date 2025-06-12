@@ -1,5 +1,6 @@
 package com.sprint.deokhugamteam7.config;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,15 +16,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private final UserAccessFilter userAccessFilter;
+  private final Optional<UserAccessFilter> userAccessFilter;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    return http
-        .csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-        .addFilterBefore(userAccessFilter, UsernamePasswordAuthenticationFilter.class)
-        .build();
+    http.csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+
+    userAccessFilter.ifPresent(filter ->
+        http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+    );
+
+    return http.build();
   }
 
   @Bean
