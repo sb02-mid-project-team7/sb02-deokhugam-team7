@@ -28,7 +28,7 @@ public class RankingBookSchedule {
       JobExecution execution = jobLauncher.run(rankingBookJob, jobParameters);
       log.info("[RankingBookSchedule] batch job status: {}", execution.getStatus());
     } catch (Exception e) {
-      log.error("[RankingBookSchedule] fail batch job");
+      log.error("[RankingBookSchedule] fail batch job", e);
     }
   }
 }
