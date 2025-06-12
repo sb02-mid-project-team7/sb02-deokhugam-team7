@@ -17,7 +17,7 @@ public class UserScoreTest {
     LocalDate date = LocalDate.of(2024, 6, 9);
 
     // when
-    UserScore score = UserScore.create(user, Period.DAILY,10.0, 5, 2);
+    UserScore score = UserScore.create(user, Period.DAILY, 10.0, 5, 2);
 
     // then
     assertThat(score.getUser()).isEqualTo(user);
