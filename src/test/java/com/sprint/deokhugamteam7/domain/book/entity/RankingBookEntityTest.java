@@ -17,7 +17,6 @@ public class RankingBookEntityTest {
     // then
     assertAll(
         () -> assertEquals(period, rankingBook.getPeriod()),
-        () -> assertEquals(0, rankingBook.getRank()),
         () -> assertEquals(0.0, rankingBook.getScore()),
         () -> assertEquals(0, rankingBook.getTotalRating()),
         () -> assertEquals(0, rankingBook.getReviewCount()),
@@ -35,7 +34,6 @@ public class RankingBookEntityTest {
     // then
     assertAll(
         () -> assertEquals(period, rankingBook.getPeriod()),
-        () -> assertEquals(0, rankingBook.getRank()),
         () -> assertEquals(1.0, rankingBook.getScore()),
         () -> assertEquals(1, rankingBook.getTotalRating()),
         () -> assertEquals(1, rankingBook.getReviewCount()),
@@ -55,7 +53,6 @@ public class RankingBookEntityTest {
     // then
     assertAll(
         () -> assertEquals(period, rankingBook.getPeriod()),
-        () -> assertEquals(0, rankingBook.getRank()),
         () -> assertEquals(1, rankingBook.getScore()),
         () -> assertEquals(1, rankingBook.getTotalRating()),
         () -> assertEquals(1, rankingBook.getReviewCount()),

@@ -30,10 +30,10 @@ public class BasicBookService implements BookService {
     if (image != null) {
       thumbnailUrl = imageComponent.uploadImage(image);
     }
-    Book book = Book.create(request.title(), request.author(), request.publisher(),
+    Book book = Book.create(request.title().trim(), request.author().trim(), request.publisher().trim(),
             request.publishedDate())
         .description(request.description())
-        .isbn(request.isbn())
+        .isbn(request.isbn().trim())
         .thumbnailUrl(thumbnailUrl).build();
     bookRepository.save(book);
     return BookDto.from(book);
@@ -51,7 +51,7 @@ public class BasicBookService implements BookService {
       thumbnailUrl = imageComponent.uploadImage(image);
     }
 
-    book.update(request.title(), request.author(), request.description(), request.publisher(),
+    book.update(request.title().trim(), request.author().trim(), request.description().trim(), request.publisher().trim(),
         request.publishedDate(), thumbnailUrl);
     bookRepository.save(book);
     return BookDto.from(book);

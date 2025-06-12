@@ -139,8 +139,4 @@ public class Book {
     }
   }
 
-
-  public List<Review> getReviewsWithIsDeletedIsFalse() {
-    return this.reviews.stream().filter(review -> !review.getIsDeleted()).toList();
-  }
 }
