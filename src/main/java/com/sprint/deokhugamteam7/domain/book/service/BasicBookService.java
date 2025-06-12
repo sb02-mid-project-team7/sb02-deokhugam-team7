@@ -23,7 +23,7 @@ public class BasicBookService implements BookService {
   @Override
   @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile image) {
-    if (!request.isbn().isBlank() && bookRepository.existsByIsbn((request.isbn().trim()))) {
+    if (!request.isbn().isBlank() && bookRepository.existsByIsbn(request.isbn().trim())) {
       throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
     }
     String thumbnailUrl = null;
