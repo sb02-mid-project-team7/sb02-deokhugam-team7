@@ -108,4 +108,8 @@ public class UserScore {
     this.rank = rank;
   }
 
+  public void updateId(UUID id) {
+    this.id = id;
+  }
+
 }
