@@ -27,11 +27,13 @@ public class BatchConfig {
   @Bean
   public Job userScoreJob(
       JobRepository jobRepository,
+      @Qualifier("deleteUserScoreStep") Step deleteUserScoreStep,
       @Qualifier("collectAndSaveUserScoresStep") Step collectAndSaveUserScoresStep,
       @Qualifier("updateUserRankingStep") Step updateUserRankingStep
   ) {
     return new JobBuilder("userScoreJob", jobRepository)
-        .start(collectAndSaveUserScoresStep)
+        .start(deleteUserScoreStep)
+        .next(collectAndSaveUserScoresStep)
         .next(updateUserRankingStep)
         .build();
   }
@@ -60,6 +62,17 @@ public class BatchConfig {
   ) {
     return new StepBuilder("updateUserRankingStep", jobRepository)
         .tasklet(rankUpdateTasklet, transactionManager)
+        .build();
+  }
+
+  @Bean
+  public Step deleteUserScoreStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      Tasklet deleteUserScoreTasklet
+  ) {
+    return new StepBuilder("deleteUserScoreStep", jobRepository)
+        .tasklet(deleteUserScoreTasklet, transactionManager)
         .build();
   }
 

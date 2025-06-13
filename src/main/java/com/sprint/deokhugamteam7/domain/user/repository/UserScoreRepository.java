@@ -42,4 +42,10 @@ public interface UserScoreRepository extends JpaRepository<UserScore, UUID> {
       @Param("likeCount") long likeCount,
       @Param("commentCount") long commentCount
   );
+
+  @Modifying
+  @Transactional
+  @Query("DELETE FROM UserScore us WHERE us.period = :period")
+  void deleteByPeriod(@Param("period") Period period);
+
 }
