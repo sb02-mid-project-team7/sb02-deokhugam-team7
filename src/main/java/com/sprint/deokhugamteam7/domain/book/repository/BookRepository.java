@@ -11,7 +11,5 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
   @Query("SELECT b FROM Book b JOIN FETCH b.rankingBooks WHERE b.id = :id AND b.isDeleted = false")
   Optional<Book> findByIdAndIsDeletedFalse(UUID id);
 
-  boolean existsByIsbn(String isbn);
-
-  boolean existsByIsbnAndIsDeletedIsFalse(String isbn);
+  Optional<Book> findByIsbn(String isbn);
 }
