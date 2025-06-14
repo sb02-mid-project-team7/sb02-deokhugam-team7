@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +43,6 @@ public class BookServiceUnitTest {
     // given
     LocalDate now = LocalDate.now();
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", null, "ccc", now, "123");
-    when(bookRepository.existsByIsbn(request.isbn())).thenReturn(false);
     // when
     BookDto bookDto = bookService.create(request, null);
     // then
@@ -81,7 +81,9 @@ public class BookServiceUnitTest {
     // given
     LocalDate now = LocalDate.now();
     BookCreateRequest request = new BookCreateRequest("aaa", "bbb", "ccc", "ddd", now, "1234567");
-    when(bookRepository.existsByIsbn("1234567")).thenReturn(true);
+    Book mock = spy(Book.class);
+    mock.setIsDeleted(true);
+    when(bookRepository.findByIsbn("1234567")).thenReturn(Optional.of(mock));
     // when & then
     assertThrows(DeokhugamException.class, ()->
         bookService.create(request, mock(MockMultipartFile.class)));

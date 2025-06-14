@@ -118,19 +118,13 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
 
   private OrderSpecifier<?> buildOrder(String sortField, String direction) {
     boolean asc = "asc".equalsIgnoreCase(direction);
-    switch (sortField) {
-      case "publishedDate":
-        return asc ? book.publishedDate.asc() : book.publishedDate.desc();
-      case "rating":
-        return asc ? rankingBook.rating.asc() : rankingBook.rating.desc();
-      case "reviewCount":
-        return asc ? rankingBook.reviewCount.asc() : rankingBook.reviewCount.desc();
-      case "score":
-        return asc ? rankingBook.score.asc() : rankingBook.score.desc();
-      case "title":
-      default:
-        return asc ? book.title.asc() : book.title.desc();
-    }
+    return switch (sortField) {
+      case "publishedDate" -> asc ? book.publishedDate.asc() : book.publishedDate.desc();
+      case "rating" -> asc ? rankingBook.rating.asc() : rankingBook.rating.desc();
+      case "reviewCount" -> asc ? rankingBook.reviewCount.asc() : rankingBook.reviewCount.desc();
+      case "score" -> asc ? rankingBook.score.asc() : rankingBook.score.desc();
+      default -> asc ? book.title.asc() : book.title.desc();
+    };
   }
 
   private BooleanExpression buildCursorCondition(String sortField, String direction,

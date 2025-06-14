@@ -31,21 +31,13 @@ public record CursorPageResponseBookDto(
     if (hasNext) {
       BookDto last = page.get(page.size() - 1);
 
-      switch (orderBy) {
-        case "publishedDate":
-          nextCursor = last.publishedDate().toString();
-          break;
-        case "rating":
-          nextCursor = String.valueOf(last.rating());
-          break;
-        case "reviewCount":
-          nextCursor = String.valueOf(last.reviewCount());
-          break;
-        case "title":
-        default:
-          nextCursor = last.title();
-          break;
-      }
+      nextCursor = switch (orderBy) {
+        case "publishedDate" -> last.publishedDate().toString();
+        case "rating" -> String.valueOf(last.rating());
+        case "reviewCount" -> String.valueOf(last.reviewCount());
+        default -> last.title();
+      };
+
       nextAfter = last.createdAt();
     }
 

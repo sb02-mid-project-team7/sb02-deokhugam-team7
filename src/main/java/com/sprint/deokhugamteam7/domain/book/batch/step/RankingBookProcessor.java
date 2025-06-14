@@ -39,7 +39,7 @@ public class RankingBookProcessor implements ItemProcessor<RankingBook,RankingBo
       case DAILY -> now.minusDays(1);
       case WEEKLY -> now.minusWeeks(1);
       case MONTHLY -> now.minusMonths(1);
-      default -> now.minusYears(1);
+      default -> now.minusYears(20);
     };
   }
 }

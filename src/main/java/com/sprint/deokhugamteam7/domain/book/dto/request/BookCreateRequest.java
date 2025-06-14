@@ -18,5 +18,4 @@ public record BookCreateRequest(
     @Schema(description = "isbn", example = "9788990982575")
     String isbn
 ) {
-
 }

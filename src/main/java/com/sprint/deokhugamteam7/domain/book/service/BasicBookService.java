@@ -7,6 +7,7 @@ import com.sprint.deokhugamteam7.domain.book.entity.Book;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
 import com.sprint.deokhugamteam7.exception.book.BookException;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,17 +24,28 @@ public class BasicBookService implements BookService {
   @Override
   @Transactional
   public BookDto create(BookCreateRequest request, MultipartFile image) {
-    if (!request.isbn().isBlank() && bookRepository.existsByIsbn(request.isbn().trim())) {
-      throw new BookException(ErrorCode.INTERNAL_BAD_REQUEST);
+    String isbn = Optional.ofNullable(request.isbn())
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .orElse(null);
+
+    if (isbn != null) {
+      Book book = bookRepository.findByIsbn(isbn).orElse(null);
+      if (book != null) {
+        if (!book.getIsDeleted()) {
+          throw new BookException(ErrorCode.DUPLICATE_ISBN);
+        }
+        book.setIsDeleted(false);
+        bookRepository.save(book);
+        return BookDto.from(book);
+      }
     }
-    String thumbnailUrl = null;
-    if (image != null) {
-      thumbnailUrl = imageComponent.uploadImage(image);
-    }
+    String thumbnailUrl = image != null ? imageComponent.uploadImage(image) : null;
+
     Book book = Book.create(request.title().trim(), request.author().trim(), request.publisher().trim(),
             request.publishedDate())
         .description(request.description())
-        .isbn(request.isbn().trim())
+        .isbn(isbn)
         .thumbnailUrl(thumbnailUrl).build();
     bookRepository.save(book);
     return BookDto.from(book);
