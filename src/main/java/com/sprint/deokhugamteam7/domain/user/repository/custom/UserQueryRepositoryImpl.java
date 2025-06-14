@@ -79,8 +79,16 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
 
   @Override
   public List<UserActivity> collectUserActivityScores(Period period, LocalDate baseDate) {
-    LocalDateTime start = getStartDate(period, baseDate).atStartOfDay();
-    LocalDateTime end = baseDate.plusDays(1).atStartOfDay(); // exclusive
+    LocalDateTime start;
+    LocalDateTime end;
+
+    if (period == Period.DAILY) {
+      end = LocalDateTime.now(); // 현재 시간
+      start = end.minusHours(24); // 24시간 전
+    } else {
+      start = getStartDate(period, baseDate).atStartOfDay();
+      end = baseDate.plusDays(1).atStartOfDay();
+    }
 
     // 유저별 활동 데이터 수집
     Map<UUID, Double> reviewScoreMap = queryFactory

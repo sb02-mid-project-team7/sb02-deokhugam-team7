@@ -2,6 +2,7 @@ package com.sprint.deokhugamteam7.domain.review.batch.schedule;
 
 import com.sprint.deokhugamteam7.constant.Period;
 import jakarta.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +22,10 @@ public class PopularReviewScoreSchedule {
   private final JobLauncher jobLauncher;
   private final Job reviewRankingJob;
 
-  @Scheduled(cron = "0 0/1 * * * *")
-  //@Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(cron = "0 0 0 * * *")
   public void scheduleScore() {
-    //LocalDateTime end = LocalDate.now().atStartOfDay();
-    LocalDateTime end = LocalDateTime.now();
+    LocalDateTime end = LocalDate.now().atStartOfDay();
+
     calculateReviewScore(end.minusDays(1), end, Period.DAILY);
     calculateReviewScore(end.minusWeeks(1), end, Period.WEEKLY);
     calculateReviewScore(end.minusMonths(1), end, Period.MONTHLY);
