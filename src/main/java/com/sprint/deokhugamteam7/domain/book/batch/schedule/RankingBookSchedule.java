@@ -18,7 +18,7 @@ public class RankingBookSchedule {
   private final JobLauncher jobLauncher;
   private final Job rankingBookJob;
 
-  @Scheduled(cron = "0 0/1 * * * *")
+  @Scheduled(cron = "0 0 0 * * *")
   public void runRankingJob() {
     try {
       JobParameters jobParameters = new JobParametersBuilder()
