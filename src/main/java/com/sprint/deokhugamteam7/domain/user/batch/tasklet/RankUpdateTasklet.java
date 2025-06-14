@@ -2,7 +2,6 @@ package com.sprint.deokhugamteam7.domain.user.batch.tasklet;
 
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.user.service.PowerUserService;
-import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -22,15 +21,11 @@ public class RankUpdateTasklet implements Tasklet {
   @Value("#{jobParameters['period']}")
   private String periodStr;
 
-  @Value("#{jobParameters['baseDate']}")
-  private String baseDateStr;
-
   @Override
   public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
     Period period = Period.valueOf(periodStr);
-    LocalDate date = LocalDate.parse(baseDateStr);
 
-    powerUserService.updateRanksForPeriodAndDate(period, date);
+    powerUserService.updateRanksForPeriod(period);
 
     return RepeatStatus.FINISHED;
   }

@@ -64,9 +64,6 @@ public class UserScore {
   @Column(name = "comment_count")
   private long commentCount;
 
-  @Column(name = "date", nullable = false)
-  private LocalDate date;
-
   @Column(name = "rank")
   private Long rank;
 
@@ -74,13 +71,12 @@ public class UserScore {
     return reviewScoreSum * 0.5 + likeCount * 0.2 + commentCount * 0.3;
   }
 
-  public static UserScore create(User user, Period period, LocalDate date, double reviewScoreSum,
+  public static UserScore create(User user, Period period, double reviewScoreSum,
       long likeCount, long commentCount) {
 
     UserScore userScore = new UserScore();
     userScore.user = user;
     userScore.period = period;
-    userScore.date = date;
     userScore.score = calculateScore(reviewScoreSum, likeCount, commentCount);
     userScore.reviewScoreSum = reviewScoreSum;
     userScore.likeCount = likeCount;
