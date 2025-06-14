@@ -71,7 +71,7 @@ public class BasicReviewService implements ReviewService {
     List<RankingBook> rankingBooks = book.getRankingBooks();
     rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(), false));
 
-    Review review = Review.create(book, user, request.content(), request.rating());
+    Review review = Review.create(book, user, request.content().trim(), request.rating());
     reviewRepository.save(review);
 
     return ReviewDto.of(review, 0, 0, false);
@@ -93,7 +93,7 @@ public class BasicReviewService implements ReviewService {
 
     review.validateUserAuthorization(userId);
 
-    String newContent = request.content();
+    String newContent = request.content().trim();
     int newRating = request.rating();
 
     review.update(newContent, newRating);
