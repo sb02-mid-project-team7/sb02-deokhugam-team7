@@ -204,3 +204,16 @@ CREATE TABLE if not exists BATCH_JOB_EXECUTION_CONTEXT
 CREATE SEQUENCE if not exists BATCH_STEP_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
 CREATE SEQUENCE if not exists BATCH_JOB_EXECUTION_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
 CREATE SEQUENCE if not exists BATCH_JOB_SEQ MAXVALUE 9223372036854775807 NO CYCLE;
+
+-- trigram 기반 검색 기능 활성화
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- LIKE 최적화 위한 인덱스 생성.
+CREATE INDEX CONCURRENTLY if not exists reviews_content_trgm_idx
+    ON reviews USING gin (lower(content) gin_trgm_ops);
+
+CREATE INDEX CONCURRENTLY if not exists users_nickname_trgm_idx
+    ON users USING gin (lower(nickname) gin_trgm_ops);
+
+CREATE INDEX CONCURRENTLY if not exists books_title_trgm_idx
+    ON books USING gin (lower(title) gin_trgm_ops);
