@@ -1,5 +1,5 @@
 package com.sprint.deokhugamteam7.config;
-/*
+
 import com.sprint.deokhugamteam7.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,7 +29,7 @@ public class UserAccessFilter extends OncePerRequestFilter {
       "/", "/index.html", "/favicon.ico",
       "/static/**", "/assets/**", "/css/**", "/js/**", "/images/**",
       "/api/users", "/api/users/login", "/api/users/power",
-      "/api/reviews/popular", "/api/books/popular"
+      "/api/reviews/popular", "/api/books/popular", "/actuator/**"
   );
 
   @Override
@@ -71,4 +71,3 @@ public class UserAccessFilter extends OncePerRequestFilter {
     }
   }
 }
-*/
