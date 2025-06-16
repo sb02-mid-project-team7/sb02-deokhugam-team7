@@ -33,10 +33,7 @@ public enum ErrorCode {
 
   //도서 오류
   BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "?", "도서를 찾을 수 없습니다."),
-  INVALID_BOOK_REGISTER(HttpStatus.CONFLICT,"?","동일한 ISBN 존재합니다."),
-  //TODO 도서 엔티티에 유저 엔티티 연관관계 집어넣는 등의 복잡한 작업 수행해야해서 일단 주석처리
-//  BOOK_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN,"?","해당 도서를 수정할 권한이 없습니다."),
-//  BOOK_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN,"?","해당 도서를 삭제할 권한이 없습니다."),
+  DUPLICATE_ISBN(HttpStatus.CONFLICT,"?","동일한 ISBN 존재합니다."),
 
   //리뷰 오류
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "?", "리뷰를 찾을 수 없습니다."),
