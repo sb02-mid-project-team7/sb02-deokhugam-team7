@@ -36,6 +36,7 @@
 ---
 
 ## 팀원별 구현 기능 상세
+
 ### **김태우**
 
 (자신이 개발한 기능에 대한 사진이나 gif 파일 첨부)
@@ -48,9 +49,10 @@
 (자신이 개발한 기능에 대한 사진이나 gif 파일 첨부)
 
 - **리뷰 관리 API**
-    - Query DSL을 활용한 리뷰 정보의 CRUD 처리(Spring Data JPA 사용).
+    - Query DSL, GIN Index를 활용한 리뷰 정보의 CRUD 처리(Spring Data JPA 사용).
+    - 리뷰 좋아요 등록/취소 구현.
 - **인기 리뷰 API**
-    - Spring Batch, Schedule을 활용한 정기적인 배치 시스템 구현. 
+    - Spring Batch, Schedule을 활용한 정기적인 배치 시스템 구현.
     - 리뷰의 좋아요 수, 댓글 수에 따른 기간별(일간, 주간, 월간, 역대) 리뷰 점수를 구하여 인기 리뷰 구현.
 
 ### **이종원**
@@ -72,7 +74,7 @@
 - **사용자 관리 API**
     - 사용자 정보의 CRUD 처리(Spring Data JPA 사용)
 - **파워 유저 API**
-    - Spring Batch, Schedule을 활용한 정기적인 배치 시스템 구현. 
+    - Spring Batch, Schedule을 활용한 정기적인 배치 시스템 구현.
     - 기간별(일간, 주간, 월간, 역대) 활동 점수에 따른 파워 유저 순위 구현.
 
 ### **한성태**
@@ -92,6 +94,7 @@
 ---
 
 ## **파일 구조**
+
 <details>
 <summary>📁 프로젝트 파일 구조</summary>
 <div markdown="1">
