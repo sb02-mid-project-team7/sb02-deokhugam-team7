@@ -88,20 +88,6 @@ public class BatchConfig {
   }
 
   @Bean
-  public Job rankingBookJob(
-      JobRepository jobRepository,
-      @Qualifier("deleteRankingBookStep") Step deleteRankingBookStep,
-      @Qualifier("updateRankingBooksStep") Step updateRankingBooksStep,
-      @Qualifier("updateBookRankingStep") Step updateBookRankingStep
-  ) {
-    return new JobBuilder("rankingBookJob", jobRepository)
-        .start(deleteRankingBookStep)
-        .next(updateRankingBooksStep)
-        .next(updateBookRankingStep)
-        .build();
-  }
-
-  @Bean
   public Step updateRankingReviewStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
@@ -114,6 +100,20 @@ public class BatchConfig {
         .reader(reader)
         .processor(processor)
         .writer(writer)
+        .build();
+  }
+
+  @Bean
+  public Job rankingBookJob(
+      JobRepository jobRepository,
+      @Qualifier("deleteRankingBookStep") Step deleteRankingBookStep,
+      @Qualifier("updateRankingBooksStep") Step updateRankingBooksStep,
+      @Qualifier("updateBookRankingStep") Step updateBookRankingStep
+  ) {
+    return new JobBuilder("rankingBookJob", jobRepository)
+        .start(deleteRankingBookStep)
+        .next(updateRankingBooksStep)
+        .next(updateBookRankingStep)
         .build();
   }
   
@@ -137,7 +137,7 @@ public class BatchConfig {
   public Step deleteRankingBookStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
-      Tasklet DeleteRankingBookTasklet
+      @Qualifier("deleteRankingBookTasklet") Tasklet DeleteRankingBookTasklet
   ) {
     return new StepBuilder("deleteRankingBookStep", jobRepository)
         .tasklet(DeleteRankingBookTasklet, transactionManager)
@@ -148,10 +148,10 @@ public class BatchConfig {
   public Step updateBookRankingStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
-      Tasklet BookRankUpdateTasklet
+      @Qualifier("updateBookRankingTasklet") Tasklet RankingBookRankUpdateTasklet
   ) {
     return new StepBuilder("updateBookRankingStep", jobRepository)
-        .tasklet(BookRankUpdateTasklet, transactionManager)
+        .tasklet(RankingBookRankUpdateTasklet, transactionManager)
         .build();
   }
 }

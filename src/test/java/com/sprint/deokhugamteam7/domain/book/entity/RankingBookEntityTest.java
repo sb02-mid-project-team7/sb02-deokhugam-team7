@@ -24,41 +24,6 @@ public class RankingBookEntityTest {
     );
   }
 
-  @Test
-  void plusRating() {
-    // given
-    Period period = Period.DAILY;
-    RankingBook rankingBook = RankingBook.create(period);
-    // when
-    rankingBook.updateScore(1, false);
-    // then
-    assertAll(
-        () -> assertEquals(period, rankingBook.getPeriod()),
-        () -> assertEquals(1.0, rankingBook.getScore()),
-        () -> assertEquals(1, rankingBook.getTotalRating()),
-        () -> assertEquals(1, rankingBook.getReviewCount()),
-        () -> assertEquals(1.0, rankingBook.getRating())
-    );
-  }
-
-  @Test
-  void minusRating() {
-    // given
-    Period period = Period.DAILY;
-    RankingBook rankingBook = RankingBook.create(period);
-    rankingBook.updateScore(1, false);
-    rankingBook.updateScore(1, false);
-    // when
-    rankingBook.updateScore(1, true);
-    // then
-    assertAll(
-        () -> assertEquals(period, rankingBook.getPeriod()),
-        () -> assertEquals(1, rankingBook.getScore()),
-        () -> assertEquals(1, rankingBook.getTotalRating()),
-        () -> assertEquals(1, rankingBook.getReviewCount()),
-        () -> assertEquals(1.0, rankingBook.getRating())
-    );
-  }
 
   @Test
   void getRatingWithNoReviewCount() {

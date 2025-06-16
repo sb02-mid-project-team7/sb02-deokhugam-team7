@@ -1,7 +1,6 @@
 package com.sprint.deokhugamteam7.domain.book.entity;
 
 import com.sprint.deokhugamteam7.constant.Period;
-import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -52,10 +50,11 @@ public class RankingBook {
   @Column(name = "rating")
   private double rating;
 
-  @Column(name = "rankg")
-  private double rank;
+  @Column(name = "rank")
+  private long rank;
 
-  private RankingBook(Period period) {
+  private RankingBook(Book book, Period period) {
+    this.book = book;
     this.period = period;
     this.rating = 0.0;
     this.score = 0.0;
@@ -64,7 +63,8 @@ public class RankingBook {
     this.rank = 0;
   }
 
-  private RankingBook(Period period, double rating, double score) {
+  private RankingBook(Book book, Period period, double rating, double score) {
+    this.book = book;
     this.period = period;
     this.rating = rating;
     this.score = score;
@@ -73,29 +73,12 @@ public class RankingBook {
     this.rank = 0;
   }
 
-  public static RankingBook create(Period period) {
-    return new RankingBook(period);
+  public static RankingBook create(Book book,Period period) {
+    return new RankingBook(book, period);
   }
 
-  public static RankingBook create(Period period,double rating, double score) {
-    return new RankingBook(period, rating, score);
-  }
-
-  public void updateScore(int rating, boolean isDeleted) {
-    if (!isDeleted) {
-      totalRating += rating;
-      reviewCount++;
-    } else {
-      totalRating -= rating;
-      reviewCount--;
-    }
-    if (reviewCount > 0) {
-      this.rating = (double) totalRating / reviewCount;
-      this.score = (reviewCount * 0.4) + (this.rating * 0.6);
-    } else {
-      this.rating = 0.0;
-      this.score = 0.0;
-    }
+  public static RankingBook create(Book book, Period period,double rating, double score) {
+    return new RankingBook(book, period, rating, score);
   }
 
   public void updateScore(double score) {
@@ -109,20 +92,4 @@ public class RankingBook {
   public double getRating() {
     return reviewCount == 0 ? 0.0 : (double) totalRating / reviewCount;
   }
-
-  public void reset() {
-    this.score = 0.0;
-    this.totalRating = 0;
-    this.reviewCount = 0;
-    this.rating = 0.0;
-  }
-
-  public void reCalculate() {
-    List<Review> reviews = this.book.getReviews();
-    reset();
-    reviews.stream()
-        .filter(review -> !review.getIsDeleted())
-        .forEach(review -> updateScore(review.getRating(), false));
-  }
-
 }

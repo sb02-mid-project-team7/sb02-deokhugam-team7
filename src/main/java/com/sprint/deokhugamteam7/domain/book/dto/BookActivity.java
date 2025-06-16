@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record BookActivity(
     UUID bookId,
-    int reviewCount,
+    long reviewCount,
     int totalRating
 ) {
 }

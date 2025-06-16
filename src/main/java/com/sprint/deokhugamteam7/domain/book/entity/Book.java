@@ -1,6 +1,5 @@
 package com.sprint.deokhugamteam7.domain.book.entity;
 
-import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import com.sprint.deokhugamteam7.exception.DeokhugamException;
 import com.sprint.deokhugamteam7.exception.ErrorCode;
@@ -18,8 +17,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -92,7 +89,6 @@ public class Book {
     this.publishedDate = publishedDate;
     this.isbn = isbn;
     this.thumbnailUrl = thumbnailUrl;
-    this.addRankingBooks();
   }
 
   public static BookBuilder create(String title, String author, String publisher,
@@ -122,21 +118,13 @@ public class Book {
     thumbnailUrl = updateField(thumbnailUrl, newThumbnailUrl);
   }
 
-
-  private void addRankingBooks() {
-    this.rankingBooks = Stream.of(Period.values()).map(
-        period -> {
-          RankingBook rankingBook = RankingBook.create(period);
-          rankingBook.setBook(this);
-          return rankingBook;
-        }
-    ).collect(Collectors.toList());
-  }
-
   private void validate(String title, String author, String publisher, LocalDate publishedDate) {
     if (title == null | author == null | publisher == null | publishedDate == null) {
       throw new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }
 
+  public List<Review> getReviewsWithIsDeletedIsFalse() {
+    return this.reviews.stream().filter(review -> !review.getIsDeleted()).toList();
+  }
 }

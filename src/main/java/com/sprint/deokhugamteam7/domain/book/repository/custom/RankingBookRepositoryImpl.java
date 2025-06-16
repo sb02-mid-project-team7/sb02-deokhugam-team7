@@ -7,7 +7,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.dto.BookActivity;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
-import com.sprint.deokhugamteam7.domain.book.dto.FindPopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.PopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.condition.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.condition.PopularBookCondition;
@@ -43,7 +42,6 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
               .or(book.isbn.containsIgnoreCase(cond.getKeyword()))
       );
     }
-    where.add(rankingBook.period.eq(Period.ALL_TIME));
 
     OrderSpecifier<?> order = buildOrder(cond.getOrderBy(), cond.getDirection());
 
@@ -52,11 +50,24 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
             book.id, book.title, book.author,
             book.description, book.publisher,
             book.publishedDate, book.isbn, book.thumbnailUrl,
-            rankingBook.reviewCount, rankingBook.rating,
+            review.id.countDistinct(), review.rating.avg().coalesce(0.0),
             book.createdAt, book.updatedAt))
-        .from(rankingBook)
-        .join(rankingBook.book, book)
+        .from(book)
+        .leftJoin(book.reviews, review)
+        .on(review.isDeleted.isFalse(), review.user.isDeleted.isFalse())
         .where(where.toArray(BooleanExpression[]::new))
+        .groupBy(
+            book.id,
+            book.title,
+            book.author,
+            book.description,
+            book.publisher,
+            book.publishedDate,
+            book.isbn,
+            book.thumbnailUrl,
+            book.createdAt,
+            book.updatedAt
+        )
         .orderBy(order)
         .limit(cond.getLimit() + 1)
         .fetch();
@@ -68,8 +79,8 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
   public CursorPageResponsePopularBookDto findPopularBooks(PopularBookCondition cond) {
     List<BooleanExpression> where = buildPopularBookConditions(cond);
 
-    List<FindPopularBookDto> find = queryFactory
-        .select(Projections.constructor(FindPopularBookDto.class,
+    List<PopularBookDto> find = queryFactory
+        .select(Projections.constructor(PopularBookDto.class,
             rankingBook.id,
             book.id,
             book.createdAt,
@@ -77,6 +88,7 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
             book.author,
             book.thumbnailUrl,
             rankingBook.period.stringValue(),
+            rankingBook.rank,
             rankingBook.score,
             rankingBook.reviewCount,
             rankingBook.rating))
@@ -86,17 +98,15 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
         .orderBy(buildOrder("score", cond.getDirection()))
         .limit(cond.getLimit() + 1)
         .fetch();
-    List<PopularBookDto> content = new ArrayList<>();
-    for (int i = 0; i < find.size(); i++) {
-      content.add(PopularBookDto.from(find.get(i), i + 1));
-    }
-    return CursorPageResponsePopularBookDto.of(content, cond.getLimit());
+    return CursorPageResponsePopularBookDto.of(find, cond.getLimit());
   }
 
   @Override
   public List<BookActivity> findReviewActivitySummary(LocalDateTime start, LocalDateTime end) {
     return queryFactory.select(Projections.constructor(BookActivity.class,
-            book.id, review.countDistinct(),review.rating.sum().coalesce(0)))
+            book.id,
+            review.countDistinct(),
+            review.rating.sum()))
         .from(book)
         .leftJoin(review).on(
             review.book.id.eq(book.id)
@@ -138,8 +148,8 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
     boolean asc = "asc".equalsIgnoreCase(direction);
     return switch (sortField) {
       case "publishedDate" -> asc ? book.publishedDate.asc() : book.publishedDate.desc();
-      case "rating" -> asc ? rankingBook.rating.asc() : rankingBook.rating.desc();
-      case "reviewCount" -> asc ? rankingBook.reviewCount.asc() : rankingBook.reviewCount.desc();
+      case "rating" -> asc ? review.rating.avg().asc() : review.rating.avg().desc();
+      case "reviewCount" -> asc ? review.id.countDistinct().asc() : review.id.countDistinct().desc();
       case "score" -> asc ? rankingBook.score.asc() : rankingBook.score.desc();
       default -> asc ? book.title.asc() : book.title.desc();
     };
@@ -157,10 +167,10 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
         return asc ? book.publishedDate.gt(date) : book.publishedDate.lt(date);
       case "rating":
         Double rating = Double.valueOf(cursor);
-        return asc ? rankingBook.rating.gt(rating) : rankingBook.rating.lt(rating);
+        return asc ? review.rating.avg().gt(rating) : review.rating.avg().lt(rating);
       case "reviewCount":
         Long cnt = Long.valueOf(cursor);
-        return asc ? rankingBook.reviewCount.gt(cnt) : rankingBook.reviewCount.lt(cnt);
+        return asc ? review.id.countDistinct().gt(cnt) : review.id.countDistinct().lt(cnt);
       case "score":     // 인기 검색용
       default:
         Double score = Double.valueOf(cursor);

@@ -1,13 +1,11 @@
 package com.sprint.deokhugamteam7.domain.book.dto;
 
-import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
-import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
-import com.sprint.deokhugamteam7.exception.DeokhugamException;
-import com.sprint.deokhugamteam7.exception.ErrorCode;
+import com.sprint.deokhugamteam7.domain.review.entity.Review;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 
@@ -40,12 +38,12 @@ public record BookDto(
     LocalDateTime updatedAt
 ) {
 
-  public static BookDto from(Book book) {
-    RankingBook rankingBook = book.getRankingBooks().stream()
-        .filter(rb -> rb.getPeriod().equals(Period.ALL_TIME)).findFirst()
-        .orElseThrow(
-            () -> new DeokhugamException(ErrorCode.INTERNAL_SERVER_ERROR)
-        );
+  public static BookDto from(Book book, BookActivity bookActivity) {
+    double rating = 0;
+    long count = bookActivity.reviewCount();
+    if (count > 0) {
+      rating = (double) bookActivity.totalRating() / count;
+    }
     return BookDto.builder()
         .id(book.getId())
         .title(book.getTitle())
@@ -57,7 +55,34 @@ public record BookDto(
         .thumbnailUrl(book.getThumbnailUrl())
         .createdAt(book.getCreatedAt())
         .updatedAt(book.getUpdatedAt())
-        .reviewCount(rankingBook.getReviewCount())
-        .rating(rankingBook.getRating()).build();
+        .reviewCount(count)
+        .rating(rating)
+        .build();
+  }
+
+  public static BookDto from(Book book) {
+    List<Review> reviews = book.getReviewsWithIsDeletedIsFalse();
+    double rating = 0;
+    long count = 0;
+    if (reviews != null) {
+      count = reviews.size();
+      if (count > 0) {
+        rating = (double) reviews.stream().mapToInt(Review::getRating).sum() / count;
+      }
+    }
+    return BookDto.builder()
+        .id(book.getId())
+        .title(book.getTitle())
+        .author(book.getAuthor())
+        .description(book.getDescription())
+        .publisher(book.getPublisher())
+        .publishedDate(book.getPublishedDate())
+        .isbn(book.getIsbn())
+        .thumbnailUrl(book.getThumbnailUrl())
+        .createdAt(book.getCreatedAt())
+        .updatedAt(book.getUpdatedAt())
+        .reviewCount(count)
+        .rating(rating)
+        .build();
   }
 }

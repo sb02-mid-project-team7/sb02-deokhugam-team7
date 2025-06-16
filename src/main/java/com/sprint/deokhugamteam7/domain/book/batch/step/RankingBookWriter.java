@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.Chunk;
@@ -35,8 +36,11 @@ public class RankingBookWriter implements ItemWriter<RankingBook> {
 
     Set<UUID> bookIds = list.stream()
         .map(b -> b.getBook().getId()).collect(Collectors.toSet());
-    Map<UUID, RankingBook> existingMap =
-        rankingBookRepository.findAllByBookIdInAndPeriod(bookIds, period);
+    List<RankingBook> result = rankingBookRepository.findAllByBookIdInAndPeriod(
+        bookIds, period);
+    Map<UUID, RankingBook> existingMap = result.stream()
+        .collect(
+            Collectors.toMap(rankingBook -> rankingBook.getBook().getId(), Function.identity()));
 
     List<RankingBook> toSave = new ArrayList<>();
 
