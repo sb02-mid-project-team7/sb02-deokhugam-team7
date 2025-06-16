@@ -1,8 +1,9 @@
 package com.sprint.deokhugamteam7.config;
 
+import com.sprint.deokhugamteam7.domain.book.dto.BookActivity;
+import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.review.dto.ReviewActivity;
 import com.sprint.deokhugamteam7.domain.review.entity.RankingReview;
-import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.user.dto.UserActivity;
 import com.sprint.deokhugamteam7.domain.user.entity.UserScore;
 import lombok.RequiredArgsConstructor;
@@ -85,14 +86,18 @@ public class BatchConfig {
         .start(updateRankingReviewStep)        
         .build();
   }
-  
+
   @Bean
   public Job rankingBookJob(
       JobRepository jobRepository,
-      @Qualifier("updateRankingBooksStep") Step updateRankingBooksStep
+      @Qualifier("deleteRankingBookStep") Step deleteRankingBookStep,
+      @Qualifier("updateRankingBooksStep") Step updateRankingBooksStep,
+      @Qualifier("updateBookRankingStep") Step updateBookRankingStep
   ) {
     return new JobBuilder("rankingBookJob", jobRepository)
-        .start(updateRankingBooksStep)
+        .start(deleteRankingBookStep)
+        .next(updateRankingBooksStep)
+        .next(updateBookRankingStep)
         .build();
   }
 
@@ -116,15 +121,37 @@ public class BatchConfig {
   public Step updateRankingBooksStep(
       JobRepository jobRepository,
       PlatformTransactionManager transactionManager,
-      ItemReader<RankingBook> reader,
-      ItemProcessor<RankingBook, RankingBook> processor,
+      ItemReader<BookActivity> reader,
+      ItemProcessor<BookActivity, RankingBook> processor,
       ItemWriter<RankingBook> writer
   ) {
     return new StepBuilder("updateRankingBooksStep", jobRepository)
-        .<RankingBook, RankingBook>chunk(10, transactionManager)
+        .<BookActivity, RankingBook>chunk(10, transactionManager)
         .reader(reader)
         .processor(processor)
         .writer(writer)
+        .build();
+  }
+
+  @Bean
+  public Step deleteRankingBookStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      Tasklet DeleteRankingBookTasklet
+  ) {
+    return new StepBuilder("deleteRankingBookStep", jobRepository)
+        .tasklet(DeleteRankingBookTasklet, transactionManager)
+        .build();
+  }
+
+  @Bean
+  public Step updateBookRankingStep(
+      JobRepository jobRepository,
+      PlatformTransactionManager transactionManager,
+      Tasklet BookRankUpdateTasklet
+  ) {
+    return new StepBuilder("updateBookRankingStep", jobRepository)
+        .tasklet(BookRankUpdateTasklet, transactionManager)
         .build();
   }
 }

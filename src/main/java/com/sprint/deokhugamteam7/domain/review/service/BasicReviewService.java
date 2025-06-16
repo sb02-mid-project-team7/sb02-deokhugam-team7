@@ -69,7 +69,7 @@ public class BasicReviewService implements ReviewService {
     }
 
     List<RankingBook> rankingBooks = book.getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(), false));
+    rankingBooks.forEach(rankingBook -> rankingBook.updateScore(request.rating(), false));
 
     Review review = Review.create(book, user, request.content().trim(), request.rating());
     reviewRepository.save(review);
@@ -124,7 +124,7 @@ public class BasicReviewService implements ReviewService {
     reviewRepository.save(review);
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
+    rankingBooks.forEach(rankingBook -> rankingBook.updateScore(review.getRating(), true));
   }
 
   @Override
@@ -138,7 +138,7 @@ public class BasicReviewService implements ReviewService {
     reviewRepository.delete(review);
 
     List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
+    rankingBooks.forEach(rankingBook -> rankingBook.updateScore(review.getRating(), true));
   }
 
   @Override

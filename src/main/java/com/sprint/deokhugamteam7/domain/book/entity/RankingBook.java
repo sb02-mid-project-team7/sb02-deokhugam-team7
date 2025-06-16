@@ -52,19 +52,36 @@ public class RankingBook {
   @Column(name = "rating")
   private double rating;
 
+  @Column(name = "rankg")
+  private double rank;
+
   private RankingBook(Period period) {
     this.period = period;
+    this.rating = 0.0;
     this.score = 0.0;
     this.totalRating = 0;
     this.reviewCount = 0;
-    this.rating = 0.0;
+    this.rank = 0;
+  }
+
+  private RankingBook(Period period, double rating, double score) {
+    this.period = period;
+    this.rating = rating;
+    this.score = score;
+    this.totalRating = 0;
+    this.reviewCount = 0;
+    this.rank = 0;
   }
 
   public static RankingBook create(Period period) {
     return new RankingBook(period);
   }
 
-  public void update(int rating, boolean isDeleted) {
+  public static RankingBook create(Period period,double rating, double score) {
+    return new RankingBook(period, rating, score);
+  }
+
+  public void updateScore(int rating, boolean isDeleted) {
     if (!isDeleted) {
       totalRating += rating;
       reviewCount++;
@@ -79,6 +96,14 @@ public class RankingBook {
       this.rating = 0.0;
       this.score = 0.0;
     }
+  }
+
+  public void updateScore(double score) {
+    this.score = score;
+  }
+
+  public void updateRank(long rank) {
+    this.rank = rank;
   }
 
   public double getRating() {
@@ -97,7 +122,7 @@ public class RankingBook {
     reset();
     reviews.stream()
         .filter(review -> !review.getIsDeleted())
-        .forEach(review -> update(review.getRating(), false));
+        .forEach(review -> updateScore(review.getRating(), false));
   }
 
 }

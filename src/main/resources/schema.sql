@@ -49,6 +49,7 @@ create table if not exists ranking_books
     total_rating INTEGER,
     review_count BIGINT,
     rating       DOUBLE PRECISION,
+    rank             BIGINT,
     CONSTRAINT uk_book_period UNIQUE (book_id, period),
     constraint fk_ranking_book foreign key (book_id) references books (id) on delete cascade
 );

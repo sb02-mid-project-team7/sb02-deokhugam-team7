@@ -30,7 +30,7 @@ public class RankingBookEntityTest {
     Period period = Period.DAILY;
     RankingBook rankingBook = RankingBook.create(period);
     // when
-    rankingBook.update(1, false);
+    rankingBook.updateScore(1, false);
     // then
     assertAll(
         () -> assertEquals(period, rankingBook.getPeriod()),
@@ -46,10 +46,10 @@ public class RankingBookEntityTest {
     // given
     Period period = Period.DAILY;
     RankingBook rankingBook = RankingBook.create(period);
-    rankingBook.update(1, false);
-    rankingBook.update(1, false);
+    rankingBook.updateScore(1, false);
+    rankingBook.updateScore(1, false);
     // when
-    rankingBook.update(1, true);
+    rankingBook.updateScore(1, true);
     // then
     assertAll(
         () -> assertEquals(period, rankingBook.getPeriod()),

@@ -5,6 +5,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.deokhugamteam7.constant.Period;
+import com.sprint.deokhugamteam7.domain.book.dto.BookActivity;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.FindPopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.PopularBookDto;
@@ -16,6 +17,7 @@ import com.sprint.deokhugamteam7.domain.book.entity.QBook;
 import com.sprint.deokhugamteam7.domain.book.entity.QRankingBook;
 import com.sprint.deokhugamteam7.domain.review.entity.QReview;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -91,6 +93,22 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
     return CursorPageResponsePopularBookDto.of(content, cond.getLimit());
   }
 
+  @Override
+  public List<BookActivity> findReviewActivitySummary(LocalDateTime start, LocalDateTime end) {
+    return queryFactory.select(Projections.constructor(BookActivity.class,
+            book.id, review.countDistinct(),review.rating.sum().coalesce(0)))
+        .from(book)
+        .leftJoin(review).on(
+            review.book.id.eq(book.id)
+                .and(review.isDeleted.isFalse())
+                .and(review.user.isDeleted.isFalse())
+                .and(start != null && end != null ? review.createdAt.between(start, end) : null)
+        )
+        .where(book.isDeleted.isFalse())
+        .groupBy(book.id).fetch();
+  }
+
+//  조건 계산식
   private List<BooleanExpression> buildBookConditions(BookCondition c) {
     List<BooleanExpression> list = new ArrayList<>();
     list.add(book.isDeleted.isFalse());
