@@ -1,4 +1,4 @@
-package com.sprint.deokhugamteam7.domain.book.service;
+package com.sprint.deokhugamteam7.domain.book.batch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
