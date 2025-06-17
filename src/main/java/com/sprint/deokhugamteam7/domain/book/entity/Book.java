@@ -76,7 +76,7 @@ public class Book {
 
   @Setter
   @OneToMany(mappedBy = "book")
-  private List<Review> reviews;
+  private List<Review> reviews = new ArrayList<>();;
 
   @Builder(builderMethodName = "of")
   private Book(String title, String author, String description, String publisher,

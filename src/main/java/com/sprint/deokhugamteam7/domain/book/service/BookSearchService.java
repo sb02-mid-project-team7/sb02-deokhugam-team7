@@ -34,20 +34,24 @@ public class BookSearchService {
       return;
     }
 
-    long rank = 1;
-    double prevScore = rankingBooks.get(0).getScore();
-    rankingBooks.get(0).updateRank(rank);
+    int rank = 1;
+    int sameScoreCount = 0;
+    Double previousScore = null;
 
-    for (int i = 1; i < rankingBooks.size(); i++) {
+    for (int i = 0; i < rankingBooks.size(); i++) {
       RankingBook current = rankingBooks.get(i);
       double currentScore = current.getScore();
 
-      if (Double.compare(currentScore, prevScore) != 0) {
-        rank++;
+      if (previousScore != null && Double.compare(previousScore, currentScore) == 0) {
+        current.updateRank(rank); // 이전과 같은 점수면 같은 랭크
+        sameScoreCount++;
+      } else {
+        rank = rank + sameScoreCount; // 중복된 만큼 건너뜀
+        current.updateRank(rank);
+        sameScoreCount = 1; // 현재 포함해서 1
       }
 
-      current.updateRank(rank);
-      prevScore = currentScore;
+      previousScore = currentScore;
     }
 
     rankingBookRepository.saveAll(rankingBooks);

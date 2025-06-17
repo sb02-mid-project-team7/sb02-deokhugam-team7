@@ -36,7 +36,7 @@ public class RankingBookProcessor implements ItemProcessor<BookActivity,RankingB
     if (reviewCount > 0) {
       double rating = (double) bookActivity.totalRating() / reviewCount;
       double score = (reviewCount * 0.4) + (rating * 0.6);
-      return RankingBook.create(book, period, rating, score);
+      return RankingBook.create(book, period, rating, score, reviewCount);
     } else {
       return RankingBook.create(book, period);
     }

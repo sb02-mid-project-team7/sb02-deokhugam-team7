@@ -11,12 +11,10 @@ import com.sprint.deokhugamteam7.exception.book.BookException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicBookService implements BookService {
@@ -45,14 +43,12 @@ public class BasicBookService implements BookService {
       }
     }
     String thumbnailUrl = image != null ? imageComponent.uploadImage(image) : null;
-    log.info("북 엔티티 생성");
     Book book = Book.create(request.title().trim(), request.author().trim(), request.publisher().trim(),
             request.publishedDate())
         .description(request.description())
         .isbn(isbn)
         .thumbnailUrl(thumbnailUrl).build();
     bookRepository.save(book);
-    log.info("북 저장 성공");
     return BookDto.from(book);
   }
 

@@ -41,9 +41,6 @@ public class RankingBook {
   @Column(name = "score")
   private double score;
 
-  @Column(name = "total_rating")
-  private int totalRating;
-
   @Column(name = "review_count")
   private long reviewCount;
 
@@ -58,18 +55,16 @@ public class RankingBook {
     this.period = period;
     this.rating = 0.0;
     this.score = 0.0;
-    this.totalRating = 0;
     this.reviewCount = 0;
     this.rank = 0;
   }
 
-  private RankingBook(Book book, Period period, double rating, double score) {
+  private RankingBook(Book book, Period period, double rating, double score, long reviewCount) {
     this.book = book;
     this.period = period;
     this.rating = rating;
     this.score = score;
-    this.totalRating = 0;
-    this.reviewCount = 0;
+    this.reviewCount = reviewCount;
     this.rank = 0;
   }
 
@@ -77,8 +72,8 @@ public class RankingBook {
     return new RankingBook(book, period);
   }
 
-  public static RankingBook create(Book book, Period period,double rating, double score) {
-    return new RankingBook(book, period, rating, score);
+  public static RankingBook create(Book book, Period period,double rating, double score, long reviewCount) {
+    return new RankingBook(book, period, rating, score,reviewCount);
   }
 
   public void updateScore(double score) {
@@ -89,7 +84,11 @@ public class RankingBook {
     this.rank = rank;
   }
 
-  public double getRating() {
-    return reviewCount == 0 ? 0.0 : (double) totalRating / reviewCount;
+  public void updateRating(double rating) {
+    this.rating = rating;
+  }
+
+  public void updateReviewCount(long reviewCount) {
+    this.reviewCount = reviewCount;
   }
 }

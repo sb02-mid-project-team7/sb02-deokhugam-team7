@@ -1,8 +1,10 @@
 package com.sprint.deokhugamteam7.domain.book.repository.custom;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.dto.BookActivity;
@@ -79,6 +81,11 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
   public CursorPageResponsePopularBookDto findPopularBooks(PopularBookCondition cond) {
     List<BooleanExpression> where = buildPopularBookConditions(cond);
 
+    where.add(
+        rankingBook.reviewCount.gt(0L)
+            .or(rankingBook.rating.gt(0.0))
+    );
+
     List<PopularBookDto> find = queryFactory
         .select(Projections.constructor(PopularBookDto.class,
             rankingBook.id,
@@ -103,19 +110,31 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
 
   @Override
   public List<BookActivity> findReviewActivitySummary(LocalDateTime start, LocalDateTime end) {
-    return queryFactory.select(Projections.constructor(BookActivity.class,
+    BooleanBuilder onCond = new BooleanBuilder()
+        .and(review.book.eq(book))
+        .and(review.isDeleted.isFalse())
+        .and(review.user.isDeleted.isFalse());
+
+    BooleanBuilder whereCond = new BooleanBuilder()
+        .and(book.isDeleted.isFalse());
+
+    if (start != null) onCond.and(review.createdAt.goe(start));
+    if (end   != null) onCond.and(review.createdAt.lt(end));
+
+    NumberExpression<Long> reviewCnt   = review.id.countDistinct().coalesce(0L);
+    NumberExpression<Integer> ratingSum = review.rating.sum().coalesce(0);
+
+    return queryFactory
+        .select(Projections.constructor(BookActivity.class,
             book.id,
-            review.countDistinct(),
-            review.rating.sum()))
+            reviewCnt,
+            ratingSum
+        ))
         .from(book)
-        .leftJoin(review).on(
-            review.book.id.eq(book.id)
-                .and(review.isDeleted.isFalse())
-                .and(review.user.isDeleted.isFalse())
-                .and(start != null && end != null ? review.createdAt.between(start, end) : null)
-        )
-        .where(book.isDeleted.isFalse())
-        .groupBy(book.id).fetch();
+        .leftJoin(review).on(onCond)
+        .where(whereCond)
+        .groupBy(book.id)
+        .fetch();
   }
 
 //  조건 계산식

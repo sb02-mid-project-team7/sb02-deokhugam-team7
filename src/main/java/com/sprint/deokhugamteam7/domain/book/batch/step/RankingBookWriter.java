@@ -32,26 +32,31 @@ public class RankingBookWriter implements ItemWriter<RankingBook> {
 
   @Override
   public void write(Chunk<? extends RankingBook> chunk) throws Exception {
-    List<? extends RankingBook> list = chunk.getItems();
+    List<? extends RankingBook> inputList = chunk.getItems();
 
-    Set<UUID> bookIds = list.stream()
-        .map(b -> b.getBook().getId()).collect(Collectors.toSet());
-    List<RankingBook> result = rankingBookRepository.findAllByBookIdInAndPeriod(
-        bookIds, period);
-    Map<UUID, RankingBook> existingMap = result.stream()
-        .collect(
-            Collectors.toMap(rankingBook -> rankingBook.getBook().getId(), Function.identity()));
+    Set<UUID> bookIds = inputList.stream()
+        .map(rb -> rb.getBook().getId())
+        .collect(Collectors.toSet());
+
+    List<RankingBook> existing = rankingBookRepository.findAllByBookIdInAndPeriod(bookIds, period);
+    Map<UUID, RankingBook> existingMap = existing.stream()
+        .collect(Collectors.toMap(rb -> rb.getBook().getId(), Function.identity()));
 
     List<RankingBook> toSave = new ArrayList<>();
 
-    for (RankingBook rankingBook : list) {
-      RankingBook existing = existingMap.get(rankingBook.getBook().getId());
-      if (existing != null) {
-        existing.updateScore(rankingBook.getScore());
-      }
-      toSave.add(rankingBook);
-    }
+    for (RankingBook newEntry : inputList) {
+      UUID bookId = newEntry.getBook().getId();
+      RankingBook existingEntry = existingMap.get(bookId);
 
+      if (existingEntry != null) {
+        existingEntry.updateScore(newEntry.getScore());
+        existingEntry.updateRating(newEntry.getRating());
+        existingEntry.updateReviewCount(newEntry.getReviewCount());
+        toSave.add(existingEntry);
+      } else {
+        toSave.add(newEntry);
+      }
+    }
     rankingBookRepository.saveAll(toSave);
   }
 }
