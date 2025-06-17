@@ -100,8 +100,8 @@ public class BookSearchServiceUnitTest {
     // then
     assertThat(b1.getRank()).isEqualTo(1);  // 최고점 100 → 1등
     assertThat(b2.getRank()).isEqualTo(2);  // 다음 점수 90 → 2등
-    assertThat(b3.getRank()).isEqualTo(2);  // 동점자도 2등
-    assertThat(b4.getRank()).isEqualTo(4);  // 2명이 2등이므로, 다음은 4등
+    assertThat(b3.getRank()).isEqualTo(3);  //  3등
+    assertThat(b4.getRank()).isEqualTo(4);  // 다음은 4등
 
     verify(rankingBookRepository).saveAll(list);
   }

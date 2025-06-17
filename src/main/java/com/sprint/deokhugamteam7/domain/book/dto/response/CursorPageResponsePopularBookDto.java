@@ -30,7 +30,7 @@ public record CursorPageResponsePopularBookDto(
     LocalDateTime nextAfter = null;
     if (hasNext) {
       PopularBookDto last = page.get(page.size() - 1);
-      nextCursor = String.valueOf(last.score());
+      nextCursor = String.valueOf(last.rank());
       nextAfter = last.createdAt();
     }
 
