@@ -2,7 +2,6 @@ package com.sprint.deokhugamteam7.domain.review.service;
 
 import com.sprint.deokhugamteam7.constant.NotificationType;
 import com.sprint.deokhugamteam7.domain.book.entity.Book;
-import com.sprint.deokhugamteam7.domain.book.entity.RankingBook;
 import com.sprint.deokhugamteam7.domain.book.repository.BookRepository;
 import com.sprint.deokhugamteam7.domain.comment.repository.CommentRepository;
 import com.sprint.deokhugamteam7.domain.notification.entity.Notification;
@@ -68,8 +67,6 @@ public class BasicReviewService implements ReviewService {
       throw new ReviewException(ErrorCode.REVIEW_ALREADY_EXISTS);
     }
 
-    List<RankingBook> rankingBooks = book.getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(request.rating(), false));
 
     Review review = Review.create(book, user, request.content().trim(), request.rating());
     reviewRepository.save(review);
@@ -98,8 +95,6 @@ public class BasicReviewService implements ReviewService {
 
     review.update(newContent, newRating);
 
-    List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(RankingBook::reCalculate);
 
     int likeCount = reviewLikeRepository.countByReviewId(id);
     int commentCount = commentRepository.countByReviewIdAndIsDeletedFalse(id);
@@ -123,8 +118,6 @@ public class BasicReviewService implements ReviewService {
 
     reviewRepository.save(review);
 
-    List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
   }
 
   @Override
@@ -137,8 +130,6 @@ public class BasicReviewService implements ReviewService {
 
     reviewRepository.delete(review);
 
-    List<RankingBook> rankingBooks = review.getBook().getRankingBooks();
-    rankingBooks.forEach(rankingBook -> rankingBook.update(review.getRating(), true));
   }
 
   @Override

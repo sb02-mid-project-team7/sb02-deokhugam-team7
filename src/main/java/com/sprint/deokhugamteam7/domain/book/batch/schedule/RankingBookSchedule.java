@@ -1,5 +1,9 @@
 package com.sprint.deokhugamteam7.domain.book.batch.schedule;
 
+import com.sprint.deokhugamteam7.constant.Period;
+import jakarta.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -20,15 +24,32 @@ public class RankingBookSchedule {
 
   @Scheduled(cron = "0 0 0 * * *")
   public void runRankingJob() {
+    LocalDateTime end = LocalDate.now().atStartOfDay();
+
+    calculateBookScore(end.minusDays(1), end, Period.DAILY);
+    calculateBookScore(end.minusWeeks(1), end, Period.WEEKLY);
+    calculateBookScore(end.minusMonths(1), end, Period.MONTHLY);
+    calculateBookScore(null, null, Period.ALL_TIME);
+  }
+
+  public void calculateBookScore
+      (@Nullable LocalDateTime start, @Nullable LocalDateTime end, Period period) {
+    JobParameters jobParameters = new JobParametersBuilder()
+        .addString("start", start != null ? start.toString() : "")
+        .addString("end", end != null ? end.toString() : "")
+        .addString("period", period.name())
+        .addLong("timestamp", System.currentTimeMillis())
+        .toJobParameters();
+
     try {
-      JobParameters jobParameters = new JobParametersBuilder()
-          .addLong("time", System.currentTimeMillis()) // 중복 실행 방지
-          .toJobParameters();
-      log.info("[RankingBookSchedule] run batch job");
+      log.info("인기 도서 - 배치 실행 시도: period={}, start={}, end={}", period, start, end);
       JobExecution execution = jobLauncher.run(rankingBookJob, jobParameters);
-      log.info("[RankingBookSchedule] batch job status: {}", execution.getStatus());
+      log.info("인기 도서 - 배치 상태: {}", execution.getStatus());
     } catch (Exception e) {
-      log.error("[RankingBookSchedule] fail batch job", e);
+      log.error("인기 도서- 배치 실패 - period: {}, start: {}, end: {}", period, start, end, e);
     }
   }
+
+
+
 }

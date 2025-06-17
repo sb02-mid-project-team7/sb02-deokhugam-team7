@@ -8,7 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface BookRepository extends JpaRepository<Book, UUID> {
 
-  @Query("SELECT b FROM Book b JOIN FETCH b.rankingBooks WHERE b.id = :id AND b.isDeleted = false")
+  @Query("""
+      SELECT DISTINCT b
+      FROM Book b
+      LEFT JOIN FETCH b.rankingBooks rb
+      WHERE b.id = :id
+        AND b.isDeleted = false
+    """)
   Optional<Book> findByIdAndIsDeletedFalse(UUID id);
 
   Optional<Book> findByIsbn(String isbn);

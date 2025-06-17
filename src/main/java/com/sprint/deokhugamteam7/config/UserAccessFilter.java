@@ -26,9 +26,9 @@ public class UserAccessFilter extends OncePerRequestFilter {
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
   private static final List<String> WHITE_LIST = List.of(
-      "/", "/index.html", "/favicon.ico",
+      "/", "/index.html", "/favicon.ico","/batch_dashboard.html",
       "/static/**", "/assets/**", "/css/**", "/js/**", "/images/**",
-      "/api/users", "/api/users/login", "/api/users/power",
+      "/api/users", "/api/users/login", "/api/users/power","/api/batch/**",
       "/api/reviews/popular", "/api/books/popular", "/actuator/**"
   );
 
