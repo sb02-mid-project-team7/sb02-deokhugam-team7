@@ -16,8 +16,8 @@ public class PopularBookCondition {
   )
   String period = "DAILY";
 
-  @Schema(description = "커서 페이지네이션 커서")
-  String cursor = "10";
+  @Schema(description = "커서 페이지네이션 커서 (rank 기준)")
+  String cursor;
 
   @Schema(description = "보조 커서(createdAt)")
   LocalDateTime after;
