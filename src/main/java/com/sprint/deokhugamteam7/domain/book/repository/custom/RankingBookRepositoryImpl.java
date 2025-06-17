@@ -5,6 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.deokhugamteam7.constant.Period;
 import com.sprint.deokhugamteam7.domain.book.dto.BookActivity;
@@ -36,6 +37,7 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
 
   @Override
   public CursorPageResponseBookDto findAllByKeyword(BookCondition cond) {
+    // 1) 기본 where 절 조립
     List<BooleanExpression> where = buildBookConditions(cond);
     if (StringUtils.hasText(cond.getKeyword())) {
       where.add(
@@ -45,20 +47,12 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
       );
     }
 
+    // 2) 정렬조건
     OrderSpecifier<?> order = buildOrder(cond.getOrderBy(), cond.getDirection());
 
+    // 3) 메인 쿼리: Book + 서브쿼리로 리뷰통계 가져오기
     List<BookDto> content = queryFactory
         .select(Projections.constructor(BookDto.class,
-            book.id, book.title, book.author,
-            book.description, book.publisher,
-            book.publishedDate, book.isbn, book.thumbnailUrl,
-            review.id.countDistinct(), review.rating.avg().coalesce(0.0),
-            book.createdAt, book.updatedAt))
-        .from(book)
-        .leftJoin(book.reviews, review)
-        .on(review.isDeleted.isFalse(), review.user.isDeleted.isFalse())
-        .where(where.toArray(BooleanExpression[]::new))
-        .groupBy(
             book.id,
             book.title,
             book.author,
@@ -67,9 +61,30 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
             book.publishedDate,
             book.isbn,
             book.thumbnailUrl,
+
+            // 리뷰 개수 서브쿼리
+            JPAExpressions.select(review.id.countDistinct())
+                .from(review)
+                .where(
+                    review.book.id.eq(book.id),
+                    review.isDeleted.isFalse(),
+                    review.user.isDeleted.isFalse()
+                ),
+
+            // 평균 평점 서브쿼리 (null → 0.0)
+            JPAExpressions.select(review.rating.avg().coalesce(0.0))
+                .from(review)
+                .where(
+                    review.book.id.eq(book.id),
+                    review.isDeleted.isFalse(),
+                    review.user.isDeleted.isFalse()
+                ),
+
             book.createdAt,
             book.updatedAt
-        )
+        ))
+        .from(book)
+        .where(where.toArray(BooleanExpression[]::new))
         .orderBy(order)
         .limit(cond.getLimit() + 1)
         .fetch();
