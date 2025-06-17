@@ -26,13 +26,13 @@ public class RankingBookSchedule {
   public void runRankingJob() {
     LocalDateTime end = LocalDate.now().atStartOfDay();
 
-    calculateReviewScore(end.minusDays(1), end, Period.DAILY);
-    calculateReviewScore(end.minusWeeks(1), end, Period.WEEKLY);
-    calculateReviewScore(end.minusMonths(1), end, Period.MONTHLY);
-    calculateReviewScore(null, null, Period.ALL_TIME);
+    calculateBookScore(end.minusDays(1), end, Period.DAILY);
+    calculateBookScore(end.minusWeeks(1), end, Period.WEEKLY);
+    calculateBookScore(end.minusMonths(1), end, Period.MONTHLY);
+    calculateBookScore(null, null, Period.ALL_TIME);
   }
 
-  public void calculateReviewScore
+  public void calculateBookScore
       (@Nullable LocalDateTime start, @Nullable LocalDateTime end, Period period) {
     JobParameters jobParameters = new JobParametersBuilder()
         .addString("start", start != null ? start.toString() : "")

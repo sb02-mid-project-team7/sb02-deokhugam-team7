@@ -18,10 +18,6 @@ public class BatchTriggerController {
   private final PopularReviewScoreSchedule popularReviewScoreSchedule;
   private final PowerUserScoreSchedule powerUserScoreSchedule;
 
-  /**
-   * POST /api/batch/trigger-all
-   * 이 한 번의 호출로 세 개의 스케줄러를 모두 실행합니다.
-   */
   @PostMapping("/trigger-all")
   public ResponseEntity<String> triggerAll() {
     // 1) 인기 도서 점수 계산
@@ -34,9 +30,6 @@ public class BatchTriggerController {
     return ResponseEntity.ok("All batch jobs have been triggered.");
   }
 
-  /**
-   * 개별 실행이 필요하면 이렇게 추가할 수도 있습니다.
-   */
   @PostMapping("/ranking-book")
   public ResponseEntity<String> triggerRankingBook() {
     rankingBookSchedule.runRankingJob();
