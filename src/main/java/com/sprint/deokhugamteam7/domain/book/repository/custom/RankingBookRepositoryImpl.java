@@ -1,12 +1,14 @@
 package com.sprint.deokhugamteam7.domain.book.repository.custom;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.deokhugamteam7.constant.Period;
+import com.sprint.deokhugamteam7.domain.book.dto.BookActivity;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
-import com.sprint.deokhugamteam7.domain.book.dto.FindPopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.PopularBookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.condition.BookCondition;
 import com.sprint.deokhugamteam7.domain.book.dto.condition.PopularBookCondition;
@@ -16,6 +18,7 @@ import com.sprint.deokhugamteam7.domain.book.entity.QBook;
 import com.sprint.deokhugamteam7.domain.book.entity.QRankingBook;
 import com.sprint.deokhugamteam7.domain.review.entity.QReview;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,7 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
 
   @Override
   public CursorPageResponseBookDto findAllByKeyword(BookCondition cond) {
+    // 1) where 조건 모으기
     List<BooleanExpression> where = buildBookConditions(cond);
     if (StringUtils.hasText(cond.getKeyword())) {
       where.add(
@@ -41,21 +45,50 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
               .or(book.isbn.containsIgnoreCase(cond.getKeyword()))
       );
     }
-    where.add(rankingBook.period.eq(Period.ALL_TIME));
 
-    OrderSpecifier<?> order = buildOrder(cond.getOrderBy(), cond.getDirection());
+    // 2) secondary sort (제목/날짜/…)
+    OrderSpecifier<?> secondaryOrder = buildOrder(cond.getOrderBy(), cond.getDirection());
 
+    // 3) primary sort: reviewCount 을 cond.direction 에 따라 asc/desc
+    boolean asc = "ASC".equalsIgnoreCase(cond.getDirection());
+    OrderSpecifier<Long> reviewCountOrder = asc
+        ? review.id.countDistinct().asc()
+        : review.id.countDistinct().desc();
+
+    // 4) select + join + group + order
     List<BookDto> content = queryFactory
         .select(Projections.constructor(BookDto.class,
-            book.id, book.title, book.author,
-            book.description, book.publisher,
-            book.publishedDate, book.isbn, book.thumbnailUrl,
-            rankingBook.reviewCount, rankingBook.rating,
-            book.createdAt, book.updatedAt))
-        .from(rankingBook)
-        .join(rankingBook.book, book)
+            book.id,
+            book.title,
+            book.author,
+            book.description,
+            book.publisher,
+            book.publishedDate,
+            book.isbn,
+            book.thumbnailUrl,
+            review.id.countDistinct(),               // reviewCount
+            review.rating.avg().coalesce(0.0),       // ratingAvg
+            book.createdAt,
+            book.updatedAt
+        ))
+        .from(book)
+        .leftJoin(book.reviews, review)
+        .on(review.isDeleted.isFalse(), review.user.isDeleted.isFalse())
         .where(where.toArray(BooleanExpression[]::new))
-        .orderBy(order)
+        .groupBy(
+            book.id,
+            book.title,
+            book.author,
+            book.description,
+            book.publisher,
+            book.publishedDate,
+            book.isbn,
+            book.thumbnailUrl,
+            book.createdAt,
+            book.updatedAt
+        )
+        // 5) primary=reviewCountOrder, secondary=기존 order
+        .orderBy(reviewCountOrder, secondaryOrder)
         .limit(cond.getLimit() + 1)
         .fetch();
 
@@ -66,8 +99,13 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
   public CursorPageResponsePopularBookDto findPopularBooks(PopularBookCondition cond) {
     List<BooleanExpression> where = buildPopularBookConditions(cond);
 
-    List<FindPopularBookDto> find = queryFactory
-        .select(Projections.constructor(FindPopularBookDto.class,
+    where.add(
+        rankingBook.reviewCount.gt(0L)
+            .or(rankingBook.rating.gt(0.0))
+    );
+
+    List<PopularBookDto> find = queryFactory
+        .select(Projections.constructor(PopularBookDto.class,
             rankingBook.id,
             book.id,
             book.createdAt,
@@ -75,6 +113,7 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
             book.author,
             book.thumbnailUrl,
             rankingBook.period.stringValue(),
+            rankingBook.rank,
             rankingBook.score,
             rankingBook.reviewCount,
             rankingBook.rating))
@@ -84,13 +123,39 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
         .orderBy(buildOrder("score", cond.getDirection()))
         .limit(cond.getLimit() + 1)
         .fetch();
-    List<PopularBookDto> content = new ArrayList<>();
-    for (int i = 0; i < find.size(); i++) {
-      content.add(PopularBookDto.from(find.get(i), i + 1));
-    }
-    return CursorPageResponsePopularBookDto.of(content, cond.getLimit());
+    return CursorPageResponsePopularBookDto.of(find, cond.getLimit());
   }
 
+  @Override
+  public List<BookActivity> findReviewActivitySummary(LocalDateTime start, LocalDateTime end) {
+    BooleanBuilder onCond = new BooleanBuilder()
+        .and(review.book.eq(book))
+        .and(review.isDeleted.isFalse())
+        .and(review.user.isDeleted.isFalse());
+
+    BooleanBuilder whereCond = new BooleanBuilder()
+        .and(book.isDeleted.isFalse());
+
+    if (start != null) onCond.and(review.createdAt.goe(start));
+    if (end   != null) onCond.and(review.createdAt.lt(end));
+
+    NumberExpression<Long> reviewCnt   = review.id.countDistinct().coalesce(0L);
+    NumberExpression<Integer> ratingSum = review.rating.sum().coalesce(0);
+
+    return queryFactory
+        .select(Projections.constructor(BookActivity.class,
+            book.id,
+            reviewCnt,
+            ratingSum
+        ))
+        .from(book)
+        .leftJoin(review).on(onCond)
+        .where(whereCond)
+        .groupBy(book.id)
+        .fetch();
+  }
+
+//  조건 계산식
   private List<BooleanExpression> buildBookConditions(BookCondition c) {
     List<BooleanExpression> list = new ArrayList<>();
     list.add(book.isDeleted.isFalse());
@@ -120,8 +185,8 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
     boolean asc = "asc".equalsIgnoreCase(direction);
     return switch (sortField) {
       case "publishedDate" -> asc ? book.publishedDate.asc() : book.publishedDate.desc();
-      case "rating" -> asc ? rankingBook.rating.asc() : rankingBook.rating.desc();
-      case "reviewCount" -> asc ? rankingBook.reviewCount.asc() : rankingBook.reviewCount.desc();
+      case "rating" -> asc ? review.rating.avg().asc() : review.rating.avg().desc();
+      case "reviewCount" -> asc ? review.id.countDistinct().asc() : review.id.countDistinct().desc();
       case "score" -> asc ? rankingBook.score.asc() : rankingBook.score.desc();
       default -> asc ? book.title.asc() : book.title.desc();
     };
@@ -139,10 +204,10 @@ public class RankingBookRepositoryImpl implements RankingBookRepositoryCustom {
         return asc ? book.publishedDate.gt(date) : book.publishedDate.lt(date);
       case "rating":
         Double rating = Double.valueOf(cursor);
-        return asc ? rankingBook.rating.gt(rating) : rankingBook.rating.lt(rating);
+        return asc ? review.rating.avg().gt(rating) : review.rating.avg().lt(rating);
       case "reviewCount":
         Long cnt = Long.valueOf(cursor);
-        return asc ? rankingBook.reviewCount.gt(cnt) : rankingBook.reviewCount.lt(cnt);
+        return asc ? review.id.countDistinct().gt(cnt) : review.id.countDistinct().lt(cnt);
       case "score":     // 인기 검색용
       default:
         Double score = Double.valueOf(cursor);

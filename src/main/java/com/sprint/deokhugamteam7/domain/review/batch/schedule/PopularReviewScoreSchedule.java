@@ -22,7 +22,7 @@ public class PopularReviewScoreSchedule {
   private final JobLauncher jobLauncher;
   private final Job reviewRankingJob;
 
-  @Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(cron = "0 1 0 * * *")
   public void scheduleScore() {
     LocalDateTime end = LocalDate.now().atStartOfDay();
 

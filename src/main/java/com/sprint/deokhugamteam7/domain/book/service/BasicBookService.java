@@ -1,5 +1,6 @@
 package com.sprint.deokhugamteam7.domain.book.service;
 
+import com.sprint.deokhugamteam7.domain.book.dto.BookActivity;
 import com.sprint.deokhugamteam7.domain.book.dto.BookDto;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookCreateRequest;
 import com.sprint.deokhugamteam7.domain.book.dto.request.BookUpdateRequest;
@@ -37,11 +38,11 @@ public class BasicBookService implements BookService {
         }
         book.setIsDeleted(false);
         bookRepository.save(book);
-        return BookDto.from(book);
+        BookActivity activity = new BookActivity(book.getId(), 0, 0);
+        return BookDto.from(book, activity);
       }
     }
     String thumbnailUrl = image != null ? imageComponent.uploadImage(image) : null;
-
     Book book = Book.create(request.title().trim(), request.author().trim(), request.publisher().trim(),
             request.publishedDate())
         .description(request.description())

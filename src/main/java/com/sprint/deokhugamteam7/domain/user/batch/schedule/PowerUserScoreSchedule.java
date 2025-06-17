@@ -20,7 +20,7 @@ public class PowerUserScoreSchedule {
   private final JobLauncher jobLauncher;
   private final Job userScoreJob;
 
-  @Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(cron = "0 2 0 * * *")
   public void runUserScoreBatchJob() {
     try {
       LocalDate today = LocalDate.now();
