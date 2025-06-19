@@ -11,7 +11,6 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -22,7 +21,7 @@ public class PopularReviewScoreSchedule {
   private final JobLauncher jobLauncher;
   private final Job reviewRankingJob;
 
-  @Scheduled(cron = "0 1 0 * * *")
+//  @Scheduled(cron = "0 1 0 * * *")
   public void scheduleScore() {
     LocalDateTime end = LocalDate.now().atStartOfDay();
 
