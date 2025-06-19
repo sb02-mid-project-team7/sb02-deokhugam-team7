@@ -208,6 +208,6 @@ public class RankingBookRepositoryTest {
     assertThat(summary).hasSize(1);
     BookActivity act = summary.get(0);
     assertThat(act.reviewCount()).isEqualTo(0L);
-    assertThat(act.totalRating()).isEqualTo(7);
+    assertThat(act.totalRating()).isEqualTo(0);
   }
 }
