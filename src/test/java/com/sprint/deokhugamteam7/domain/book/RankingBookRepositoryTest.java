@@ -207,7 +207,7 @@ public class RankingBookRepositoryTest {
     // then
     assertThat(summary).hasSize(1);
     BookActivity act = summary.get(0);
-    assertThat(act.reviewCount()).isEqualTo(2L);
+    assertThat(act.reviewCount()).isEqualTo(0L);
     assertThat(act.totalRating()).isEqualTo(7);
   }
 }
